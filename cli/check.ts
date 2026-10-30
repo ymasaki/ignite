@@ -69,7 +69,9 @@ const BREAK_WIDTHS = new Set([860, 720, 600])
 const BREAK_HEIGHTS = new Set([500])
 const MEDIA_SIZE = /\((min|max)-(width|height)\s*:\s*(\d+)px\)/g
 // Ignite の部品。アプリの CSS でこれらの見た目を上書きしない
-const DS_PARTS = /\.(seg|tabs|stepper|select-btn|sel-[\w-]+|btn|icon-btn|chip|tag|badge|kpi(?:-[\w]+)?|erow|er-[\w]+|section-h|subhead|notice|drawer|popover-body|field|sfield|check|check-[\w]+|switch|sw-[\w]+|numfield|nf-[\w]+|form-field|ff-[\w]+|cal|cal-[\w]+|dialog|dlg-[\w]+|toast|toasts|pagination|pg-[\w]+|accordion|ac-[\w]+|steps|st-[\w]+|spinner|progress|linkbtn|crumbs|kv|empty-state|av|section|section-[\w]+|skel|skel-[\w]+|side-foot)(?![\w-])/
+const DS_PARTS = /\.(seg|tabs|stepper|select-btn|sel-[\w-]+|btn|icon-btn|chip|tag|badge|kpi(?:-[\w]+)?|erow|er-[\w]+|section-h|subhead|notice|drawer|popover-body|field|sfield|check|linkbtn|crumbs|kv|empty-state|av|section|section-[\w]+|skel|skel-[\w]+|side-foot)(?![\w-])/
+// 1.1 で足した部品。アプリに同じ名前の独自のクラスがあるかもしれないので、次の major までは注意にとどめる
+const NEW_PARTS = /\.(check-[\w]+|switch|sw-[\w]+|numfield|nf-[\w]+|form-field|ff-[\w]+|cal|cal-[\w]+|dialog|dlg-[\w]+|toast|toasts|pagination|pg-[\w]+|accordion|ac-[\w]+|steps|st-[\w]+|spinner|progress)(?![\w-])/
 const LOOK_PROPS = /(?<![\w-])(padding(?:-\w+)?|font-size|font-weight|color|background(?:-color)?|border(?:-(?:top|right|bottom|left|color|width))?|width|height|border-radius|box-shadow|opacity)\s*:/g
 // AppShell が持つ枠の部品。アプリの CSS はこれらを対象（セレクタの最後の要素）にしない（中身の状態に合わせた規則はよい）
 const SHELL_PARTS = /\.(app|mainwrap|side|side-handle|side-scrim|pslot|panel)(?![\w-])[^\s>+~]*$/
@@ -152,13 +154,13 @@ export function checkMediaSpacing(file: string, text: string): Problem[] {
 }
 
 /** アプリの CSS が Ignite の部品の見た目（余白・文字・色・枠）を上書きしていないか。幅・位置（配置）はよい */
-export function checkOverride(file: string, text: string): Problem[] {
+export function checkOverride(file: string, text: string, parts: RegExp = DS_PARTS): Problem[] {
   const out: Problem[] = []
   const body = stripCssComments(text)
   const raw = text.split('\n')
   for (const m of body.matchAll(/([^{}@;]+)\{([^{}]*)\}/g)) {
     const [, sel, decl] = m
-    const part = sel.match(DS_PARTS)
+    const part = sel.match(parts)
     const props = [...decl.matchAll(LOOK_PROPS)].map((p) => p[1])
     if (!part || !props.length) continue
     const line = body.slice(0, m.index + (sel.length - sel.trimStart().length)).split('\n').length
@@ -276,6 +278,7 @@ export function run(files: Map<string, string>, config: CheckConfig, added?: (fi
       const lines = added?.(file)
       problems.push(...found.filter((p) => lines?.has(p.line) ?? !added))
       if (added) warnings.push(...found.filter((p) => !lines?.has(p.line)))
+      if (!theme) warnings.push(...checkOverride(file, text, NEW_PARTS))
     }
     if (code) {
       if (!config.self) problems.push(...checkShellJs(file, text))

@@ -24,3 +24,6 @@ export function monthGrid(ym: string, weekStart = 0): string[] {
   const start = addDays(first, -((weekday(first) - weekStart + 7) % 7))
   return Array.from({ length: 42 }, (_, i) => addDays(start, i))
 }
+
+/** 選べる範囲に収める */
+export const clampDate = (iso: string, min?: string, max?: string) => (min != null && iso < min ? min : max != null && iso > max ? max : iso)

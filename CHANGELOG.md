@@ -14,12 +14,13 @@
 - トークン: `--danger*`、`--on-danger`、`--space-*`、`--z-*`、`--dur-*`
 - `focusFirstInvalid()`
 - `TextField`・`TextArea`・`Select` は `FormField` の中で `label` を省ける
-- `ignite check` の注意: `alert`・`confirm`・`prompt` とブラウザ標準の入力（止めない）
+- `ignite check` の注意: `alert`・`confirm`・`prompt` とブラウザ標準の入力、新しい部品のクラスの上書き（どれも止めない）
 
 ### 修正
 
 - 重ねた `Drawer` がフォーカスの枠を出していた
 - `Popover`・`Select` が下・右で切れるとき、反対側へ開く
+- `Select` の一覧を開いているあいだに親が描き直すと、選択中の項目へフォーカスが戻っていた
 - `Dialog` の中の `Popover` を Esc で閉じたときに、`Dialog` まで閉じないようにした
 
 ## 1.0.0（2026-10-30）

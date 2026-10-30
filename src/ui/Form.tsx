@@ -34,11 +34,11 @@ export function RadioGroup<T extends string>({ value, options, onChange, label, 
   const f = useField(label)
   const name = useId()
   return (
-    <div className={`radios${inline ? ' inline' : ''}`} role="radiogroup" aria-label={f.label} aria-describedby={f.describedBy} aria-required={f.required || undefined}>
+    <div className={`radios${inline ? ' inline' : ''}`} role="radiogroup" aria-label={f.label} aria-describedby={f.describedBy} aria-required={f.required || undefined} aria-invalid={f.invalid || undefined}>
       {options.map((o) => {
         const off = disabled || o.disabled
         return (
-          <label key={o.value} className={`check${off ? ' off' : ''}`}>
+          <label key={o.value} className={`check${off ? ' off' : ''}${f.invalid ? ' invalid' : ''}`}>
             <input type="radio" name={name} value={o.value} checked={o.value === value} disabled={off} onChange={() => onChange(o.value)} />
             <span className="check-box round" aria-hidden="true"><i /></span>
             <span className="check-t">
@@ -56,7 +56,7 @@ export function RadioGroup<T extends string>({ value, options, onChange, label, 
 export function Switch({ checked, onChange, label, hideLabel = false, disabled = false }: { checked: boolean; onChange: (v: boolean) => void; label?: string; hideLabel?: boolean; disabled?: boolean }) {
   const f = useField(label)
   return (
-    <button type="button" role="switch" className="switch" id={f.id} aria-checked={checked} aria-label={hideLabel ? f.label : undefined} aria-describedby={f.describedBy} disabled={disabled} onClick={() => onChange(!checked)}>
+    <button type="button" role="switch" className="switch" id={f.id} aria-checked={checked} aria-label={hideLabel ? f.label : undefined} aria-describedby={f.describedBy} aria-invalid={f.invalid || undefined} disabled={disabled} onClick={() => onChange(!checked)}>
       <span className="sw-track" aria-hidden="true"><span className="sw-thumb" /></span>
       {!hideLabel && <span>{f.label}</span>}
     </button>
@@ -79,7 +79,9 @@ export const clampNumber = (n: number, min = -Infinity, max = Infinity) => Math.
 
 /** 増減した値（0.1 の足し算の端数が出ないよう、step の桁にそろえる） */
 export function stepNumber(n: number | null, delta: number, step: number, min?: number, max?: number): number {
-  const digits = String(step).split('.')[1]?.length ?? 0
+  // 小さい step は「1e-7」の形になるので、指数も数える
+  const [mantissa, exp = '0'] = String(step).split('e')
+  const digits = Math.min(100, Math.max(0, (mantissa.split('.')[1]?.length ?? 0) - Number(exp)))
   return clampNumber(Number(((n ?? min ?? 0) + delta).toFixed(digits)), min, max)
 }
 
@@ -87,6 +89,9 @@ export function stepNumber(n: number | null, delta: number, step: number, min?: 
 export function NumberField({ value, onChange, label, min, max, step = 1, unit, placeholder, disabled = false }: { value: number | null; onChange: (v: number | null) => void; label?: string; min?: number; max?: number; step?: number; unit?: string; placeholder?: string; disabled?: boolean }) {
   const f = useField(label)
   const [draft, setDraft] = useState<string | null>(null)
+  // 打っている途中に外から値が変わったら、外の値を優先する（古い下書きを離れるときに書き戻さない）
+  useEffect(() => setDraft(null), [value])
+  const shown = draft === null ? value : parseNumber(draft)
   const set = (n: number) => (setDraft(null), onChange(n))
   const commit = () => {
     if (draft === null) return
@@ -95,14 +100,14 @@ export function NumberField({ value, onChange, label, min, max, step = 1, unit, 
     onChange(n === null ? null : clampNumber(n, min, max))
   }
   const onKey = (e: KeyboardEvent) => {
-    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return
+    if (e.nativeEvent.isComposing || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return
     e.preventDefault()
     set(stepNumber(draft === null ? value : parseNumber(draft), e.key === 'ArrowUp' ? step : -step, step, min, max))
   }
   return (
     <span className="numfield">
       <span className="nf-box">
-        <input className="field" type="text" inputMode="decimal" role="spinbutton" autoComplete="off" aria-label={f.label} aria-valuenow={value ?? undefined} aria-valuemin={min} aria-valuemax={max} aria-valuetext={value != null && unit ? `${value}${unit}` : undefined} placeholder={placeholder} disabled={disabled} value={draft ?? value ?? ''} onChange={(e) => setDraft(e.target.value)} onBlur={commit} onKeyDown={onKey} {...fieldProps(f)} />
+        <input className="field" type="text" inputMode="decimal" role="spinbutton" autoComplete="off" aria-label={f.label} aria-valuenow={shown ?? undefined} aria-valuemin={min} aria-valuemax={max} aria-valuetext={shown != null && unit ? `${shown}${unit}` : undefined} placeholder={placeholder} disabled={disabled} value={draft ?? value ?? ''} onChange={(e) => setDraft(e.target.value)} onBlur={commit} onKeyDown={onKey} {...fieldProps(f)} />
         {/* ↑↓ で同じことができるので Tab では止まらない */}
         <button type="button" className="nf-btn" tabIndex={-1} aria-label={`${f.label ?? ''}を減らす`} disabled={disabled || (value != null && min != null && value <= min)} onClick={() => set(stepNumber(value, -step, step, min, max))}><IconMinus size={14} stroke={1.8} /></button>
         <button type="button" className="nf-btn" tabIndex={-1} aria-label={`${f.label ?? ''}を増やす`} disabled={disabled || (value != null && max != null && value >= max)} onClick={() => set(stepNumber(value, step, step, min, max))}><IconPlus size={14} stroke={1.8} /></button>

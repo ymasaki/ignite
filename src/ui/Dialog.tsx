@@ -8,19 +8,24 @@ import { FOCUSABLE, useScrollFocus } from './A11y'
 import { Button, IconButton } from './Button'
 import { reducedMotion } from './Motion'
 
+/** 本文。窓と一緒に出し入れされるので、スクロールの仕組みもここで持つ */
+function DialogBody({ label, children }: { label: string; children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null)
+  useScrollFocus(ref, label)
+  return <div className="dlg-body" ref={ref}>{children}</div>
+}
+
 /**
  * 重ねて答えを待つ窓。詳細を見せるだけなら詳細パネルを使う。footer に操作を置く（主ボタンは右端）。
  * 開くと、中の data-autofocus の要素か最初の入力欄へフォーカスを移す。dismissable を切ると、Esc と外側のクリックでは閉じない
  */
 export function Dialog({ open, onClose, title, footer, size = 'md', dismissable = true, alert = false, children }: { open: boolean; onClose: () => void; title: string; footer?: ReactNode; size?: 'md' | 'lg'; dismissable?: boolean; alert?: boolean; children?: ReactNode }) {
   const ref = useRef<HTMLDialogElement>(null)
-  const body = useRef<HTMLDivElement>(null)
   const titleId = useId()
   const [shown, setShown] = useState(open)
-  const [closing, setClosing] = useState(false)
   if (open && !shown) setShown(true)
-  if (open && closing) setClosing(false)
-  useScrollFocus(body, title)
+  // 閉じる途中か（描画と同時に決まるので、同じ操作で出した知らせが置き場所を間違えない）
+  const closing = !open
   useLayoutEffect(() => {
     const d = ref.current
     if (!open || !d || d.open) return
@@ -32,13 +37,11 @@ export function Dialog({ open, onClose, title, footer, size = 'md', dismissable 
   // 閉じる動きを見せてから閉じる（6 章）
   useEffect(() => {
     if (open || !shown) return
-    if (reducedMotion()) return finish()
-    setClosing(true)
+    if (reducedMotion()) finish()
   }, [open, shown])
   function finish() {
     ref.current?.close()
     setShown(false)
-    setClosing(false)
   }
   if (!shown) return null
   // body の直下に描く（親の inert や余白の計算の影響を受けないように）
@@ -51,17 +54,18 @@ export function Dialog({ open, onClose, title, footer, size = 'md', dismissable 
       tabIndex={-1}
       onCancel={(e) => {
         e.preventDefault()
-        if (dismissable) onClose()
+        if (dismissable && open) onClose()
       }}
-      onClick={(e) => e.target === ref.current && dismissable && onClose()}
+      onClick={(e) => e.target === ref.current && dismissable && open && onClose()}
       onAnimationEnd={(e) => e.target === ref.current && closing && finish()}
     >
-      <div className="dlg-in">
+      {/* 閉じる動きのあいだは押せない（確定を二度実行しないように） */}
+      <div className="dlg-in" inert={!open}>
         <div className="dlg-head">
           <h2 id={titleId}>{title}</h2>
           {dismissable && !alert && <IconButton label="閉じる" onClick={onClose}><IconX size={16} stroke={1.8} /></IconButton>}
         </div>
-        {children != null && <div className="dlg-body" ref={body}>{children}</div>}
+        {children != null && <DialogBody label={title}>{children}</DialogBody>}
         {footer && <div className="dlg-foot">{footer}</div>}
       </div>
     </dialog>,

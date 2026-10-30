@@ -95,7 +95,7 @@
 .field:hover{border-color:var(--pri)}
 .field:focus{outline:none;border-color:var(--focus);box-shadow:0 0 0 3px var(--focus-ring)}
 /* エラーのある欄（FormField の error）。枠だけでなく、欄の下の文とアイコンでも示す */
-.field[aria-invalid="true"],.select-btn.invalid{border-color:var(--danger)}
+.field[aria-invalid="true"],.select-btn[aria-invalid="true"]{border-color:var(--danger)}
 .field[aria-invalid="true"]:hover{box-shadow:0 0 0 1px var(--danger)}
 .field[aria-invalid="true"]:focus{border-color:var(--danger);box-shadow:0 0 0 3px color-mix(in srgb,var(--danger) 22%,transparent)}
 .field:disabled{opacity:.45;pointer-events:none}

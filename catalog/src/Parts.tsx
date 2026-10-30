@@ -1,6 +1,6 @@
 import { IconCopy, IconDownload, IconPencil, IconPlus, IconSearch, IconSettings, IconTrash } from '@tabler/icons-react'
-import { Accordion, AnimatedList, Appear, Avatar, AvatarGroup, Badge, Board, Button, Checkbox, Chip, Collapse, Combobox, ConfirmDialog, CopyText, Crumbs, DataTable, DatePicker, Dialog, EmptyState, EntityRow, ExternalLink, Expandable, FormField, Highlight, IconBox, IconButton, KeyValues, LinkButton, MarkPicker, Menu, MonthStepper, Notice, NumberField, Pagination, Popover, ProgressBar, Prose, RadioGroup, RollingNumber, ScreenBar, SearchField, Section, Segmented, Select, Skeleton, Spinner, Stepper, Steps, SubHeading, Switch, Tabs, Tag, TextArea, TextField, toast, useScrollFocus, type TableSort } from '@ymasaki/ignite'
-import { useRef, useState, type ReactNode } from 'react'
+import { Accordion, AnimatedList, Appear, Avatar, AvatarGroup, Badge, Board, Button, Checkbox, Chip, Collapse, Combobox, ConfirmDialog, CopyText, Crumbs, DataTable, DatePicker, Dialog, EmptyState, EntityRow, ExternalLink, Expandable, focusFirstInvalid, FormField, Highlight, IconBox, IconButton, KeyValues, LinkButton, MarkPicker, Menu, MonthStepper, Notice, NumberField, Pagination, Popover, ProgressBar, Prose, RadioGroup, RollingNumber, ScreenBar, SearchField, Section, Segmented, Select, Skeleton, Spinner, Stepper, Steps, SubHeading, Switch, Tabs, Tag, TextArea, TextField, toast, useScrollFocus, type TableSort } from '@ymasaki/ignite'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { MONTHS, PROJECTS } from './data'
 
 /** 面の中をスクロールするカタログのページ */
@@ -38,6 +38,12 @@ export function ControlsPage() {
   const [mark, setMark] = useState(1)
   const [chips, setChips] = useState(['進行中', '佐藤 葵'])
   const [page, setPage] = useState(4)
+  // データの更新で親が描き直されても、開いたメニューの今の項目が動かないことを確かめる
+  const [, setTick] = useState(0)
+  useEffect(() => {
+    const t = setInterval(() => setTick((n) => n + 1), 1000)
+    return () => clearInterval(t)
+  }, [])
   return (
     <Page label="操作の部品">
         <Section level={2} title="ボタン">
@@ -176,14 +182,16 @@ export function FormsPage() {
   const [live, setLive] = useState(true)
   const [role, setRole] = useState('edit')
   const [sent, setSent] = useState(false)
+  const [channel, setChannel] = useState<string | null>(null)
   return (
     <Page label="フォームの部品">
         <Section level={2} title="入力欄の枠">
           <div className="cat-form">
             <FormField label="名前" required hint="画面に出る名前" error={sent && !name ? '名前を入れてください' : undefined}><TextField value={name} onChange={setName} placeholder="佐藤 葵" /></FormField>
             <FormField label="権限"><Select value={role} onChange={setRole} options={[{ value: 'edit', label: '編集できる' }, { value: 'view', label: '見るだけ' }]} /></FormField>
+            <FormField label="通知先" group required error={sent && !channel ? '通知先を選んでください' : undefined}><RadioGroup value={channel} onChange={setChannel} inline options={[{ value: 'mail', label: 'メール' }, { value: 'chat', label: 'チャット' }]} /></FormField>
             <FormField label="メモ" hint="200 字まで"><TextArea value="" onChange={() => undefined} maxLength={200} rows={2} /></FormField>
-            <div className="cat-row"><Button variant="primary" onClick={() => { setSent(true); if (name) toast('保存しました', { tone: 'ok' }) }}>保存する</Button></div>
+            <div className="cat-row"><Button variant="primary" onClick={() => { setSent(true); if (name && channel) toast('保存しました', { tone: 'ok' }); else requestAnimationFrame(() => focusFirstInvalid()) }}>保存する</Button></div>
           </div>
         </Section>
         <Section level={2} title="選ぶ">
@@ -208,6 +216,7 @@ export function FormsPage() {
         <Section level={2} title="数">
           <div className="cat-form">
             <FormField label="人数"><NumberField value={count} onChange={setCount} min={0} max={10} unit="名" /></FormField>
+            <div className="cat-row"><LinkButton onClick={() => setCount(5)}>人数を 5 にする</LinkButton></div>
             <FormField label="割合"><NumberField value={rate} onChange={setRate} min={0} max={1} step={0.1} /></FormField>
           </div>
         </Section>
@@ -235,6 +244,7 @@ export function FeedbackPage() {
             <Button variant="danger" icon={<IconTrash size={16} stroke={1.8} />} onClick={() => setConfirm(true)}>削除する</Button>
           </div>
           <Dialog open={dialog} onClose={() => setDialog(false)} title="名前を変える" footer={<><Button onClick={() => setDialog(false)}>やめる</Button><Button variant="primary" onClick={() => setDialog(false)}>変更する</Button></>}>
+            <LinkButton onClick={() => { setDialog(false); setTimeout(() => setDialog(true), 40) }}>閉じてすぐ開き直す</LinkButton>
             <FormField label="新しい名前"><TextField value={text} onChange={setText} /></FormField>
             <FormField label="権限"><Select value={role} onChange={setRole} options={[{ value: 'edit', label: '編集できる' }, { value: 'view', label: '見るだけ' }]} /></FormField>
           </Dialog>

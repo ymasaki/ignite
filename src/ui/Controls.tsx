@@ -220,7 +220,7 @@ export function Select<T extends string>({ value, options, onChange, label: labe
     <Popover
       className={`select ${size}`}
       trigger={(open, toggle) => (
-        <button ref={btnRef} id={f.id} type="button" disabled={disabled} className={`btn select-btn ${open ? 'on' : ''}${f.invalid ? ' invalid' : ''}`} aria-haspopup="listbox" aria-expanded={open} aria-label={`${label}: ${cur?.label ?? ''}`} aria-describedby={f.describedBy} onClick={toggle}>
+        <button ref={btnRef} id={f.id} type="button" disabled={disabled} className={`btn select-btn ${open ? 'on' : ''}`} aria-invalid={f.invalid || undefined} aria-haspopup="listbox" aria-expanded={open} aria-label={`${label}: ${cur?.label ?? ''}`} aria-describedby={f.describedBy} onClick={toggle}>
           {/* data-fit: 狭いときに落とす順番の目印（DESIGN.md 5 章。監査が「主役を詰める前に extra を隠したか」を測る） */}
           {cur?.lead && <span className="sel-lead" data-fit="extra">{cur.lead}</span>}
           <span className="sel-label" data-fit="main">{display ?? cur?.label}</span>
@@ -235,7 +235,8 @@ export function Select<T extends string>({ value, options, onChange, label: labe
           aria-label={label}
           ref={(el) => {
             // 開いた最初の 1 回だけ選択中の選択肢へ（開いているあいだに描き直されても、今いる選択肢から動かさない）
-            if (el && listRef.current !== el) el.querySelector<HTMLButtonElement>('[aria-selected="true"]')?.focus()
+            if (!el) return
+            if (listRef.current !== el) el.querySelector<HTMLButtonElement>('[aria-selected="true"]')?.focus()
             listRef.current = el
           }}
           onKeyDown={onKey}
@@ -313,11 +314,23 @@ export function usePlaced(ref: { current: HTMLElement | null }, open: boolean) {
     const el = ref.current
     const host = el?.parentElement
     if (!open || !el || !host) return
-    const clip = clipRect(el)
-    const r = el.getBoundingClientRect()
-    const h = host.getBoundingClientRect()
-    if (r.bottom > clip.bottom && h.top - clip.top > clip.bottom - h.bottom) el.classList.add('up')
-    if (r.left < clip.left || r.right > clip.right) el.classList.add('flip')
+    const place = () => {
+      el.classList.remove('up', 'flip')
+      const clip = clipRect(el)
+      const r = el.getBoundingClientRect()
+      const h = host.getBoundingClientRect()
+      if (r.bottom > clip.bottom && h.top - clip.top > clip.bottom - h.bottom) el.classList.add('up')
+      if (r.left < clip.left || r.right > clip.right) el.classList.add('flip')
+    }
+    place()
+    // 開いたまま中身が変わる（候補が絞られる）ときは測り直す。通知の中で動かすと通知が重なるので次の描画で
+    let frame = 0
+    const ro = new ResizeObserver(() => {
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(place)
+    })
+    ro.observe(el)
+    return () => (ro.disconnect(), cancelAnimationFrame(frame))
   }, [ref, open])
 }
 

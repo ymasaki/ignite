@@ -6,7 +6,10 @@ export const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),s
 
 /** 送信で検証に失敗したとき、最初のエラーの欄へフォーカスを移す（理由は欄の補足として読まれる） */
 export function focusFirstInvalid(root: ParentNode = document) {
-  root.querySelector<HTMLElement>('[aria-invalid="true"],.select-btn.invalid')?.focus()
+  const el = root.querySelector<HTMLElement>('[aria-invalid="true"]')
+  // ラジオの並びは枠でなく、操作できるラジオへ移す
+  const radio = el?.getAttribute('role') === 'radiogroup' ? el.querySelector<HTMLElement>('input:checked:not(:disabled)') ?? el.querySelector<HTMLElement>('input:not(:disabled)') : null
+  ;(radio ?? el)?.focus()
 }
 
 let region: HTMLElement | null = null
@@ -19,20 +22,29 @@ let timer = 0
  */
 export function announce(text: string, { assertive = false }: { assertive?: boolean } = {}) {
   if (typeof document === 'undefined') return
-  if (!region || !region.isConnected) {
-    region = document.createElement('div')
-    region.className = 'sr-only'
-    region.setAttribute('aria-live', 'polite')
-    region.setAttribute('aria-atomic', 'true')
-  }
-  // 開いている Dialog の外は読み上げの対象外になるので、知らせる場所を Dialog の中へ移す
-  const host = document.querySelector('dialog[open]') ?? document.body
-  if (region.parentElement !== host) host.appendChild(region)
-  const el = region
-  el.setAttribute('aria-live', assertive ? 'assertive' : 'polite')
-  el.textContent = ''
   window.clearTimeout(timer)
-  timer = window.setTimeout(() => (el.textContent = text), 60)
+  const write = () => {
+    // 閉じる途中の Dialog の中へ置くと一緒に消え、外はまだ読み上げの対象外なので、閉じ終わるまで待つ
+    if (document.querySelector('dialog.closing[open]')) {
+      timer = window.setTimeout(write, 60)
+      return
+    }
+    if (!region || !region.isConnected) {
+      region = document.createElement('div')
+      region.className = 'sr-only'
+      region.setAttribute('aria-live', 'polite')
+      region.setAttribute('aria-atomic', 'true')
+    }
+    // 開いている Dialog の外は読み上げの対象外になるので、知らせる場所を Dialog の中へ移す
+    const host = document.querySelector('dialog[open]') ?? document.body
+    if (region.parentElement !== host) host.appendChild(region)
+    const el = region
+    el.setAttribute('aria-live', assertive ? 'assertive' : 'polite')
+    el.textContent = ''
+    timer = window.setTimeout(() => (el.textContent = text), 60)
+  }
+  // 同じ処理の中で閉じた Dialog の状態が画面に反映されてから決める
+  timer = window.setTimeout(write, 0)
 }
 
 /**

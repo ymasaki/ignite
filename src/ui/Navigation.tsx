@@ -66,8 +66,9 @@ export function Menu({ label, items, icon, iconOnly = false }: { label: string; 
           role="menu"
           aria-label={label}
           ref={(el) => {
-            // 開いた最初の 1 回だけ、先頭の項目へ
-            if (el && list.current !== el) el.querySelector<HTMLElement>('[role="menuitem"]:not(:disabled)')?.focus()
+            // 開いた最初の 1 回だけ、先頭の項目へ（描き直しの null では覚えを消さない。消すと今いる項目から先頭へ戻ってしまう）
+            if (!el) return
+            if (list.current !== el) el.querySelector<HTMLElement>('[role="menuitem"]:not(:disabled)')?.focus()
             list.current = el
           }}
           onKeyDown={onKey}

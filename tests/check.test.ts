@@ -88,7 +88,10 @@ describe('ブラウザ標準の UI の注意', () => {
     expect(r.problems).toEqual([])
     expect(r.warnings).toHaveLength(1)
   })
-  it('新しい部品の見た目の上書きを止める', () => {
-    expect(checkOverride('a.css', '.dialog{padding:0}\n.toast{color:var(--ink)}\n.check-box{width:20px}')).toHaveLength(3)
+  it('1.1 で足した部品の上書きは注意だけで、アプリの同じ名前のクラスを止めない', () => {
+    expect(checkOverride('a.css', '.progress{height:8px}')).toEqual([])
+    const r = run(new Map([['src/styles/a.css', '.progress{height:8px}\n.dialog{padding:0}\n']]), { ...DEFAULT_CONFIG, styles: ['src/styles'] })
+    expect(r.problems).toEqual([])
+    expect(r.warnings).toHaveLength(2)
   })
 })

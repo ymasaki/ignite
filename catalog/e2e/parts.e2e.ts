@@ -47,9 +47,9 @@ test('ConfirmDialog: 危険な確定は、はじめのフォーカスが取り�
   await expect(box.getByRole('button', { name: 'やめる' })).toBeFocused()
   await box.getByRole('button', { name: '削除する' }).click()
   await expect(box).toHaveCount(0)
-  await expect(page.getByText('1件削除しました')).toBeVisible()
+  await expect(page.locator('.toast', { hasText: '1件削除しました' })).toBeVisible()
   await page.getByRole('button', { name: '元に戻す' }).click()
-  await expect(page.getByText('元に戻しました')).toBeVisible()
+  await expect(page.locator('.toast', { hasText: '元に戻しました' })).toBeVisible()
 })
 
 test('Toast: 失敗の知らせは自動で消えず、× で閉じる。完了の知らせは載せているあいだ消えない', async ({ page }) => {
@@ -84,7 +84,7 @@ test('Menu: ↑↓ で移り、押せない項目を飛ばし、Enter で実行�
   await page.keyboard.press('Enter')
   await expect(page.getByRole('menu')).toHaveCount(0)
   await expect(btn).toBeFocused()
-  await expect(page.getByText('複製しました')).toBeVisible()
+  await expect(page.locator('.toast', { hasText: '複製しました' })).toBeVisible()
 })
 
 test('Combobox: 打って絞り、↓ と Enter で選ぶ。変換の確定の Enter では選ばない。空にすると選択を外す', async ({ page }) => {
@@ -194,4 +194,139 @@ test('Pagination: 番号を押すと移り、端では前後のボタンが押�
   await nav.getByRole('button', { name: '1ページ目' }).click()
   await expect(nav.getByRole('button', { name: '1ページ目' })).toHaveAttribute('aria-current', 'page')
   await expect(nav.getByRole('button', { name: '前のページ' })).toBeDisabled()
+})
+
+test('連続で押しても、確定と取り消しの操作は 1 回だけ実行する', async ({ page }) => {
+  await open(page, 'feedback')
+  await page.getByRole('button', { name: '確定を確かめる' }).click()
+  await page.getByRole('alertdialog').getByRole('button', { name: '公開する' }).dblclick()
+  await expect(page.locator('.toast', { hasText: '公開しました' })).toHaveCount(1)
+  await page.getByRole('button', { name: '削除する' }).click()
+  await page.getByRole('alertdialog').getByRole('button', { name: '削除する' }).click()
+  await page.getByRole('button', { name: '元に戻す' }).dblclick()
+  await expect(page.locator('.toast', { hasText: '元に戻しました' })).toHaveCount(1)
+})
+
+test('Dialog: 閉じる途中に開き直しても、開いたまま操作できる', async ({ page }) => {
+  await open(page, 'feedback')
+  await page.getByRole('button', { name: '窓を開く' }).click()
+  await page.getByRole('button', { name: '閉じてすぐ開き直す' }).click()
+  await page.waitForTimeout(500)
+  await expect(page.locator('dialog.dialog:not(.closing)')).toBeVisible()
+  await page.getByRole('textbox', { name: '新しい名前' }).fill('あ')
+  await expect(page.getByRole('textbox', { name: '新しい名前' })).toHaveValue('あ')
+})
+
+test('動きを減らす設定: Dialog がすぐ閉じ、閉じると同時に出した知らせも読み上げに届く', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await open(page, 'feedback')
+  const opener = page.getByRole('button', { name: '確定を確かめる' })
+  await opener.click()
+  await page.getByRole('alertdialog').getByRole('button', { name: '公開する' }).click()
+  await expect(page.getByRole('alertdialog')).toHaveCount(0)
+  await expect(opener).toBeFocused()
+  await expect(page.locator('body > [aria-live]')).toHaveText('公開しました')
+})
+
+test('閉じる動きのあとでも、閉じると同時に出した知らせは読み上げに届く', async ({ page }) => {
+  await open(page, 'feedback')
+  await page.getByRole('button', { name: '確定を確かめる' }).click()
+  await page.getByRole('alertdialog').getByRole('button', { name: '公開する' }).click()
+  await expect(page.locator('body > [aria-live]')).toHaveText('公開しました')
+})
+
+test('Toast: 載せるのをやめてもフォーカスがあるあいだは消えない', async ({ page }) => {
+  await page.clock.install()
+  await open(page, 'feedback')
+  await page.getByRole('button', { name: '完了を知らせる' }).click()
+  const ok = page.locator('.toast.ok')
+  await ok.hover()
+  await ok.getByRole('button', { name: '知らせを閉じる' }).focus()
+  await page.mouse.move(10, 10)
+  await page.clock.runFor(10000)
+  await expect(ok).toBeVisible()
+  await page.getByRole('button', { name: '完了を知らせる' }).focus()
+  await page.clock.runFor(6000)
+  await expect(ok).toHaveCount(0)
+})
+
+test('Toaster: 重ねた左メニューと詳細のあいだは背面として操作できない', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 })
+  await page.goto('/?nav=list')
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 30000 })
+  await page.locator('.ttl-menu').click()
+  await expect.poll(() => page.locator('.toasts').evaluate((el) => (el as HTMLElement).inert)).toBe(true)
+  await page.goto('/?nav=list&open=p1')
+  await expect(page.locator('.drawer')).toBeVisible()
+  await expect.poll(() => page.locator('.toasts').evaluate((el) => (el as HTMLElement).inert)).toBe(true)
+})
+
+test('DatePicker: 範囲の端で止まり、フォーカスを見失わない', async ({ page }) => {
+  await open(page, 'forms')
+  await page.getByRole('button', { name: /^期限/ }).click()
+  await page.keyboard.press('Shift+PageUp')
+  await expect(page.getByRole('button', { name: '2026年1月1日 木曜日', exact: true })).toBeFocused()
+  await page.keyboard.press('ArrowLeft')
+  await expect(page.getByRole('button', { name: '2026年1月1日 木曜日', exact: true })).toBeFocused()
+  await page.keyboard.press('ArrowUp')
+  await expect(page.getByRole('grid')).toHaveAttribute('aria-label', '2026年1月')
+  await expect(page.getByRole('button', { name: '2026年1月1日 木曜日', exact: true })).toBeFocused()
+})
+
+test('NumberField: 変換中の矢印では増減しない。打っている途中に外の値が変わると、外の値を優先する', async ({ page }) => {
+  await open(page, 'forms')
+  const box = page.getByRole('spinbutton', { name: '人数' })
+  await box.evaluate((el) => el.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true, isComposing: true })))
+  await expect(box).toHaveValue('3')
+  await box.fill('8')
+  await expect(box).toHaveAttribute('aria-valuenow', '8')
+  // 欄を離れずに、外から値を変える
+  await page.getByRole('button', { name: '人数を 5 にする' }).dispatchEvent('click')
+  await expect(box).toHaveValue('5')
+  await expect(box).toHaveAttribute('aria-valuenow', '5')
+  await box.blur()
+  await expect(box).toHaveValue('5')
+})
+
+test('focusFirstInvalid: ラジオのエラーへ移り、Select と DatePicker にもエラーが伝わる', async ({ page }) => {
+  await open(page, 'forms')
+  await page.getByRole('textbox', { name: '名前' }).fill('佐藤')
+  await page.getByRole('button', { name: '保存する' }).click()
+  await expect(page.getByRole('radio', { name: 'メール' })).toBeFocused()
+  await expect(page.getByRole('radiogroup', { name: '通知先' })).toHaveAttribute('aria-invalid', 'true')
+  await expect(page.getByRole('radiogroup', { name: '通知先' })).toHaveAccessibleDescription(/通知先を選んでください/)
+})
+
+test('Combobox: 開いたまま候補が増えて下で切れるなら、上へ開き直す', async ({ page }) => {
+  await open(page, 'forms')
+  const box = page.getByRole('combobox', { name: '拠点' })
+  await box.evaluate((el) => el.scrollIntoView({ block: 'end' }))
+  await box.fill('那覇')
+  await expect(page.getByRole('option')).toHaveCount(1)
+  await box.fill('')
+  await expect(page.getByRole('option')).toHaveCount(11)
+  await expect(page.locator('.combo .popover-body')).toHaveClass(/up/)
+})
+
+test('Menu: 開いているあいだに親が描き直しても、今の項目から動かない', async ({ page }) => {
+  await page.clock.install()
+  await open(page, 'controls')
+  await page.getByRole('button', { name: '操作', exact: true }).click()
+  await page.keyboard.press('ArrowDown')
+  await expect(page.getByRole('menuitem', { name: '複製する' })).toBeFocused()
+  await page.clock.runFor(2000)
+  await expect(page.getByRole('menuitem', { name: '複製する' })).toBeFocused()
+})
+
+test('Accordion: キーボードで開閉し、既定は 1 つだけ開く', async ({ page }) => {
+  await open(page, 'display')
+  const a = page.getByRole('button', { name: /^概要/ })
+  const b = page.getByRole('button', { name: /^履歴/ })
+  await expect(a).toHaveAttribute('aria-expanded', 'true')
+  await b.focus()
+  await page.keyboard.press('Enter')
+  await expect(b).toHaveAttribute('aria-expanded', 'true')
+  await expect(a).toHaveAttribute('aria-expanded', 'false')
+  await page.keyboard.press('Space')
+  await expect(b).toHaveAttribute('aria-expanded', 'false')
 })

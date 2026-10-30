@@ -47,16 +47,23 @@ function ToastCard({ item }: { item: Item }) {
   const Icon = ICONS[tone]
   const wait = toastDuration(item)
   const timer = useRef(0)
+  // 載せている・フォーカスがある、のどちらかが続くあいだは止める
+  const held = useRef({ hover: false, focus: false })
   const stop = () => window.clearTimeout(timer.current)
   const start = () => {
     stop()
-    if (wait != null) timer.current = window.setTimeout(() => dismissToast(id), wait)
+    if (wait != null && !held.current.hover && !held.current.focus) timer.current = window.setTimeout(() => dismissToast(id), wait)
+  }
+  const hold = (k: 'hover' | 'focus', on: boolean) => {
+    held.current[k] = on
+    if (on) stop()
+    else start()
   }
   // 出たときに一度だけ数え始める（ほかの知らせで描き直されても、止めているあいだは動かさない）
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => (start(), stop), [])
   return (
-    <div className={`toast ${tone}${closing ? ' closing' : ''}`} onPointerEnter={stop} onPointerLeave={start} onFocus={stop} onBlur={start} onAnimationEnd={(e) => e.target === e.currentTarget && closing && set(items.filter((t) => t.id !== id))}>
+    <div className={`toast ${tone}${closing ? ' closing' : ''}`} inert={closing} onPointerEnter={() => hold('hover', true)} onPointerLeave={() => hold('hover', false)} onFocus={() => hold('focus', true)} onBlur={() => hold('focus', false)} onAnimationEnd={(e) => e.target === e.currentTarget && closing && set(items.filter((t) => t.id !== id))}>
       <Icon size={16} stroke={1.8} aria-hidden="true" />
       <span className="toast-t">{text}</span>
       {action && <LinkButton onClick={() => (dismissToast(id), action.onClick())}>{action.label}</LinkButton>}
@@ -65,9 +72,11 @@ function ToastCard({ item }: { item: Item }) {
   )
 }
 
-/** 知らせの置き場。AppShell の中では要らない（AppShell が置く） */
-export function Toaster() {
+/**
+ * 知らせの置き場。AppShell の中では要らない（AppShell が置く）。
+ * 知らせがなくても置いておく（重ねた Drawer が開くときに背面として数えるため）。inert は重ねた左メニューのあいだ
+ */
+export function Toaster({ inert }: { inert?: boolean }) {
   const shown = useSyncExternalStore((l) => (listeners.add(l), () => void listeners.delete(l)), () => items, () => items)
-  if (!shown.length) return null
-  return <section className="toasts" aria-label="知らせ">{shown.map((t) => <ToastCard key={t.id} item={t} />)}</section>
+  return <section className="toasts" aria-label="知らせ" hidden={!shown.length} inert={inert}>{shown.map((t) => <ToastCard key={t.id} item={t} />)}</section>
 }

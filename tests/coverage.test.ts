@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { filterOptions, parseNumber, stepNumber } from '../src/ui/Form'
-import { addDays, addMonths, monthGrid } from '../src/ui/calendar'
+import { addDays, addMonths, clampDate, monthGrid } from '../src/ui/calendar'
 import { pageItems } from '../src/ui/Navigation'
 import { toastDuration } from '../src/ui/Toast'
 
@@ -39,6 +39,7 @@ describe('数の入力', () => {
     expect(stepNumber(0.1, 0.2, 0.1)).toBe(0.3)
     expect(stepNumber(10, 1, 1, 0, 10)).toBe(10)
     expect(stepNumber(null, 1, 1, 5)).toBe(6)
+    expect(stepNumber(0, 1e-7, 1e-7)).toBe(1e-7)
   })
 })
 
@@ -62,6 +63,8 @@ describe('カレンダー', () => {
     expect(addMonths('2028-01-31', 1)).toBe('2028-02-29')
     expect(addMonths('2026-12-15', 1)).toBe('2027-01-15')
     expect(addDays('2026-12-31', 1)).toBe('2027-01-01')
+    expect(clampDate('2026-01-01', '2026-02-01')).toBe('2026-02-01')
+    expect(clampDate('2026-03-01', undefined, '2026-02-01')).toBe('2026-02-01')
   })
 })
 
