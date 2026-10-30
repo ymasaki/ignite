@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_CONFIG, checkCopy, checkCss, checkDate, checkMedia, checkMediaSpacing, checkOverride, checkScreen, checkShellCss, checkShellJs, checkWords, run } from '../cli/check'
+import { DEFAULT_CONFIG, checkNativeUi, checkCopy, checkCss, checkDate, checkMedia, checkMediaSpacing, checkOverride, checkScreen, checkShellCss, checkShellJs, checkWords, run } from '../cli/check'
 
 const lines = (ps: { line: number }[]) => ps.map((p) => p.line)
 
@@ -74,5 +74,21 @@ describe('ignite check の振り分け', () => {
   it('Ignite 自身の検査では上書きと枠の検査を外す', () => {
     const css = new Map([['src/styles/a.css', '.btn{padding:0}\n.side{width:1px}']])
     expect(run(css, { ...DEFAULT_CONFIG, self: true }).problems).toEqual([])
+  })
+})
+
+describe('ブラウザ標準の UI の注意', () => {
+  it('alert・confirm・<dialog>・標準の入力を見つけ、部品や design-ok は通す', () => {
+    const bad = ['confirm("消す？")', 'window.alert("x")', '<dialog open>', '<progress value={1} />', '<input type="checkbox" />']
+    bad.forEach((line) => expect(checkNativeUi('a.tsx', line), line).toHaveLength(1))
+    for (const ok of ['<ConfirmDialog open title="x" />', 'onConfirm()', 'x.confirm()', '<input type="text" />', 'alert("x") // design-ok: 開発用']) expect(checkNativeUi('a.tsx', ok), ok).toEqual([])
+  })
+  it('注意は止めない（既存のアプリの書き方を止めない。docs/releasing.md）', () => {
+    const r = run(new Map([['src/app/A.tsx', 'export const a = () => confirm("x")\n']]), { ...DEFAULT_CONFIG, screens: ['src/app'] })
+    expect(r.problems).toEqual([])
+    expect(r.warnings).toHaveLength(1)
+  })
+  it('新しい部品の見た目の上書きを止める', () => {
+    expect(checkOverride('a.css', '.dialog{padding:0}\n.toast{color:var(--ink)}\n.check-box{width:20px}')).toHaveLength(3)
   })
 })

@@ -1,6 +1,9 @@
 // 区切り・見出し・項目の一覧・空の状態・パンくず。見た目は styles/components/layout.css。
 
+import { IconAlertCircle, IconCircleCheck, IconInfoCircle } from '@tabler/icons-react'
 import { Fragment, type ReactNode } from 'react'
+
+const NOTICE_ICONS = { danger: IconAlertCircle, ok: IconCircleCheck, info: IconInfoCircle }
 
 /**
  * 一覧の画面の型。上に絞り込みの帯（tools：SearchField・Select・Segmented）と件数、
@@ -43,9 +46,11 @@ export function ScreenBar({ count, children }: { count?: ReactNode; children: Re
 }
 
 /** 普段と違う状態の知らせ（1 文・32 字まで）。詳しい事情は tip（ホバーで出す）に回す */
-export function Notice({ tip, children }: { tip?: string; children: ReactNode }) {
+export function Notice({ tip, tone = 'warn', children }: { tip?: string; tone?: 'warn' | 'danger' | 'ok' | 'info'; children: ReactNode }) {
+  const Icon = tone === 'warn' ? null : NOTICE_ICONS[tone]
   return (
-    <div className="notice" role="status" data-tip={tip}>
+    <div className={`notice ${tone === 'warn' ? '' : tone}${Icon ? ' has-icon' : ''}`} role="status" data-tip={tip}>
+      {Icon && <Icon size={14} stroke={1.8} aria-hidden="true" />}
       {children}
     </div>
   )

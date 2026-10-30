@@ -12,3 +12,17 @@
 .data-table .heat-4{background:color-mix(in srgb,var(--chart-1) 28%,var(--panel))}
 
 .data-table thead th{font-size:var(--fs-12)}
+
+/* 並べ替え・選択・空・読み込み中（DataTable の onSort / onSelect / empty / loading） */
+.data-table th[aria-sort]{padding:0}
+.data-table .th-sort{display:inline-flex;align-items:center;justify-content:flex-end;gap:2px;width:100%;padding:12px 16px;font-weight:600;color:var(--ink-2)}
+.data-table.dense .th-sort{padding:8px 10px}
+.data-table th:first-child .th-sort,.data-table.has-select th:nth-child(2) .th-sort{justify-content:flex-start}
+.data-table .th-sort:hover{color:var(--pri-ink)}
+.data-table .th-sort:active{color:var(--link-press)}
+.data-table .th-sort svg{flex:none;color:var(--ink-3)}
+.data-table .th-sort.on svg{color:var(--pri)}
+.data-table.has-select th:nth-child(2){text-align:left}
+.data-table .sel-cell{width:1%;padding-right:0;text-align:left}
+.data-table tr.sel th,.data-table tr.sel td{background:var(--pri-soft)}
+.data-table .table-note{padding:24px 16px;text-align:center;white-space:normal;color:var(--ink-3)}

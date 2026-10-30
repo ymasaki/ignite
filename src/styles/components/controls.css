@@ -43,7 +43,7 @@
 
 /* ポップオーバー */
 .popover{position:relative;flex:none}
-.popover-body{position:absolute;right:0;top:calc(var(--control-h) + 6px);z-index:85;display:grid;gap:14px;width:300px;padding:14px 16px 16px;
+.popover-body{position:absolute;right:0;top:calc(var(--control-h) + 6px);z-index:var(--z-popover);display:grid;gap:14px;width:300px;padding:14px 16px 16px;
   background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow-2);animation:popIn .18s var(--ease-in-out)}
 @keyframes popIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion: reduce){.popover-body{animation:none}}
@@ -51,6 +51,10 @@
 .popover-body.right{top:auto;bottom:0;left:calc(100% + 8px);right:auto;animation-name:popInRight}
 @keyframes popInRight{from{opacity:0;transform:translateX(-4px)}to{opacity:1;transform:none}}
 @media (max-width:860px){.popover-body{width:min(300px,calc(100vw - 32px))}}
+/* 下・右に入らないときは反対側へ開く（ui/Controls.tsx の usePlaced が付ける） */
+.popover-body.up,.select .popover-body.up{top:auto;bottom:calc(100% + 6px)}
+.popover-body.flip{right:auto;left:0}
+.select .popover-body.flip{left:auto;right:0}
 
 /* 1 つを選ぶプルダウン（Select）。ボタンは .btn、一覧はポップオーバー。.lg はヘッダーに置く大きさ */
 .select-btn{max-width:340px;color:var(--ink)}
@@ -73,14 +77,13 @@
 /* キーボードで今どの選択肢にいるかは、フォーカスの枠で示す（地だけではホバーと見分けられない） */
 .select-opt:focus-visible{background:var(--hover);outline:2px solid var(--focus);outline-offset:-2px}
 .select-opt:active{background:var(--press)}
+.select-opt:disabled{opacity:.45;pointer-events:none}
 .select-opt[aria-selected="true"]{font-weight:700}
 .select-opt .sel-label{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .select-opt .sel-lead{display:flex;align-items:center;flex:none;color:var(--ink-3)}
 .select-opt .sel-meta{margin-left:auto;padding-left:12px;font-size:var(--fs-12);font-weight:600;color:var(--ink-3)}
 .select-opt .sel-check{flex:none;margin-left:-2px;color:var(--pri);visibility:hidden}
 .select-opt[aria-selected="true"] .sel-check{visibility:visible}
-
-/* チェックボックスとラベル（Check） */
 
 /* 入力欄 */
 /* 入力欄。左右の余白は置き場所で変えられる（先頭のアイコン・末尾の手がかりの分。--field-pl / --field-pr）。.lg はヘッダーの大きさで置き場所の幅いっぱい */
@@ -91,6 +94,11 @@
 .field.area{display:block;width:100%;height:auto;min-height:88px;padding:8px 12px;font:inherit;font-size:var(--fs-13);line-height:1.6;color:var(--ink);resize:vertical}
 .field:hover{border-color:var(--pri)}
 .field:focus{outline:none;border-color:var(--focus);box-shadow:0 0 0 3px var(--focus-ring)}
+/* エラーのある欄（FormField の error）。枠だけでなく、欄の下の文とアイコンでも示す */
+.field[aria-invalid="true"],.select-btn.invalid{border-color:var(--danger)}
+.field[aria-invalid="true"]:hover{box-shadow:0 0 0 1px var(--danger)}
+.field[aria-invalid="true"]:focus{border-color:var(--danger);box-shadow:0 0 0 3px color-mix(in srgb,var(--danger) 22%,transparent)}
+.field:disabled{opacity:.45;pointer-events:none}
 /* タッチの端末では 16px（iOS は 16px 未満の入力欄にフォーカスすると画面を拡大してしまう。ページの拡大を止める maximum-scale は、ピンチでの拡大も止めるので使わない） */
 @media (pointer:coarse){.field,.field.lg,.field.area,.field.wide{font-size:var(--fs-16)}}
 /* 一覧の絞り込みの入力欄（SearchField）。先頭に虫眼鏡、F の行き先のときは右端に「F」の印（キーボードのない端末では出さない） */
@@ -106,12 +114,12 @@
 [data-keys="off"] .sfield:has(> .kbd-key) > .field{padding-right:44px}
 
 /* 引き出し（狭い画面の詳細）。スマホ幅では下から出るシート */
-.drawer-scrim{position:fixed;inset:0;z-index:65;background:var(--scrim);animation:fadeIn .2s ease-out}
+.drawer-scrim{position:fixed;inset:0;z-index:var(--z-scrim);background:var(--scrim);animation:fadeIn .2s ease-out}
 .drawer-scrim.closing{animation:fadeOut .18s ease-in forwards}
-.drawer{position:fixed;right:12px;top:12px;bottom:12px;z-index:70;width:min(400px,calc(100% - 24px));overflow:auto;
+.drawer{position:fixed;right:12px;top:12px;bottom:12px;z-index:var(--z-drawer);width:min(400px,calc(100% - 24px));overflow:auto;
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-2);animation:drawerIn .22s var(--ease-in-out)}
 /* 開いたときに引き出しそのものへフォーカスを移す（中の最初の操作へ飛ばさない）。入れ物なので枠は出さない */
 .drawer:focus-visible{outline:none}
-  background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-2);animation:drawerIn .22s var(--ease-in-out)}
 .drawer.closing{animation:drawerOut .18s ease-in forwards}
 @keyframes drawerIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
 @keyframes drawerOut{from{opacity:1;transform:none}to{opacity:0;transform:translateX(24px)}}

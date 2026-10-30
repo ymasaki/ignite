@@ -3,6 +3,7 @@
 import { IconCheck, IconChevronDown, IconChevronUp, IconSearch, IconX } from '@tabler/icons-react'
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react'
 import { shortcutsOn } from '../assist'
+import { useField } from './Field'
 import { RollingNumber, reducedMotion } from './Motion'
 
 /**
@@ -153,7 +154,9 @@ export type SelectOption<T extends string> = { value: T; label: string; lead?: R
  * leadWidth は一覧の先頭の絵の幅（ロゴのように幅がまちまちなとき、名前の頭をそろえる）。
  * display はボタンに出す選択中の名前を、文字列の代わりに描くとき（月の数字をスロットで回すなど）
  */
-export function Select<T extends string>({ value, options, onChange, label, size = 'md', leadWidth, display, fit = false }: { value: T; options: SelectOption<T>[]; onChange: (v: T) => void; label: string; size?: 'md' | 'lg'; leadWidth?: number; display?: ReactNode; fit?: boolean }) {
+export function Select<T extends string>({ value, options, onChange, label: labelProp, size = 'md', leadWidth, display, fit = false, disabled = false }: { value: T; options: SelectOption<T>[]; onChange: (v: T) => void; label?: string; size?: 'md' | 'lg'; leadWidth?: number; display?: ReactNode; fit?: boolean; disabled?: boolean }) {
+  const f = useField(labelProp)
+  const label = f.label ?? ''
   const cur = options.find((o) => o.value === value) || options[0]
   const listRef = useRef<HTMLDivElement>(null)
   const btnRef = useRef<HTMLButtonElement>(null)
@@ -217,7 +220,7 @@ export function Select<T extends string>({ value, options, onChange, label, size
     <Popover
       className={`select ${size}`}
       trigger={(open, toggle) => (
-        <button ref={btnRef} type="button" className={`btn select-btn ${open ? 'on' : ''}`} aria-haspopup="listbox" aria-expanded={open} aria-label={`${label}: ${cur?.label ?? ''}`} onClick={toggle}>
+        <button ref={btnRef} id={f.id} type="button" disabled={disabled} className={`btn select-btn ${open ? 'on' : ''}${f.invalid ? ' invalid' : ''}`} aria-haspopup="listbox" aria-expanded={open} aria-label={`${label}: ${cur?.label ?? ''}`} aria-describedby={f.describedBy} onClick={toggle}>
           {/* data-fit: 狭いときに落とす順番の目印（DESIGN.md 5 章。監査が「主役を詰める前に extra を隠したか」を測る） */}
           {cur?.lead && <span className="sel-lead" data-fit="extra">{cur.lead}</span>}
           <span className="sel-label" data-fit="main">{display ?? cur?.label}</span>
@@ -289,10 +292,41 @@ export function Tabs<T extends string>({ value, tabs, onChange, fit = false, lab
 /** Tabs の中身を包む要素に付ける（選んでいるタブの名前で読み上げる） */
 export const tabPanelProps = (id: string, value: string) => ({ role: 'tabpanel', id: `${id}-panel`, 'aria-labelledby': `${id}-tab-${value}` }) as const
 
+/** 要素を切り取る範囲（画面と、はみ出しを隠す親の重なり） */
+function clipRect(el: HTMLElement) {
+  const r = { top: 0, left: 0, right: window.innerWidth, bottom: window.innerHeight }
+  for (let p = el.parentElement; p; p = p.parentElement) {
+    const cs = getComputedStyle(p)
+    if (cs.overflowX === 'visible' && cs.overflowY === 'visible') continue
+    const b = p.getBoundingClientRect()
+    r.top = Math.max(r.top, b.top)
+    r.left = Math.max(r.left, b.left)
+    r.right = Math.min(r.right, b.right)
+    r.bottom = Math.min(r.bottom, b.bottom)
+  }
+  return r
+}
+
+/** 開いた面が下・右で切れるなら、反対側に開く（反対側のほうが広いときだけ）。Popover・Combobox で共通 */
+export function usePlaced(ref: { current: HTMLElement | null }, open: boolean) {
+  useLayoutEffect(() => {
+    const el = ref.current
+    const host = el?.parentElement
+    if (!open || !el || !host) return
+    const clip = clipRect(el)
+    const r = el.getBoundingClientRect()
+    const h = host.getBoundingClientRect()
+    if (r.bottom > clip.bottom && h.top - clip.top > clip.bottom - h.bottom) el.classList.add('up')
+    if (r.left < clip.left || r.right > clip.right) el.classList.add('flip')
+  }, [ref, open])
+}
+
 /** ボタンで開閉し、外側のクリック・Esc・Tab で外へ出たときに閉じる小さなパネル。place="right" はボタンの右に、ボタンの下端から上へ開く（折りたたんだ左メニューの「+N」） */
 export function Popover({ trigger, children, className = '', place = 'below' }: { trigger: (open: boolean, toggle: () => void) => ReactNode; children: ReactNode | ((close: () => void) => ReactNode); className?: string; place?: 'below' | 'right' }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const body = useRef<HTMLDivElement>(null)
+  usePlaced(body, open && place === 'below')
   useEffect(() => {
     if (!open) return
     const onDown = (e: PointerEvent) => {
@@ -301,6 +335,8 @@ export function Popover({ trigger, children, className = '', place = 'below' }: 
     // Esc で閉じたら、開いたボタンへフォーカスを戻す（キーボードで続けて操作できるように）
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return
+      // Dialog の中で開いているときに、Dialog まで一緒に閉じないように
+      e.preventDefault()
       setOpen(false)
       ref.current?.querySelector<HTMLElement>('[aria-expanded]')?.focus()
     }
@@ -315,7 +351,7 @@ export function Popover({ trigger, children, className = '', place = 'below' }: 
     // Tab でパネルの外へフォーカスが出たら閉じる（開いたまま取り残さない。どこも押していない＝行き先が無いときは閉じない）
     <div className={`popover ${className}`} ref={ref} onBlur={(e) => open && e.relatedTarget && !ref.current?.contains(e.relatedTarget as Node) && setOpen(false)}>
       {trigger(open, () => setOpen((o) => !o))}
-      {open && <div className={`popover-body ${place === 'right' ? 'right' : ''}`}>{typeof children === 'function' ? children(() => setOpen(false)) : children}</div>}
+      {open && <div ref={body} className={`popover-body ${place === 'right' ? 'right' : ''}`}>{typeof children === 'function' ? children(() => setOpen(false)) : children}</div>}
     </div>
   )
 }

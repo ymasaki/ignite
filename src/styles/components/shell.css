@@ -32,7 +32,7 @@
 .side-foot{margin-top:auto;padding:14px 20px;border-top:1px solid var(--line);font-size:var(--fs-12);color:var(--ink-3)}
 .side-scrim{display:none}
 /* 本文へ移る（スキップリンク）。Tab でフォーカスしたときだけ画面の左上に出す */
-.skip-link{position:fixed;left:8px;top:8px;z-index:200;padding:8px 12px;border-radius:8px;background:var(--solid);color:var(--on-solid);font-size:var(--fs-13);font-weight:700;transform:translateY(calc(-100% - 16px))}
+.skip-link{position:fixed;left:8px;top:8px;z-index:var(--z-skip);padding:8px 12px;border-radius:8px;background:var(--solid);color:var(--on-solid);font-size:var(--fs-13);font-weight:700;transform:translateY(calc(-100% - 16px))}
 .skip-link:focus-visible{transform:none}
 
 /* ---------- ヘッダー ---------- */
@@ -69,9 +69,9 @@
 @media (max-width:600px){
   .app{grid-template-columns:minmax(0,1fr)}
   /* 影は開いているときだけ（閉じて画面の外にあるときに、影が左端ににじまないように） */
-  .side{position:fixed;left:0;top:0;bottom:0;z-index:70;width:260px;transform:translateX(-100%);transition:transform .2s ease-in}
+  .side{position:fixed;left:0;top:0;bottom:0;z-index:var(--z-drawer);width:260px;transform:translateX(-100%);transition:transform .2s ease-in}
   .side.open{box-shadow:var(--shadow-2);transform:none;transition:transform .22s var(--ease-in-out)}
-  .side-scrim.on{display:block;position:fixed;inset:0;z-index:65;background:var(--scrim)}
+  .side-scrim.on{display:block;position:fixed;inset:0;z-index:var(--z-scrim);background:var(--scrim)}
   .ttl h1{display:flex;flex:none;font-size:var(--fs-16)}
   .ttl-t{display:none}
 }

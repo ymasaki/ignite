@@ -50,8 +50,8 @@ const RADII = new Set(['0', '3px', '6px', '8px', '10px', '12px', '14px', '99px',
 // 素のまま書かない要素と、代わりに使う部品
 const RAW_TAGS: Record<string, string> = {
   button: 'Button / IconButton / LinkButton',
-  input: 'SearchField / TextField',
-  select: 'Select',
+  input: 'SearchField / TextField / Checkbox / NumberField',
+  select: 'Select / Combobox',
   textarea: 'TextArea',
   h1: 'AppShell の title',
   h2: 'Section / SubHeading',
@@ -69,7 +69,7 @@ const BREAK_WIDTHS = new Set([860, 720, 600])
 const BREAK_HEIGHTS = new Set([500])
 const MEDIA_SIZE = /\((min|max)-(width|height)\s*:\s*(\d+)px\)/g
 // Ignite の部品。アプリの CSS でこれらの見た目を上書きしない
-const DS_PARTS = /\.(seg|tabs|stepper|select-btn|sel-[\w-]+|btn|icon-btn|chip|tag|badge|kpi(?:-[\w]+)?|erow|er-[\w]+|section-h|subhead|notice|drawer|popover-body|field|sfield|check|linkbtn|crumbs|kv|empty-state|av|section|section-[\w]+|skel|skel-[\w]+|side-foot)(?![\w-])/
+const DS_PARTS = /\.(seg|tabs|stepper|select-btn|sel-[\w-]+|btn|icon-btn|chip|tag|badge|kpi(?:-[\w]+)?|erow|er-[\w]+|section-h|subhead|notice|drawer|popover-body|field|sfield|check|check-[\w]+|switch|sw-[\w]+|numfield|nf-[\w]+|form-field|ff-[\w]+|cal|cal-[\w]+|dialog|dlg-[\w]+|toast|toasts|pagination|pg-[\w]+|accordion|ac-[\w]+|steps|st-[\w]+|spinner|progress|linkbtn|crumbs|kv|empty-state|av|section|section-[\w]+|skel|skel-[\w]+|side-foot)(?![\w-])/
 const LOOK_PROPS = /(?<![\w-])(padding(?:-\w+)?|font-size|font-weight|color|background(?:-color)?|border(?:-(?:top|right|bottom|left|color|width))?|width|height|border-radius|box-shadow|opacity)\s*:/g
 // AppShell が持つ枠の部品。アプリの CSS はこれらを対象（セレクタの最後の要素）にしない（中身の状態に合わせた規則はよい）
 const SHELL_PARTS = /\.(app|mainwrap|side|side-handle|side-scrim|pslot|panel)(?![\w-])[^\s>+~]*$/
@@ -235,6 +235,20 @@ export function checkDate(file: string, text: string): Problem[] {
   return codeLines(text).flatMap((line, i) => (!OK.test(raw[i] ?? '') && DATE_FMT.test(line) ? [{ path: file, line: i + 1, message: '日付を直接整形しない。fmtDate / fmtDateTime / fmtMonth / fmtAsOf を使う（DESIGN.md 9 章）' }] : []))
 }
 
+// 部品で置き換えられるブラウザ標準の UI。既存の書き方を止めないよう、次の major までは警告にとどめる（docs/releasing.md）
+const NATIVE_UI: [RegExp, string][] = [
+  [/(?<![\w.])(?:window\.)?(?:alert|confirm|prompt)\(/, 'alert / confirm / prompt を使わない。ConfirmDialog か toast を使う'],
+  [/<dialog[\s>]/, '<dialog> を直接書かない。Dialog を使う'],
+  [/<progress[\s>]/, '<progress> を直接書かない。ProgressBar を使う'],
+  [/<input[^>]*type=["'](?:checkbox|radio|date|number|range)["']/, 'ブラウザ標準の入力を直接書かない。Checkbox / RadioGroup / DatePicker / NumberField を使う'],
+]
+
+/** 部品で置き換えられるブラウザ標準の UI（画面の .tsx） */
+export function checkNativeUi(file: string, text: string): Problem[] {
+  const raw = text.split('\n')
+  return codeLines(text).flatMap((line, i) => (OK.test(raw[i] ?? '') ? [] : NATIVE_UI.filter(([re]) => re.test(line)).map(([, message]) => ({ path: file, line: i + 1, message }))))
+}
+
 export function checkWords(file: string, text: string, rule: ForbiddenWords): Problem[] {
   const re = new RegExp(rule.pattern, rule.flags)
   return text.split('\n').flatMap((line, i) => (!OK.test(line) && re.test(line) ? [{ path: file, line: i + 1, message: rule.message }] : []))
@@ -267,7 +281,10 @@ export function run(files: Map<string, string>, config: CheckConfig, added?: (fi
       if (!config.self) problems.push(...checkShellJs(file, text))
       if (!file.endsWith('format/date.ts')) problems.push(...checkDate(file, text))
     }
-    if (file.endsWith('.tsx') && within(file, config.screens)) problems.push(...checkScreen(file, text), ...checkCopy(file, text, config.maxText))
+    if (file.endsWith('.tsx') && within(file, config.screens)) {
+      problems.push(...checkScreen(file, text), ...checkCopy(file, text, config.maxText))
+      warnings.push(...checkNativeUi(file, text))
+    }
     if (file.endsWith('.tsx') && within(file, config.parts)) problems.push(...checkCopy(file, text, config.maxText))
     for (const rule of config.forbiddenWords) {
       if (!within(file, rule.allow ?? [])) problems.push(...checkWords(file, text, rule))
@@ -320,7 +337,7 @@ export function main(root: string, argv: string[]): number {
   else config.source.forEach((s) => walk(root, s, files))
   const { problems, warnings } = run(files, config, staged ? (f) => addedLines(root, f) : undefined)
   if (warnings.length) {
-    console.log(`[ignite] 注意: 既存の Ignite の部品の上書き ${warnings.length} 件`)
+    console.log(`[ignite] 注意 ${warnings.length} 件（止めないが直す）`)
     for (const w of warnings) console.log(`  ${w.path}:${w.line}: ${w.message}`)
   }
   for (const p of problems) console.log(`${p.path}:${p.line}: ${p.message}`)

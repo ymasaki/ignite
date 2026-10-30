@@ -79,7 +79,9 @@ const BASE_EXCEPTIONS = [
   { match: /^文字の大きさ .*\.av\.xl .* 26px$/, why: 'avatar.css の design-ok: 72px の顔アイコンの頭文字' },
 ]
 // 8 章の例外（今選んでいて押しても変わらないもの・入れ物）
-const BASE_HOVER_SKIP = ['.seg button[aria-pressed="true"]', '[role="tab"][aria-selected="true"]', '[aria-current="page"]', '.erow.on', '.swatch[aria-pressed="true"]', '.mark-sw[aria-pressed="true"]', '.tm-tile[aria-pressed="true"]', '[role="region"]', '[role="group"]', '[role="tablist"]']
+const BASE_HOVER_SKIP = ['.seg button[aria-pressed="true"]', '[role="tab"][aria-selected="true"]', '[aria-current="page"]', '.erow.on', '.swatch[aria-pressed="true"]', '.mark-sw[aria-pressed="true"]', '.tm-tile[aria-pressed="true"]', '.cal-d.on', '.select-opt.on', '[role="region"]', '[role="group"]', '[role="tablist"]']
+// 測るあいだに消える部品（時間で消える知らせなど）を待ち続けず、飛ばす
+const GONE = { timeout: 1000 }
 const PIXEL = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64')
 
 type Finding = { rule: string; where: string; expected: string; actual: string }
@@ -304,7 +306,7 @@ export function defineIgniteAudit(config: IgniteAuditConfig): void {
       await cdp.send('DOM.enable')
       await cdp.send('CSS.enable')
       const press = async (i: number, on: boolean) => {
-        if (on) await page.locator(`[data-hover-audit="${i}"]`).evaluate((el) => { for (let e: Element | null = el; e; e = e.parentElement) e.setAttribute('data-press-audit', '') })
+        if (on) await page.evaluate((n) => { for (let e = document.querySelector(`[data-hover-audit="${n}"]`); e; e = e.parentElement) e.setAttribute('data-press-audit', '') }, i)
         const { root } = await cdp.send('DOM.getDocument', { depth: 0 })
         const { nodeIds } = await cdp.send('DOM.querySelectorAll', { nodeId: root.nodeId, selector: '[data-press-audit]' })
         for (const nodeId of nodeIds) await cdp.send('CSS.forcePseudoState', { nodeId, forcedPseudoClasses: on ? ['active'] : [] })
@@ -319,11 +321,11 @@ export function defineIgniteAudit(config: IgniteAuditConfig): void {
           const up: Element[] = []
           for (let p = el.parentElement; p && area(p) <= area(el) * 1.5; p = p.parentElement) up.push(p)
           return [...up, el, ...el.querySelectorAll('*')].flatMap((e) => [pick(getComputedStyle(e)), pick(getComputedStyle(e, '::before'))]).join('\n')
-        })
+        }, undefined, GONE)
       for (const t of targets) {
         hovered.set(t.where, hovered.get(t.where) || t.label)
         const el = page.locator(`[data-hover-audit="${t.i}"]`)
-        const box = await el.boundingBox()
+        const box = await el.boundingBox(GONE).catch(() => null)
         if (!box) continue
         await page.mouse.move(0, 899)
         await page.waitForTimeout(250)
@@ -333,10 +335,12 @@ export function defineIgniteAudit(config: IgniteAuditConfig): void {
         const after = await look(t.i).catch(() => null)
         if (before === null || after === null) continue
         if (before === after) {
+          // 8 章: 入力欄はフォーカス中はフォーカスの見せ方が勝つ（Dialog が開くと最初の欄にフォーカスがある）
+          if (await el.evaluate((e) => e === document.activeElement && e.matches('input, textarea'), undefined, GONE).catch(() => true)) continue
           record(`ホバー ${t.where}`, { rule: 'ホバーで見た目が変わる（8 章）', where: t.where, expected: 'マウスを載せると地・枠・文字の色などが変わる', actual: `変わらない（「${t.label}」）` }, `${s.name}（ホバー）`)
           continue
         }
-        if (await el.evaluate((e) => e.matches('input:not([type="checkbox"]):not([type="radio"]), textarea, select'))) continue
+        if (await el.evaluate((e) => e.matches('input:not([type="checkbox"]):not([type="radio"]), textarea, select'), undefined, GONE).catch(() => true)) continue
         await press(t.i, true)
         await page.waitForTimeout(50)
         const pressed = await look(t.i).catch(() => null)

@@ -42,6 +42,7 @@
   /* 意味の色 */
   --ok-soft:#12382c; --ok-ink:#51d2a8;
   --warn:#ffbe65; --warn-soft:#3d2e12;
+  --danger:#ff8a98; --danger-soft:#4a1a22;
   --hl:#6b4a00;
   --mark-1:#3b3112; --mark-1-line:#e6b63a;
   --mark-2:#163527; --mark-2-line:#4cc27f;

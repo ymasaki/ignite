@@ -1,5 +1,5 @@
 import { IconChartLine, IconChecks, IconClock, IconListCheck } from '@tabler/icons-react'
-import { Avatar, AssistSettings, BarList, Board, ChartCard, ChartGrid, DashboardScreen, Delta, EmptyState, EntityRow, Funnel, IconBox, KeyValues, Kpi, KpiBand, LineChart, LinkButton, ListScreen, PanelBody, PanelFrame, PanelHeader, SearchField, Section, Segmented, SettingGroup, SettingRow, SettingsScreen, Sparkline, StackColumns, Stat, Tag, ThemeSettings, TileMap } from '@ymasaki/ignite'
+import { Avatar, AssistSettings, BarList, Board, ChartCard, ChartGrid, DashboardScreen, Delta, EmptyState, EntityRow, Funnel, IconBox, KeyValues, Kpi, KpiBand, LineChart, LinkButton, ListScreen, PanelBody, PanelFrame, PanelHeader, SearchField, Section, Segmented, SettingBody, SettingGroup, SettingKey, SettingRow, SettingsScreen, Sparkline, StackColumns, Stat, Tag, ThemeSettings, TileMap } from '@ymasaki/ignite'
 import { useState } from 'react'
 import { MONTHS, PROJECTS } from './data'
 
@@ -74,6 +74,8 @@ export function SettingsPage() {
       <AssistSettings />
       <SettingGroup title="このアプリについて">
         <SettingRow label="バージョン"><IconBox><IconChartLine size={16} stroke={1.8} /></IconBox></SettingRow>
+        <SettingRow label="検索へ移る"><SettingKey>F</SettingKey></SettingRow>
+        <SettingBody note="名前つきで届きます"><Tag>自由な中身</Tag></SettingBody>
       </SettingGroup>
     </SettingsScreen>
   )

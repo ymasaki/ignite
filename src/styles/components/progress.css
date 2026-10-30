@@ -1,0 +1,28 @@
+/* 進み具合の部品（ui/Progress.tsx） */
+
+/* 回転。ボタンの中では文字の色に合わせる。動きを減らす設定では 1 回で止まり、輪の形が「処理中」を示す */
+.spinner{display:inline-block;flex:none;width:16px;height:16px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .8s linear infinite}
+.spinner.lg{width:24px;height:24px;color:var(--pri)}
+
+/* 進み具合の棒。地との比は枠の線で保つ（棒の色は --chart-1） */
+.progress{display:flex;align-items:center;gap:var(--space-2);min-width:0;font-size:var(--fs-12);color:var(--ink-3)}
+.pg-track{position:relative;flex:1;height:8px;overflow:hidden;border-radius:99px;background:var(--line)}
+.pg-track > span{display:block;height:100%;border-radius:99px;background:var(--chart-1);transition:width var(--dur-slow) var(--ease-in-out)}
+.pg-track.unknown > span{width:40%;animation:pgSlide 1.4s var(--ease-in-out) infinite}
+@keyframes pgSlide{from{transform:translateX(-100%)}to{transform:translateX(250%)}}
+
+/* 段階。全部出したときの幅（段ごとに 120px として 5 段）が入らなければ縦に並べる */
+.steps-box{container-type:inline-size;width:100%}
+.steps{display:flex;gap:var(--space-2);margin:0;padding:0;list-style:none}
+.steps li{display:flex;flex:1;align-items:center;gap:var(--space-2);min-width:0;font-size:var(--fs-13);color:var(--ink-3)}
+.steps li:not(:last-child)::after{content:'';flex:1;min-width:var(--space-3);height:1px;background:var(--line-2)}
+.steps li.done{color:var(--ink-2)}
+.steps li.now{font-weight:700;color:var(--ink)}
+.steps li:last-child{flex:none}
+.st-mark{display:grid;place-items:center;flex:none;width:24px;height:24px;border:1.5px solid var(--ink-3);border-radius:50%;font-size:var(--fs-12)}
+.steps .done .st-mark{border-color:var(--solid);background:var(--solid);color:var(--on-solid)}
+.steps .now .st-mark{border-color:var(--pri);color:var(--pri-ink)}
+@container (max-width:600px){
+  .steps{flex-direction:column}
+  .steps li:not(:last-child)::after{display:none}
+}

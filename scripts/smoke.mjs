@@ -1,5 +1,5 @@
 // 配布から更新までを、実際のパッケージで確かめる。
-// npm pack した 1.0 を新しいアプリに入れ → 検査と監査を通し → わざと違反を入れて止まることを確かめ → 1.1 へ ignite upgrade して部品と決まりが届くことを確かめる。
+// npm pack した今の版を新しいアプリに入れ → 検査と監査を通し → わざと違反を入れて止まることを確かめ → 次の版へ ignite upgrade して部品と決まりが届くことを確かめる。
 // 引数 --skip-audit で、ブラウザを使う監査を省く。
 import { execFileSync, spawnSync } from 'node:child_process'
 import fs from 'node:fs'
@@ -70,27 +70,28 @@ try {
     fs.writeFileSync(css, clean)
   }
 
-  console.log('5. 1.1 を作って ignite upgrade で取り込む')
+  const next = pack.version.replace(/^(\d+)\.(\d+)\..*$/, (_, a, b) => `${a}.${Number(b) + 1}.0`)
+  console.log(`5. ${next} を作って ignite upgrade で取り込む`)
   const x = path.join(tmp, 'x')
   fs.mkdirSync(x)
   run('tar', ['xzf', v1, '-C', x], tmp)
   const p = path.join(x, 'package')
   const edit = (f, fn) => fs.writeFileSync(path.join(p, f), fn(fs.readFileSync(path.join(p, f), 'utf8')))
-  edit('package.json', (s) => s.replace(`"version": "${pack.version}"`, '"version": "1.1.0"'))
+  edit('package.json', (s) => s.replace(`"version": "${pack.version}"`, `"version": "${next}"`))
   edit('dist/index.js', (s) => `${s}\nexport const smokeMarker = "${MARK}"\n`)
   edit('dist/styles.css', (s) => `${s}\n:root{--${MARK}:1}\n`)
   edit('DESIGN.md', (s) => `${s}\n${MARK}\n`)
   edit('templates/agent/rules.md', (s) => `${s}- ${MARK}\n`)
-  edit('CHANGELOG.md', (s) => s.replace('## 1.0.0', `## 1.1.0（2026-11-01）\n\n### 追加\n\n- ${MARK} の変更\n\n## 1.0.0`))
-  const v2 = path.join(tmp, 'ignite-1.1.0.tgz')
+  edit('CHANGELOG.md', (s) => s.replace(`## ${pack.version}`, `## ${next}（2026-11-01）\n\n### 追加\n\n- ${MARK} の変更\n\n## ${pack.version}`))
+  const v2 = path.join(tmp, `ignite-${next}.tgz`)
   run('tar', ['czf', v2, '-C', x, 'package'], tmp)
   const up = ignite('upgrade', v2)
   assert(up.status === 0, 'ignite upgrade が通る', up.stdout + up.stderr)
-  assert(up.stdout.includes('1.0.0 → 1.1.0') && up.stdout.includes(`${MARK} の変更`), '入った変更が表示される', up.stdout)
-  assert(JSON.parse(read(`node_modules/${name}/package.json`)).version === '1.1.0', '部品が 1.1.0 になる')
+  assert(up.stdout.includes(`${pack.version} → ${next}`) && up.stdout.includes(`${MARK} の変更`), '入った変更が表示される', up.stdout)
+  assert(JSON.parse(read(`node_modules/${name}/package.json`)).version === next, `部品が ${next} になる`)
   assert(read(`node_modules/${name}/DESIGN.md`).includes(MARK), 'デザインの定義が更新される')
-  assert(read('AGENTS.md').includes('ignite:begin 1.1.0') && read('AGENTS.md').includes(MARK) && read('AGENTS.md').includes('アプリ固有の決まり'), 'AI の決まりが更新され、アプリの文は残る')
-  assert(!read('AGENTS.md').includes('ignite:begin 1.0.0'), '古い節が残らない')
+  assert(read('AGENTS.md').includes(`ignite:begin ${next}`) && read('AGENTS.md').includes(MARK) && read('AGENTS.md').includes('アプリ固有の決まり'), 'AI の決まりが更新され、アプリの文は残る')
+  assert(!read('AGENTS.md').includes(`ignite:begin ${pack.version}`), '古い節が残らない')
   assert(ignite('sync', '--check').status === 0, 'ignite sync --check が通る')
   fs.writeFileSync(path.join(app, 'src/app/marker.ts'), `import { smokeMarker } from '${name}'\nconsole.log(smokeMarker)\n`)
   fs.appendFileSync(path.join(app, 'src/main.tsx'), "import './app/marker'\n")

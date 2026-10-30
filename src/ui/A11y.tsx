@@ -4,6 +4,11 @@ import { useEffect, useRef, type RefObject } from 'react'
 /** Tab で止まる要素（無効・tabindex=-1 を除く）。最初の操作へフォーカスを移すときに使う */
 export const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
 
+/** 送信で検証に失敗したとき、最初のエラーの欄へフォーカスを移す（理由は欄の補足として読まれる） */
+export function focusFirstInvalid(root: ParentNode = document) {
+  root.querySelector<HTMLElement>('[aria-invalid="true"],.select-btn.invalid')?.focus()
+}
+
 let region: HTMLElement | null = null
 let timer = 0
 
@@ -19,8 +24,10 @@ export function announce(text: string, { assertive = false }: { assertive?: bool
     region.className = 'sr-only'
     region.setAttribute('aria-live', 'polite')
     region.setAttribute('aria-atomic', 'true')
-    document.body.appendChild(region)
   }
+  // 開いている Dialog の外は読み上げの対象外になるので、知らせる場所を Dialog の中へ移す
+  const host = document.querySelector('dialog[open]') ?? document.body
+  if (region.parentElement !== host) host.appendChild(region)
   const el = region
   el.setAttribute('aria-live', assertive ? 'assertive' : 'polite')
   el.textContent = ''

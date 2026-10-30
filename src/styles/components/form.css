@@ -1,0 +1,80 @@
+/* フォームの部品（ui/Field.tsx・ui/Form.tsx・ui/DatePicker.tsx） */
+
+/* 見出し・補足・エラーの枠 */
+.form-field{display:grid;gap:var(--space-1);min-width:0}
+.ff-head{display:flex;align-items:center;gap:var(--space-2)}
+.ff-label{font-size:var(--fs-12);font-weight:600;color:var(--ink-2)}
+.ff-req{font-size:var(--fs-11);font-weight:700;color:var(--danger)}
+.ff-hint{font-size:var(--fs-12);color:var(--ink-3)}
+.ff-error{display:flex;align-items:center;gap:var(--space-1);font-size:var(--fs-12);font-weight:600;color:var(--danger)}
+.ff-error svg{flex:none}
+
+/* チェックとラジオ。行は「地のない部品」（8 章）で、押せる範囲を行全体にする。本物の input を透明にして重ね、読み上げとキー操作をブラウザに任せる */
+.check,.switch{display:inline-flex;align-items:flex-start;gap:var(--space-2);margin:-3px -6px;padding:3px 6px;border-radius:8px;font-size:var(--fs-13);color:var(--ink);text-align:left;cursor:pointer;transition:background-color var(--dur-fast) ease-out}
+.check:hover,.switch:hover{background:var(--hover)}
+.check:active,.switch:active{background:var(--press)}
+.check{position:relative}
+.check input{position:absolute;left:6px;top:4px;width:18px;height:18px;margin:0;opacity:0;cursor:inherit}
+.check-box{display:grid;place-items:center;flex:none;width:18px;height:18px;margin-top:1px;border:1.5px solid var(--ink-3);border-radius:6px;background:var(--panel);color:var(--on-solid);transition:background-color var(--dur-fast) ease-out,border-color var(--dur-fast) ease-out}
+.check-box svg{visibility:hidden}
+.check:hover .check-box{border-color:var(--pri)}
+.check input:checked + .check-box,.check input:indeterminate + .check-box{border-color:var(--solid);background:var(--solid)}
+.check input:checked + .check-box svg,.check input:indeterminate + .check-box svg{visibility:visible}
+.check-box.round{border-radius:50%}
+.check-box.round i{width:8px;height:8px;border-radius:50%;background:var(--on-solid);scale:0;transition:scale var(--dur-fast) var(--ease-spring)}
+.check input:checked + .check-box.round i{scale:1}
+.check input:focus-visible + .check-box{outline:2px solid var(--focus);outline-offset:2px}
+:root[data-input="pointer"]:not([data-focus="always"]) .check input:focus-visible + .check-box{outline:none}
+.check.invalid .check-box{border-color:var(--danger)}
+.check.off,.switch:disabled{opacity:.45;pointer-events:none}
+.check-t{display:grid;min-width:0}
+.check-t small{font-size:var(--fs-12);color:var(--ink-3)}
+.radios{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2)}
+.radios.inline{flex-direction:row;flex-wrap:wrap;gap:var(--space-2) var(--space-5)}
+
+/* スイッチ。切の地は枠と同じ濃さ（部品と地の比 3 を保つ） */
+.switch{align-items:center}
+.sw-track{position:relative;flex:none;width:34px;height:20px;border-radius:99px;background:var(--ink-3);transition:background-color var(--dur-base) ease-out,var(--press-back)}
+.sw-thumb{position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:var(--panel);box-shadow:var(--shadow-1);transition:translate var(--dur-slow) var(--ease-spring)}
+.switch[aria-checked="true"] .sw-track{background:var(--solid)}
+.switch[aria-checked="true"] .sw-thumb{translate:14px 0;background:var(--on-solid)}
+.switch:active .sw-track{scale:var(--press-scale)}
+
+/* 数の欄。右端に − ＋ を重ねる */
+.numfield{display:inline-flex;align-items:center;gap:var(--space-2);min-width:0}
+.nf-box{position:relative;display:inline-flex;align-items:center;min-width:0;--field-pr:64px}
+.nf-box > .field{width:136px;max-width:100%;font-variant-numeric:tabular-nums}
+.nf-btn{position:absolute;right:32px;display:grid;place-items:center;width:28px;height:28px;border-radius:8px;color:var(--ink-2);transition:var(--press-back)}
+.nf-btn:last-child{right:4px}
+.nf-btn:hover{background:var(--hover);color:var(--ink)}
+.nf-btn:active{background:var(--press);scale:var(--press-scale)}
+.nf-btn:disabled{opacity:.45;pointer-events:none}
+.nf-unit{font-size:var(--fs-13);color:var(--ink-3)}
+
+/* 候補から選ぶ入力。候補の見た目は Select と同じ */
+.combo{display:block;width:100%}
+.combo > .field{padding-right:32px}
+.combo-chev{position:absolute;right:10px;top:10px;color:var(--ink-3);pointer-events:none}
+.combo .popover-body{overflow:visible;max-height:none}
+/* スクロールするのは候補の一覧そのもの（フォーカスは入力欄に残り、↑↓ で一覧が送られる） */
+.combo [role="listbox"]{max-height:348px;overflow-y:auto}
+.combo .select-opt{cursor:pointer}
+.combo .select-opt.on{background:var(--hover);outline:2px solid var(--focus);outline-offset:-2px}
+.combo-empty{padding:8px 12px;font-size:var(--fs-13);color:var(--ink-3)}
+
+/* カレンダー */
+.datepicker .popover-body{max-height:none;padding:var(--space-3)}
+.cal{display:grid;gap:var(--space-2)}
+.cal-head{display:flex;align-items:center;justify-content:space-between;gap:var(--space-2)}
+.cal-head b{font-size:var(--fs-14)}
+.cal table{border-collapse:collapse}
+.cal th{height:28px;padding:0;font-size:var(--fs-12);font-weight:600;color:var(--ink-3)}
+.cal td{padding:1px}
+.cal-d{display:grid;place-items:center;width:34px;height:34px;border-radius:8px;font-size:var(--fs-13);color:var(--ink);transition:var(--press-back)}
+.cal-d.other{color:var(--ink-3)}
+.cal-d:hover{background:var(--hover)}
+.cal-d:active{background:var(--press);scale:var(--press-scale)}
+.cal-d[aria-current="date"]{border:1px solid var(--pri);font-weight:700}
+.cal-d.on,.cal-d.on:hover,.cal-d.on:active{background:var(--solid);color:var(--on-solid)}
+.cal-d:disabled{opacity:.45;pointer-events:none}
+.cal-foot{display:flex;justify-content:space-between;gap:var(--space-3);min-height:18px}

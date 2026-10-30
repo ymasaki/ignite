@@ -49,6 +49,7 @@ export const CONTRAST_RULES: ContrastRule[] = [
   text('--ink-3', '--panel-2', '沈んだ地の上のラベル（表の見出し、切り替えの選んでいない項目）'),
   text('--ink-3', '--bg', '画面の地の上のラベル'),
   text('--ink', '--hover', 'ホバーした行・項目の本文'),
+  text('--ink-2', '--panel-2', '沈んだ地の上の補足（お知らせの帯）'),
   text('--ink-2', '--hover', 'ホバーした行・項目の補足'),
   text('--ink-3', '--hover', 'ホバーした行・項目のラベル・件数'),
   text('--ink', '--hover-strong', 'ホバーした切り替え・タブの項目'),
@@ -73,6 +74,11 @@ export const CONTRAST_RULES: ContrastRule[] = [
   text('--ok-ink', '--ok-soft', '肯定のタグ'),
   text('--warn', '--warn-soft', '注意'),
   text('--ink', '--hl', '検索語のハイライト'),
+  text('--danger', '--panel', 'エラーの文・危険な操作の項目'),
+  text('--danger', '--danger-soft', '危険の知らせ・タグ'),
+  text('--on-danger', '--danger-solid', '危険なボタン'),
+  text('--on-danger', '--danger-solid-hover', '危険なボタンのホバー'),
+  text('--on-danger', '--danger-solid-press', '押している危険なボタン'),
   ...[1, 2, 3, 4, 5].flatMap((n) => [
     text('--ink', `--mark-${n}`, 'マーカー色の地の上の本文'),
     text('--ink-2', `--mark-${n}`, 'マーカー色の地の上の補足（コメント）'),
@@ -84,6 +90,7 @@ export const CONTRAST_RULES: ContrastRule[] = [
   ui('--pri', '--panel', 'アイコン・選択の枠', GREEN),
   ui('--pri', '--pri-soft', '薄い主要色の地の上のアイコン', GREEN),
   ui('--chart-1', '--panel', 'グラフの線・棒', GREEN),
+  ui('--danger', '--panel', 'エラーの欄の枠'),
   ui('--focus', '--panel', 'フォーカスの枠'),
   ui('--focus', '--bg', '画面の地の上のフォーカスの枠'),
 ]

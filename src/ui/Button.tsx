@@ -3,13 +3,15 @@
 
 import { IconExternalLink } from '@tabler/icons-react'
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import { Spinner } from './Progress'
 
 type Native = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'>
 
-export function Button({ variant = 'default', icon, active = false, className = '', children, ...rest }: Native & { variant?: 'default' | 'primary'; icon?: ReactNode; active?: boolean }) {
+/** variant="danger" は取り消せない操作だけ（削除の確定など）。loading は処理中: 先頭のアイコンを回転に替え、押しても何も起きない（フォーカスは保つ） */
+export function Button({ variant = 'default', icon, active = false, loading = false, className = '', onClick, children, ...rest }: Native & { variant?: 'default' | 'primary' | 'danger'; icon?: ReactNode; active?: boolean; loading?: boolean }) {
   return (
-    <button type="button" className={`btn ${variant === 'primary' ? 'pri' : ''} ${active ? 'on' : ''} ${className}`} {...rest}>
-      {icon}
+    <button type="button" className={`btn ${variant === 'primary' ? 'pri' : variant === 'danger' ? 'danger' : ''} ${active ? 'on' : ''} ${loading ? 'busy' : ''} ${className}`} aria-busy={loading || undefined} aria-disabled={loading || undefined} onClick={loading ? undefined : onClick} {...rest}>
+      {loading ? <Spinner label="" /> : icon}
       {children}
     </button>
   )

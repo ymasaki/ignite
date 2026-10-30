@@ -13,6 +13,11 @@
 .btn.pri{background:var(--solid);border-color:var(--solid);color:var(--on-solid)}
 .btn.pri:hover{background:var(--solid-hover);border-color:var(--solid-hover);color:var(--on-solid)}
 .btn.pri:active{background:var(--solid-press);border-color:var(--solid-press)}
+.btn.danger{background:var(--danger-solid);border-color:var(--danger-solid);color:var(--on-danger)}
+.btn.danger:hover{background:var(--danger-solid-hover);border-color:var(--danger-solid-hover);color:var(--on-danger)}
+.btn.danger:active{background:var(--danger-solid-press);border-color:var(--danger-solid-press)}
+/* 処理中（Button の loading）。フォーカスを失わないよう disabled にせず、押しても何も起きないようにする */
+.btn.busy{pointer-events:none}
 /* 押せないあいだ（入力が空・送信中など）は薄くし、ホバーで変えない */
 .btn:disabled{opacity:.45;cursor:default;pointer-events:none}
 
@@ -24,6 +29,7 @@
 .icon-btn[aria-pressed="true"],.icon-btn[aria-pressed="true"]:hover{color:var(--pri)}
 .icon-btn.lg{width:var(--control-h);height:var(--control-h);border:1px solid var(--line-2);border-radius:10px;background:var(--panel)}
 .icon-btn.lg:active{background:var(--press)}
+.icon-btn:disabled{opacity:.45;pointer-events:none}
 
 /* 文字だけのボタン */
 .linkbtn{font-size:var(--fs-12);font-weight:600;color:var(--link)}

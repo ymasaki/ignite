@@ -1,6 +1,6 @@
 # Ignite
 
-アプリ共通のデザインシステム。決まりの正本は `DESIGN.md`、採用は `docs/adopting.md`、版と公開は `docs/releasing.md`。
+アプリ共通のデザインシステム。決まりの正本は `DESIGN.md`、採用は `docs/adopting.md`、版と公開は `docs/releasing.md`、主要なデザインシステムとの比較と残りの候補は `docs/coverage.md`。
 
 ## 構成
 
@@ -15,7 +15,7 @@
 
 - 応答・文書・コメントは日本語で書く。
 - 外部の UI ライブラリ・CSS フレームワークを入れない。
-- 部品を足す・変えるときは `DESIGN.md` の表、`src/index.ts`、カタログを一緒に直す。
+- 部品を足す・変えるときは `DESIGN.md` の表、`src/index.ts`、カタログを一緒に直す（`tests/coverage.test.ts` が載せ漏れを止める）。キー操作やフォーカスの動きがある部品は `catalog/e2e/parts.e2e.ts` にも足す。
 - 測れる決まりを足したら、`cli/check.ts` か `audit/` にも足し、テストで違反を検出できることを確かめる。
 - 利用者に影響する変更は `CHANGELOG.md` に書き、`docs/releasing.md` の基準で版を決める。
 - 配布物だけに起きる不具合があるので、部品の土台を変えたら `npm run smoke` を通す。

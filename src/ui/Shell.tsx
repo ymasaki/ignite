@@ -8,6 +8,7 @@ import { createContext, useContext, useEffect, useRef, useState, useSyncExternal
 import { shortcutsOn } from '../assist'
 import { FOCUSABLE } from './A11y'
 import { Button } from './Button'
+import { Toaster } from './Toast'
 import { Drawer, isTyping, type DrawerPeek } from './Controls'
 import { reducedMotion } from './Motion'
 import { SHELL_SIZES, shellLayout, type ShellSizes } from './shellLayout'
@@ -284,6 +285,7 @@ export function AppShell({ side, foot, collapse, title, titleAfter, search, tool
           </main>
         </div>
       </div>
+      <Toaster />
       {panel && !inline && (
         <Drawer open={panel.open} closing={panel.closing} onClose={panel.onClose} peek={panel.peek} minimized={minimized} onExpand={() => setMinimized(false)}>
           {panel.content}

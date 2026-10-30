@@ -3,7 +3,7 @@ import { defineConfig } from '@playwright/test'
 // カタログを Ignite 自身の監査にかける（採用アプリと同じ監査）。同じポートの別のアプリを測らないよう、既存のサーバーは使わない
 export default defineConfig({
   testDir: 'e2e',
-  testMatch: '**/*.audit.ts',
+  testMatch: ['**/*.audit.ts', '**/*.e2e.ts'],
   fullyParallel: false,
   workers: 1,
   timeout: 60000,

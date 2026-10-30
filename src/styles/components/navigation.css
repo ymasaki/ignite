@@ -1,0 +1,32 @@
+/* 移動と開閉の部品（ui/Navigation.tsx） */
+
+/* ページ送り。全部出したときの幅（番号 7 つ × 34px ＋ 前後のボタン）が入らなければ「3 / 20」にする */
+.pagination{container-type:inline-size;width:100%}
+.pg-row{display:flex;align-items:center;justify-content:center;gap:2px}
+.pg-n{display:grid;place-items:center;min-width:30px;height:30px;padding:0 6px;border-radius:8px;font-size:var(--fs-13);color:var(--ink-2);transition:var(--press-back)}
+.pg-n:hover{background:var(--hover);color:var(--ink)}
+.pg-n:active{background:var(--press);scale:var(--press-scale)}
+.pg-n[aria-current="page"]{background:var(--thumb);color:var(--pri-ink-2);font-weight:700}
+.pg-gap{min-width:24px;text-align:center;color:var(--ink-3)}
+.pg-cur{display:none;padding:0 var(--space-2);font-size:var(--fs-13);color:var(--ink-2)}
+@container (max-width:320px){.pg-n,.pg-gap{display:none}.pg-cur{display:block}}
+
+/* 操作の一覧。項目の見た目は Select と同じ */
+.menu .popover-body{min-width:180px}
+.select.menu .popover-body{left:auto;right:0}
+.select.menu .popover-body.flip{left:0;right:auto}
+.select-opt.danger,.select-opt.danger .sel-lead{color:var(--danger)}
+.menu-sep{height:1px;margin:4px 6px;background:var(--line)}
+
+/* 開閉の並び */
+.accordion{border-top:1px solid var(--line)}
+.ac-item{border-bottom:1px solid var(--line)}
+.ac-h{margin:0;font-size:var(--fs-14);font-weight:700}
+.ac-h button{display:flex;align-items:center;gap:var(--space-2);width:100%;padding:10px var(--space-2);text-align:left;font-weight:inherit;border-radius:8px;transition:background-color var(--dur-fast) ease-out}
+.ac-h button:hover{background:var(--hover)}
+.ac-h button:active{background:var(--press)}
+.ac-t{flex:1;min-width:0}
+.ac-m{font-size:var(--fs-12);font-weight:400;color:var(--ink-3)}
+.ac-chev{flex:none;color:var(--ink-3);transition:transform var(--dur-base) var(--ease-in-out)}
+.ac-h button[aria-expanded="true"] .ac-chev{transform:rotate(180deg)}
+.ac-body{padding:var(--space-1) var(--space-2) var(--space-3);font-size:var(--fs-13);line-height:1.7;color:var(--ink-2)}

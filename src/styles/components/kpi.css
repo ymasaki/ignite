@@ -41,7 +41,7 @@
 .kpis-wrap > .kpis > .kpi.hide{max-width:0;padding-left:0;padding-right:0;opacity:0;border-right-width:0}
 @media (prefers-reduced-motion: reduce){.kpis-wrap > .kpis > .kpi.fold{transition:none}}
 /* まとめた枠を押して開く一覧（1 つずつの枠を縦に並べる）。枠の下に浮かせ、高さの上限を超えたら中だけスクロール（位置の left は KpiBand が決める） */
-.kpi-pop{position:absolute;top:calc(100% + 6px);left:0;z-index:85;display:grid;min-width:200px;max-width:calc(100vw - 32px);max-height:min(360px,60vh);overflow:auto;padding:6px;
+.kpi-pop{position:absolute;top:calc(100% + 6px);left:0;z-index:var(--z-popover);display:grid;min-width:200px;max-width:calc(100vw - 32px);max-height:min(360px,60vh);overflow:auto;padding:6px;
   background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow-2);animation:popIn .18s var(--ease-in-out)}
 .kpi-pop > .kpi{padding:6px 10px;border-right:0;border-radius:8px}
 @media (prefers-reduced-motion: reduce){.kpi-pop{animation:none}}

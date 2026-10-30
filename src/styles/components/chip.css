@@ -4,6 +4,9 @@
 .tag{display:inline-block;padding:0 8px;border:1px solid var(--line-2);border-radius:99px;font-size:var(--fs-11);line-height:18px;color:var(--ink-2);white-space:nowrap}
 .tag.accent{border-color:transparent;background:var(--pri-soft);color:var(--pri-ink);font-weight:700}
 .tag.dashed{border-style:dashed}
+.tag.ok{border-color:transparent;background:var(--ok-soft);color:var(--ok-ink);font-weight:700}
+.tag.warn{border-color:transparent;background:var(--warn-soft);color:var(--warn);font-weight:700}
+.tag.danger{border-color:transparent;background:var(--danger-soft);color:var(--danger);font-weight:700}
 /* 押せる印（押すと対象を開くのでホバーで影） */
 .tag.link{cursor:pointer;transition:box-shadow .15s,var(--press-back)}
 .tag.link:hover{box-shadow:var(--shadow-hover)}

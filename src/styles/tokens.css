@@ -54,6 +54,10 @@
   /* 意味の色 */
   --ok-soft:#cbf3e3; --ok-ink:#007357;  /* green/100、text/success */
   --warn:#946000; --warn-soft:#fff6ec;  /* text/warning、bg/warning-subtle */
+  /* 危険（エラー・取り消せない操作）。主要色が赤のスキンでも見分けられるよう、色だけに頼らずアイコンと文字を添える（DESIGN.md 2 章） */
+  --danger:#c01f3a; --danger-soft:#ffecee;              /* text/danger、bg/danger-subtle */
+  --danger-solid:#c01f3a; --danger-solid-hover:#9d1830; --on-danger:#ffffff; /* 危険なボタンの地（白い文字が読める濃さ） */
+  --danger-solid-press:color-mix(in srgb,var(--danger-solid-hover) 78%,#000);
   --hl:#ffeacf;                         /* yellow/100。検索語のハイライト */
   /* マーカー色（利用者が選んで塗るハイライト。黄・緑・青・紫・桃。地と、色の見本・枠の濃い色。DESIGN.md 2 章の例外） */
   --mark-1:#fff2c2; --mark-1-line:#a87700;
@@ -71,6 +75,11 @@
 
   /* 大きさ */
   --control-h:40px;
+  /* 部品の中の余白の目盛り（DESIGN.md 5 章。4 の倍数） */
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:24px; --space-6:32px;
+
+  /* 重なり順（DESIGN.md 4 章「重なり」）。下から順に。Dialog はブラウザの最前面に出るのでここに持たない */
+  --z-scrim:65; --z-drawer:70; --z-popover:85; --z-toast:110; --z-tip:120; --z-skip:200;
 
   /* 画面の段組みの余白（外側の余白。ヘッダーの下の段: KPI・内容の枠）。窓の大きさに合わせて上限と下限のあいだをなめらかに変える
      （DESIGN.md 5 章「外側の余白」。区切りで段を付けない）。横の余白は幅で、縦の余白は幅と高さの小さいほうで決める。
@@ -88,7 +97,8 @@
   --shell-head-row:clamp(8px, calc(8px + (100vw - 375px) * 2 / 485), 10px);   /* 2 段に組んだときの段の間: 375 → 860px で 8 → 10 */
   --shell-title-gap:clamp(8px, calc(8px + (100vw - 375px) * 6 / 805), 14px);  /* 画面名と範囲の選択（表示する範囲の切り替え）の間: 8 → 14 */
 
-  /* 動き */
+  /* 動き（DESIGN.md 6 章の長さの目盛り） */
+  --dur-fast:.14s; --dur-base:.2s; --dur-slow:.32s;
   --ease-in-out:cubic-bezier(.2,.7,.2,1);
   /* 少しだけ行き過ぎて戻る（スイッチの切り替えの手応え） */
   --ease-spring:cubic-bezier(.34,1.32,.5,1);

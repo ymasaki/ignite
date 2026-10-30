@@ -5,7 +5,7 @@ import { useState, type ReactNode } from 'react'
 import { RollingNumber } from './Motion'
 
 /** onClick を渡すと押せる印（対象を開くのでホバーで影） */
-export function Tag({ variant = 'default', onClick, children }: { variant?: 'default' | 'accent' | 'dashed'; onClick?: () => void; children: ReactNode }) {
+export function Tag({ variant = 'default', onClick, children }: { variant?: 'default' | 'accent' | 'dashed' | 'ok' | 'warn' | 'danger'; onClick?: () => void; children: ReactNode }) {
   const cls = `tag ${variant === 'default' ? '' : variant}`
   if (onClick)
     return (

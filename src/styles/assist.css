@@ -31,6 +31,7 @@
   --focus:var(--pri-ink);
   --ok-ink:oklch(from #007357 .4 c h);
   --warn:oklch(from #946000 .4 c h);
+  --danger:oklch(from #c01f3a .4 c h); --danger-solid:oklch(from #c01f3a .42 c h); --danger-solid-hover:oklch(from #c01f3a .35 c h);
 }
 /* 緑は明るく、白い地の上のアイコン・枠が 3:1 に届かない（ふだんは例外。DESIGN.md 2 章）。強くしたときは例外にせず、主要色を一段濃くする */
 :root[data-contrast="more"][data-skin="green"]:not([data-mode="dark"]){--pri:oklch(from var(--skin-green) .6 c h)}
@@ -53,6 +54,7 @@
   --focus:var(--pri-ink);
   --ok-ink:oklch(from #51d2a8 .86 c h);
   --warn:oklch(from #ffbe65 .88 c h);
+  --danger:oklch(from #ff8a98 .88 c h); --danger-solid:oklch(from #c01f3a .42 c h); --danger-solid-hover:oklch(from #c01f3a .35 c h);
 }
 /* 枠を太く（フォーカス・選択の枠が、色の見分けに頼らず形でわかるように） */
 :root[data-contrast="more"] :focus-visible,:root[data-contrast="more"][data-focus="always"] :focus{outline-width:3px}
