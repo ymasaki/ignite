@@ -18,8 +18,9 @@
 .check-box{display:grid;place-items:center;flex:none;width:18px;height:18px;margin-top:1px;border:1.5px solid var(--ink-3);border-radius:6px;background:var(--panel);color:var(--on-solid);transition:background-color var(--dur-fast) ease-out,border-color var(--dur-fast) ease-out}
 .check-box svg{visibility:hidden}
 .check:hover .check-box{border-color:var(--pri)}
-.check input:checked + .check-box,.check input:indeterminate + .check-box{border-color:var(--solid);background:var(--solid)}
-.check input:checked + .check-box svg,.check input:indeterminate + .check-box svg{visibility:visible}
+/* :indeterminate はチェックだけに限る（どれも選んでいないラジオの組にも付くので、限らないと全部塗られる） */
+.check input:checked + .check-box,.check input[type="checkbox"]:indeterminate + .check-box{border-color:var(--solid);background:var(--solid)}
+.check input:checked + .check-box svg,.check input[type="checkbox"]:indeterminate + .check-box svg{visibility:visible}
 .check-box.round{border-radius:50%}
 .check-box.round i{width:8px;height:8px;border-radius:50%;background:var(--on-solid);scale:0;transition:scale var(--dur-fast) var(--ease-spring)}
 .check input:checked + .check-box.round i{scale:1}

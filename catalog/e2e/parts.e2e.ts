@@ -384,3 +384,10 @@ test('Accordion: キーボードで開閉し、既定は 1 つだけ開く', asy
   await page.keyboard.press('Space')
   await expect(b).toHaveAttribute('aria-expanded', 'false')
 })
+
+test('RadioGroup: どれも選んでいないときは塗らない', async ({ page }) => {
+  await open(page, 'forms')
+  const box = page.getByRole('radiogroup', { name: '通知先' }).locator('.check-box').first()
+  const panel = await page.locator('.board').evaluate((el) => getComputedStyle(el).backgroundColor)
+  await expect(box).toHaveCSS('background-color', panel)
+})
