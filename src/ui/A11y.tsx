@@ -23,10 +23,11 @@ let timer = 0
 export function announce(text: string, { assertive = false }: { assertive?: boolean } = {}) {
   if (typeof document === 'undefined') return
   window.clearTimeout(timer)
-  const write = () => {
+  // 置き場所を決めて空にし、少し待って本文を書く。待つあいだに Dialog が閉じることがあるので、書く直前にも確かめ、変わっていれば準備からやり直す
+  const attempt = (prepared: boolean) => {
     // 閉じる途中の Dialog の中へ置くと一緒に消え、外はまだ読み上げの対象外なので、閉じ終わるまで待つ
     if (document.querySelector('dialog.closing[open]')) {
-      timer = window.setTimeout(write, 60)
+      timer = window.setTimeout(() => attempt(false), 60)
       return
     }
     if (!region || !region.isConnected) {
@@ -37,14 +38,18 @@ export function announce(text: string, { assertive = false }: { assertive?: bool
     }
     // 開いている Dialog の外は読み上げの対象外になるので、知らせる場所を Dialog の中へ移す
     const host = document.querySelector('dialog[open]') ?? document.body
-    if (region.parentElement !== host) host.appendChild(region)
     const el = region
+    if (prepared && el.parentElement === host) {
+      el.textContent = text
+      return
+    }
+    if (el.parentElement !== host) host.appendChild(el)
     el.setAttribute('aria-live', assertive ? 'assertive' : 'polite')
     el.textContent = ''
-    timer = window.setTimeout(() => (el.textContent = text), 60)
+    timer = window.setTimeout(() => attempt(true), 60)
   }
   // 同じ処理の中で閉じた Dialog の状態が画面に反映されてから決める
-  timer = window.setTimeout(write, 0)
+  timer = window.setTimeout(() => attempt(false), 0)
 }
 
 /**

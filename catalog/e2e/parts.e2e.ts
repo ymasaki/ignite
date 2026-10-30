@@ -213,8 +213,10 @@ test('Dialog: 閉じる途中に開き直しても、開いたまま操作でき
   await page.getByRole('button', { name: '閉じてすぐ開き直す' }).click()
   await page.waitForTimeout(500)
   await expect(page.locator('dialog.dialog:not(.closing)')).toBeVisible()
-  await page.getByRole('textbox', { name: '新しい名前' }).fill('あ')
-  await expect(page.getByRole('textbox', { name: '新しい名前' })).toHaveValue('あ')
+  // そのまま打ち続けられる（fill はフォーカスを移してしまうので、先に確かめて type で打つ）
+  await expect(page.getByRole('textbox', { name: '新しい名前' })).toBeFocused()
+  await page.keyboard.type('a')
+  await expect(page.getByRole('textbox', { name: '新しい名前' })).toHaveValue('a')
 })
 
 test('動きを減らす設定: Dialog がすぐ閉じ、閉じると同時に出した知らせも読み上げに届く', async ({ page }) => {
@@ -250,16 +252,68 @@ test('Toast: 載せるのをやめてもフォーカスがあるあいだは消�
   await expect(ok).toHaveCount(0)
 })
 
-test('Toaster: 重ねた左メニューと詳細のあいだは背面として操作できない', async ({ page }) => {
+test('Toaster: 重ねた左メニューと詳細のあいだは操作できず、詳細を閉じても左メニューの分は残る', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 })
   await page.goto('/?nav=list')
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 30000 })
-  await page.locator('.ttl-menu').click()
-  await expect.poll(() => page.locator('.toasts').evaluate((el) => (el as HTMLElement).inert)).toBe(true)
-  await page.goto('/?nav=list&open=p1')
+  const inert = () => page.locator('.toasts').evaluate((el) => (el as HTMLElement).inert)
+  await expect.poll(inert).toBe(false)
+  // 詳細を開く → 閉じる: 戻る
+  await page.locator('.erow').first().click()
   await expect(page.locator('.drawer')).toBeVisible()
-  await expect.poll(() => page.locator('.toasts').evaluate((el) => (el as HTMLElement).inert)).toBe(true)
+  await expect.poll(inert).toBe(true)
+  await page.locator('.drawer .ph button[aria-label="詳細を閉じる"]').click()
+  await expect(page.locator('.drawer')).toHaveCount(0)
+  await expect.poll(inert).toBe(false)
+  // 左メニューを開く → ブラウザの戻るで詳細が重なる → 詳細を閉じる: 左メニューの分は残る
+  await page.locator('.ttl-menu').click()
+  await expect.poll(inert).toBe(true)
+  await page.goBack()
+  await expect(page.locator('.drawer')).toBeVisible()
+  await page.locator('.drawer .ph button[aria-label="詳細を閉じる"]').dispatchEvent('click')
+  await expect(page.locator('.drawer')).toHaveCount(0)
+  await expect.poll(inert).toBe(true)
 })
+
+test('知らせの置き場所を決めたあとで Dialog が閉じても、読み上げに届く', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await open(page, 'feedback')
+  await page.getByRole('button', { name: '窓を開く' }).click()
+  await page.getByRole('button', { name: '知らせてから閉じる' }).click()
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  await expect(page.locator('body > [aria-live]')).toHaveText('名前を控えました')
+})
+
+test('Dialog: 閉じた状態から開いた長い本文も、キーボードで送れる', async ({ page }) => {
+  await open(page, 'feedback')
+  await page.getByRole('button', { name: '長い本文の窓' }).click()
+  const body = page.locator('.dlg-body')
+  await expect(body).toHaveAttribute('tabindex', '0')
+  await expect(body).toHaveAttribute('role', 'region')
+  await expect(body).toHaveAccessibleName('利用の条件')
+})
+
+test('Select: 開いているあいだに親が描き直しても、今の項目から動かない', async ({ page }) => {
+  await page.clock.install()
+  await open(page, 'controls')
+  await page.getByRole('button', { name: /^並び順/ }).click()
+  await page.keyboard.press('ArrowDown')
+  const opt = page.getByRole('option', { name: /名前の順/ })
+  await expect(opt).toBeFocused()
+  await page.clock.runFor(2000)
+  await expect(opt).toBeFocused()
+})
+
+for (const [label, role, name, error] of [['スイッチ', 'switch', '同意', '同意してください'], ['プルダウン', 'button', /^担当/, '担当を選んでください'], ['日付', 'button', /^開始日/, '開始日を選んでください']] as const) {
+  test(`focusFirstInvalid: ${label}のエラーが読み上げに伝わり、そこへ移る`, async ({ page }) => {
+    await open(page, 'forms')
+    const el = page.getByRole(role, { name })
+    await expect(el).toHaveAttribute('aria-invalid', 'true')
+    await expect(el).toHaveAccessibleDescription(new RegExp(error))
+    await page.getByRole('button', { name: `${label}のエラーへ移る` }).click()
+    await expect(el).toBeFocused()
+  })
+}
 
 test('DatePicker: 範囲の端で止まり、フォーカスを見失わない', async ({ page }) => {
   await open(page, 'forms')
@@ -288,7 +342,7 @@ test('NumberField: 変換中の矢印では増減しない。打っている途�
   await expect(box).toHaveValue('5')
 })
 
-test('focusFirstInvalid: ラジオのエラーへ移り、Select と DatePicker にもエラーが伝わる', async ({ page }) => {
+test('focusFirstInvalid: ラジオのエラーへ移る', async ({ page }) => {
   await open(page, 'forms')
   await page.getByRole('textbox', { name: '名前' }).fill('佐藤')
   await page.getByRole('button', { name: '保存する' }).click()

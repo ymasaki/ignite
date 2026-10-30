@@ -28,8 +28,9 @@ export function Dialog({ open, onClose, title, footer, size = 'md', dismissable 
   const closing = !open
   useLayoutEffect(() => {
     const d = ref.current
-    if (!open || !d || d.open) return
-    d.showModal()
+    if (!open || !d) return
+    // 閉じる途中に開き直したときは窓が開いたままなので showModal は要らないが、中のフォーカスは外れているので移し直す
+    if (!d.open) d.showModal()
     const first = d.querySelector<HTMLElement>('[data-autofocus]') ?? d.querySelector<HTMLElement>('input:not([disabled]),textarea:not([disabled])')
     const target = first ?? (alert ? d.querySelector<HTMLElement>(`.dlg-foot :is(${FOCUSABLE})`) : null) ?? d
     target.focus()

@@ -170,6 +170,12 @@ export function DisplayPage() {
 
 const CITIES = ['札幌', '仙台', '東京', '横浜', '名古屋', '京都', '大阪', '神戸', '広島', '福岡', '那覇'].map((c) => ({ value: c, label: c }))
 
+/** 枠の中の最初のエラーへ移す例 */
+function ErrorCase({ label, children }: { label: string; children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null)
+  return <div className="cat-stack" ref={ref}>{children}<div className="cat-row"><LinkButton onClick={() => ref.current && focusFirstInvalid(ref.current)}>{label}のエラーへ移る</LinkButton></div></div>
+}
+
 export function FormsPage() {
   const [name, setName] = useState('')
   const [city, setCity] = useState<string | null>(null)
@@ -213,6 +219,13 @@ export function FormsPage() {
             </div>
           </div>
         </Section>
+        <Section level={2} title="エラーの状態">
+          <div className="cat-form">
+            <ErrorCase label="スイッチ"><FormField label="同意" error="同意してください"><Switch checked={false} onChange={() => undefined} /></FormField></ErrorCase>
+            <ErrorCase label="プルダウン"><FormField label="担当" error="担当を選んでください"><Select value="none" onChange={() => undefined} options={[{ value: 'none', label: '未選択' }]} /></FormField></ErrorCase>
+            <ErrorCase label="日付"><FormField label="開始日" error="開始日を選んでください"><DatePicker value={null} onChange={() => undefined} /></FormField></ErrorCase>
+          </div>
+        </Section>
         <Section level={2} title="数">
           <div className="cat-form">
             <FormField label="人数"><NumberField value={count} onChange={setCount} min={0} max={10} unit="名" /></FormField>
@@ -228,6 +241,7 @@ export function FeedbackPage() {
   const [dialog, setDialog] = useState(false)
   const [confirm, setConfirm] = useState(false)
   const [plain, setPlain] = useState(false)
+  const [long, setLong] = useState(false)
   const [busy, setBusy] = useState(false)
   const [text, setText] = useState('')
   const [role, setRole] = useState('edit')
@@ -242,9 +256,14 @@ export function FeedbackPage() {
             <Button onClick={() => setDialog(true)}>窓を開く</Button>
             <Button onClick={() => setPlain(true)}>確定を確かめる</Button>
             <Button variant="danger" icon={<IconTrash size={16} stroke={1.8} />} onClick={() => setConfirm(true)}>削除する</Button>
+            <Button onClick={() => setLong(true)}>長い本文の窓</Button>
           </div>
+          <Dialog open={long} onClose={() => setLong(false)} title="利用の条件">{Array.from({ length: 40 }, (_, i) => <Prose key={i}>{i + 1} 番目の条件。</Prose>)}</Dialog>
           <Dialog open={dialog} onClose={() => setDialog(false)} title="名前を変える" footer={<><Button onClick={() => setDialog(false)}>やめる</Button><Button variant="primary" onClick={() => setDialog(false)}>変更する</Button></>}>
-            <LinkButton onClick={() => { setDialog(false); setTimeout(() => setDialog(true), 40) }}>閉じてすぐ開き直す</LinkButton>
+            <div className="cat-row">
+              <LinkButton onClick={() => { setDialog(false); setTimeout(() => setDialog(true), 40) }}>閉じてすぐ開き直す</LinkButton>
+              <LinkButton onClick={() => { toast('名前を控えました'); setTimeout(() => setDialog(false), 30) }}>知らせてから閉じる</LinkButton>
+            </div>
             <FormField label="新しい名前"><TextField value={text} onChange={setText} /></FormField>
             <FormField label="権限"><Select value={role} onChange={setRole} options={[{ value: 'edit', label: '編集できる' }, { value: 'view', label: '見るだけ' }]} /></FormField>
           </Dialog>

@@ -74,7 +74,7 @@ function ToastCard({ item }: { item: Item }) {
 
 /**
  * 知らせの置き場。AppShell の中では要らない（AppShell が置く）。
- * 知らせがなくても置いておく（重ねた Drawer が開くときに背面として数えるため）。inert は重ねた左メニューのあいだ
+ * inert は重ねたものが開いているあいだ（AppShell が左メニューと詳細の両方を見て決める）
  */
 export function Toaster({ inert }: { inert?: boolean }) {
   const shown = useSyncExternalStore((l) => (listeners.add(l), () => void listeners.delete(l)), () => items, () => items)

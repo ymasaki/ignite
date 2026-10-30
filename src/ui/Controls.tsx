@@ -390,8 +390,9 @@ export function Drawer({ open, closing = false, onClose, label = '詳細', peek,
   useEffect(() => {
     if (!open || min) return
     const back = document.activeElement as HTMLElement | null
-    // 開いているあいだは背面を操作・読み上げの外にする（aria-modal だけでは Tab で背面へ出られる）
-    const behind = [...(ref.current?.parentElement?.children || [])].filter((el) => el !== ref.current && !el.classList.contains('drawer-scrim')) as HTMLElement[]
+    // 開いているあいだは背面を操作・読み上げの外にする（aria-modal だけでは Tab で背面へ出られる）。
+    // 知らせの置き場は左メニューとも関わるので AppShell がまとめて決める（ここで外すと左メニューの分まで外してしまう）
+    const behind = [...(ref.current?.parentElement?.children || [])].filter((el) => el !== ref.current && !el.classList.contains('drawer-scrim') && !el.classList.contains('toasts')) as HTMLElement[]
     for (const el of behind) el.inert = true
     ref.current?.focus()
     return () => {

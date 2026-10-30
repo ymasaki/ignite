@@ -285,7 +285,7 @@ export function AppShell({ side, foot, collapse, title, titleAfter, search, tool
           </main>
         </div>
       </div>
-      <Toaster inert={drawerOpen} />
+      <Toaster inert={drawerOpen || (!!panel?.open && !inline && !minimized)} />
       {panel && !inline && (
         <Drawer open={panel.open} closing={panel.closing} onClose={panel.onClose} peek={panel.peek} minimized={minimized} onExpand={() => setMinimized(false)}>
           {panel.content}
