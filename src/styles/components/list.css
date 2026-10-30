@@ -1,0 +1,28 @@
+/* 一覧の行（ui/List.tsx の EntityRow） */
+
+/* 一覧の行。ホバーで --panel-2、選択中は --pri-soft。.lg はメンバー検索の大きい行（格子に並べる） */
+.erow{display:flex;align-items:center;gap:10px;width:100%;padding:7px 8px;border-radius:8px;text-align:left;color:var(--ink)}
+.erow:hover{background:var(--hover)}
+.erow.static:hover{background:none}
+.erow:active{background:var(--press)}
+.erow.static:active{background:none}
+.erow.on{background:var(--pri-soft)}
+.erow .er-b{display:flex;flex-direction:column;flex:1;min-width:0}
+.erow .er-t{display:flex;align-items:center;gap:6px;min-width:0}
+.erow .er-title{overflow:hidden;font-size:var(--fs-13);font-weight:700;text-overflow:ellipsis;white-space:nowrap}
+.erow .er-s{overflow:hidden;font-size:var(--fs-12);color:var(--ink-3);text-overflow:ellipsis;white-space:nowrap}
+.erow .er-trail{display:flex;align-items:center;gap:4px;flex:none;font-size:var(--fs-12);color:var(--ink-3)}
+.erow.lg{padding:10px 16px;border-radius:0;border-bottom:1px solid var(--line);border-right:1px solid var(--line)}
+.erow.lg .er-title{font-size:var(--fs-14)}
+
+/* つながった行（レポートラインなど）: 行の間を縦線でつなぐ。枝分かれした行（.branch。すぐ上の行の補佐など）は一段下げて小さく添え、
+   線は上の縦線から「└」で枝分かれさせる（縦は行の中ほどまで、横は顔の手前まで）。枝のあとに次の行があるときだけ縦線を下へ通す */
+.chain{position:relative;display:grid;padding-left:4px}
+.chain > .erow{position:relative}
+.chain > .erow + .erow::before{content:"";position:absolute;left:21px;top:-6px;height:10px;border-left:1.5px solid var(--edge)}
+.chain > .erow.branch{padding-left:40px}
+.chain > .erow.branch .er-title{font-size:var(--fs-12);font-weight:600}
+.chain > .erow.branch::before{top:-6px;height:calc(50% + 6px)}
+.chain > .erow.branch::after{content:"";position:absolute;left:21px;top:50%;width:14px;border-top:1.5px solid var(--edge)}
+.chain > .erow.branch:has(+ .erow)::before{height:calc(100% + 12px)}
+

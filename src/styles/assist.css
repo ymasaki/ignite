@@ -1,0 +1,58 @@
+/* 表示の補助（DESIGN.md 12 章「アクセシビリティ」、assist.ts）。設定で選んだ人にだけ効く。既定の見た目は変えない。
+   スキン・ダークモードの後に読む（同じ強さのセレクタなので、後に読んだこちらが勝つ）。 */
+
+/* 動きを減らす（端末の設定でも、設定の画面でも <html data-motion="reduce"> が付く。base.css の media と同じ中身） */
+:root[data-motion="reduce"] *,:root[data-motion="reduce"] *::before,:root[data-motion="reduce"] *::after{
+  animation-duration:.01ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important
+}
+
+/* フォーカスの枠をいつも出す（マウスで押したあとも、いまどこにいるかを見失わない） */
+:root[data-focus="always"] :focus:not(:focus-visible){outline:2px solid var(--focus);outline-offset:2px;border-radius:6px}
+
+/* 押せる文字に下線。細く・少し離し・文字より薄くして、文字の形を崩さない（色に頼らずに押せるとわかる。WCAG 1.4.1）。
+   アプリの押せる文字（人名など）は data-link を付けて同じ見せ方にする */
+:root[data-underline="on"] :is(.linkbtn,.crumbs button,[data-link]){text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;text-decoration-color:color-mix(in srgb,currentColor 45%,transparent)}
+:root[data-underline="on"] :is(.linkbtn,.crumbs button,[data-link]):hover{text-decoration-color:currentColor}
+
+/* コントラストを強く（色弱・ロービジョン。文字は 7:1（WCAG 1.4.6 AAA）、枠・区切りは 3:1）。
+   地とブランドの色味は残し、文字と線を濃くする。主要色の文字は、主要色の明るさだけを固定して作る（どのスキンでも同じ濃さになる） */
+:root[data-contrast="more"]:not([data-mode="dark"]){
+  --ink:color-mix(in srgb,var(--pri) 1.5%,#1c1c20);
+  --ink-2:color-mix(in srgb,var(--pri) 2%,#35353b);
+  --ink-3:color-mix(in srgb,var(--pri) 2.5%,#44444a);
+  --line:color-mix(in srgb,var(--pri) 2%,#b9b9bc);
+  --line-2:color-mix(in srgb,var(--pri) 3%,#86868b);
+  --edge:color-mix(in srgb,var(--pri) 3%,#6b6b70);
+  --pri-ink:oklch(from var(--pri) .4 c h);
+  --pri-ink-2:oklch(from var(--pri) .34 c h);
+  --link:var(--pri-ink); --link-hover:var(--pri-ink-2);
+  --solid:oklch(from var(--pri) .42 c h); --solid-hover:oklch(from var(--pri) .35 c h); --on-solid:#ffffff;
+  --pri-press:color-mix(in srgb,var(--pri) 7%,var(--pri-soft-2)); /* 押している間の淡い選択の地。濃い文字が 7 を保てる濃さに */
+  --focus:var(--pri-ink);
+  --ok-ink:oklch(from #007357 .4 c h);
+  --warn:oklch(from #946000 .4 c h);
+}
+/* 緑は明るく、白い地の上のアイコン・枠が 3:1 に届かない（ふだんは例外。DESIGN.md 2 章）。強くしたときは例外にせず、主要色を一段濃くする */
+:root[data-contrast="more"][data-skin="green"]:not([data-mode="dark"]){--pri:oklch(from var(--skin-green) .6 c h)}
+:root[data-contrast="more"][data-mode="dark"]{
+  --ink:color-mix(in srgb,var(--pri) 1%,#f8f8f9);
+  --ink-2:color-mix(in srgb,var(--pri) 2%,#d6d6db);
+  --ink-3:color-mix(in srgb,var(--pri) 2.5%,#d0d0d6);
+  --line:color-mix(in srgb,var(--pri) 3%,#4d4d55);
+  --line-2:color-mix(in srgb,var(--pri) 3%,#7c7c85);
+  --edge:color-mix(in srgb,var(--pri) 3.5%,#94949c);
+  /* 明るくすると赤は色域の端で明るさが頭打ちになるので、彩度を少し落とす */
+  --pri-ink:oklch(from var(--pri) .88 calc(c * .6) h);
+  --pri-ink-2:oklch(from var(--pri) .92 calc(c * .5) h);
+  /* 選択中の薄い地は、明るい文字が読める暗さにとどめる */
+  --pri-soft:color-mix(in srgb,var(--pri) 12%,var(--panel));
+  --pri-soft-2:color-mix(in srgb,var(--pri) 20%,var(--panel));
+  --pri-press:color-mix(in srgb,var(--pri) 28%,var(--panel));
+  --solid:oklch(from var(--pri) .42 c h); --solid-hover:oklch(from var(--pri) .35 c h); --on-solid:#ffffff;
+  --link:var(--pri-ink); --link-hover:var(--pri-ink-2);
+  --focus:var(--pri-ink);
+  --ok-ink:oklch(from #51d2a8 .86 c h);
+  --warn:oklch(from #ffbe65 .88 c h);
+}
+/* 枠を太く（フォーカス・選択の枠が、色の見分けに頼らず形でわかるように） */
+:root[data-contrast="more"] :focus-visible,:root[data-contrast="more"][data-focus="always"] :focus{outline-width:3px}

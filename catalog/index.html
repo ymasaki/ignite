@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ignite</title>
+  </head>
+  <body>
+    <!-- この端末で選んだテーマを最初の描画から当てる（読み込み中に色が切り替わって見えないように）。鍵は skin.ts・assist.ts と同じ -->
+    <script>
+      try {
+        var r = document.documentElement.dataset, m = localStorage.getItem("ds.mode") || "light"
+        r.skin = localStorage.getItem("ds.skin") || "red"
+        r.modePref = m
+        r.mode = m === "auto" ? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : m
+        var a = JSON.parse(localStorage.getItem("ds.assist") || "{}") || {}
+        if (a.text === "large" || a.text === "larger") r.text = a.text
+        if (a.contrast === "more" || matchMedia("(prefers-contrast: more)").matches) r.contrast = "more"
+      } catch (e) {}
+    </script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

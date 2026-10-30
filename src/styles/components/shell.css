@@ -1,0 +1,183 @@
+/* アプリの枠（ui/Shell.tsx の AppShell）: 左メニュー（ブランド・メニュー・一番下の欄）、ヘッダー（見出しと右の操作）、内容の段。
+   スマホの幅（600px 以下）では左メニューを左から出す引き出しにする。アプリ固有の部品（折りたたみ・検索など）はアプリの CSS で重ねる */
+
+.app{display:grid;grid-template-columns:var(--side-full,236px) minmax(0,1fr);height:100%}
+.mainwrap{display:flex;flex-direction:column;min-width:0;min-height:0}
+.shell-main{display:contents}
+
+/* ---------- 左メニュー ---------- */
+.side{display:flex;flex-direction:column;min-height:0;overflow:auto;background:var(--panel);border-right:1px solid var(--line)}
+/* ブランドのマーク（32px）は、メニューのアイコン（左 12px＋幅 40px の枠の中央）と同じ縦の線（左から 32px）に中心をそろえる */
+.brand{display:flex;align-items:center;gap:8px;width:100%;padding:18px 16px 14px;font-size:var(--fs-16);font-weight:700;text-align:left;color:var(--ink)}
+.brand:hover{color:var(--pri-ink)}
+.brand:active{color:var(--link-press)}
+.brand-mark{display:block;flex:none;width:32px;height:32px;object-fit:contain;color:var(--pri)}
+.brand-txt{display:flex;flex-direction:column;line-height:1.15}
+.brand-txt small{font-size:var(--fs-11);font-weight:600;letter-spacing:.04em;color:var(--ink-3)}
+/* 項目の間に隙間を作らない（隙間でカーソルが矢印に戻り、なぞるとちらつくため） */
+.nav{display:grid;padding:4px 12px 14px;border-bottom:1px solid var(--line)}
+.nav button{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;text-align:left;color:var(--ink-2)}
+.nav button:hover{background:var(--hover)}
+.nav button:active{background:var(--press)}
+.nav button[aria-current="page"]{background:var(--pri-soft);color:var(--pri-ink);font-weight:700}
+/* 設定（ui/Settings.tsx の SettingsButton）。メニューの項目と同じ形のボタンで、左メニューの下のほうに置く（上に何もなければ下へ寄せる） */
+.side-set{display:grid;margin-top:auto;padding:8px 12px;border-top:1px solid var(--line)}
+.side-set button{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;text-align:left;color:var(--ink-2)}
+.side-set button:hover{background:var(--hover)}
+.side-set button:active{background:var(--press)}
+.side-set button[aria-current="page"]{background:var(--pri-soft);color:var(--pri-ink);font-weight:700}
+.side-set + .side-foot{margin-top:0}
+.side-set.joined{padding-bottom:0}
+/* 一番下の欄（最終更新・集計日など） */
+.side-foot{margin-top:auto;padding:14px 20px;border-top:1px solid var(--line);font-size:var(--fs-12);color:var(--ink-3)}
+.side-scrim{display:none}
+/* 本文へ移る（スキップリンク）。Tab でフォーカスしたときだけ画面の左上に出す */
+.skip-link{position:fixed;left:8px;top:8px;z-index:200;padding:8px 12px;border-radius:8px;background:var(--solid);color:var(--on-solid);font-size:var(--fs-13);font-weight:700;transform:translateY(calc(-100% - 16px))}
+.skip-link:focus-visible{transform:none}
+
+/* ---------- ヘッダー ---------- */
+/* 左右の余白は内容の段と同じ --shell-x（窓の幅で詰めても、ヘッダーと内容の左端がそろう）。上下・間の余白も窓の大きさでなめらかに変わる（tokens.css の --shell-head-*） */
+.top{display:flex;align-items:center;gap:var(--shell-head-row) var(--shell-head-gap);padding:var(--shell-head-top) var(--shell-x) var(--shell-head-bottom)}
+.ttl{display:flex;align-items:center;gap:var(--shell-title-gap);min-width:0;min-height:var(--control-h)} /* 右に操作がなくてもヘッダーの高さをそろえる */
+.ttl h1{margin:0;font-size:var(--fs-24);line-height:1.3;white-space:nowrap}
+/* スマホ幅では、メニューのボタンと画面名を 1 つのボタン（.ttl-menu）にまとめる。広い幅では画面名の文字（.ttl-t）だけ */
+.ttl-menu{height:var(--control-h);padding:0 12px;font-size:var(--fs-16);font-weight:700;color:var(--ink)}
+@media (min-width:601px){.ttl-menu{display:none}}
+
+/* ---------- 内容 ---------- */
+/* KPI の帯（Kpi を横に並べる）。入らないときは横にスクロールさせず、段を足して折り返す（消さずに段を足す。5 章） */
+/* position: 畳んだ枠の中の読み上げ用の数字（.roll-sr、absolute）も帯の枠で切る（切らないとスマホで画面が横にはみ出す） */
+.kpis{position:relative;display:flex;flex-wrap:wrap;align-items:stretch;overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+/* 折り返した段の間の区切り。影で描くので中身の高さを増やさず（スクロールバーを出さず）、最後の段の下の線は帯の枠で切れる */
+.kpis > .kpi{box-shadow:0 1px 0 var(--line)}
+/* 帯が狭く（520px 未満。枠 2 つ分に満たない）1 段に 1 つずつ並ぶときは、枠を段の幅いっぱいに伸ばして縦にそろえる（幅がばらばらだと右端が階段になる）。
+   帯の幅で決める。畳む帯（KpiBand の .kpis-wrap）とその写しは左詰めのまま測るので外す */
+.kpis:not(.kpis-wrap > .kpis):not(.kpis-measure > .kpis){container-type:inline-size}
+@container (max-width:519px){
+  .kpis > .kpi{flex:1 1 100%;border-right:0}
+}
+.content{display:flex;flex:1;min-height:0;padding:0 var(--shell-x) var(--shell-bottom)}
+/* 詳細パネルを持たない画面（AppShell に panel を渡さない）では .content がないので、面が同じ余白を持つ */
+.shell-main > .board{margin:0 var(--shell-x) var(--shell-bottom)}
+.top + .shell-main > .board:first-child,.shell-aux + .board{margin-top:var(--shell-top)}
+/* 詳細を下の 1 行に畳んでいるあいだ（AppShell の revealMain）は、その行の高さぶん内容を上に縮める（行の下に結果を隠さない） */
+.app.panel-peek .content{padding-bottom:calc(var(--shell-bottom) + 64px + env(safe-area-inset-bottom))}
+.board{display:flex;flex:1;flex-direction:column;min-width:0;min-height:0;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+
+/* ---------- スマホ ---------- */
+/* 左メニューは引き出し（開くのは画面名とまとめたメニューのボタン .ttl-menu）。それより広いうちは畳んだアイコンの列を横に置く */
+@media (max-width:600px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  /* 影は開いているときだけ（閉じて画面の外にあるときに、影が左端ににじまないように） */
+  .side{position:fixed;left:0;top:0;bottom:0;z-index:70;width:260px;transform:translateX(-100%);transition:transform .2s ease-in}
+  .side.open{box-shadow:var(--shadow-2);transform:none;transition:transform .22s var(--ease-in-out)}
+  .side-scrim.on{display:block;position:fixed;inset:0;z-index:65;background:var(--scrim)}
+  .ttl h1{display:flex;flex:none;font-size:var(--fs-16)}
+  .ttl-t{display:none}
+}
+
+/* ---------- 左メニューを畳む（AppShell の collapse） ---------- */
+/* 窓の幅で左メニューの形（引き出し ⇔ 横に並ぶ）が切り替わった直後（AppShell の .side-switch）。動かさずに最後の姿で出す */
+.side-switch,.side-switch .side,.side-switch .side *,.side-switch .side-handle,.side-switch .side-handle *{transition:none!important;animation:none!important}
+@media (min-width:601px){
+  /* 幅を広げる ⇔ アイコンの列（--side-full ⇔ --side-rail）で動かし、アイコンの位置は動かさずに文字（.side-t）だけを消す。
+     畳めるアプリ（つまみ .side-handle を枠の直下に置く）だけに効かせる（:where で包み、セレクタの強さは目印なしと同じにする）。畳み終わったら（.side-min-done）、はみ出してよい（名前の吹き出し・ポップオーバーを右に出す）。長さは AppShell の SIDE_MS と合わせる */
+  .app:where(:has(> .side-handle)){transition:grid-template-columns .28s var(--ease-in-out)}
+  .app.side-min{grid-template-columns:var(--side-rail,64px) minmax(0,1fr)}
+  :where(.app:has(> .side-handle)) > .side{overflow-x:hidden}
+  .side-min-done .side{overflow:visible}
+  :where(.app:has(> .side-handle)) .side-t{white-space:nowrap;transition:opacity .16s ease-out}
+  .side-min .side-t{opacity:0}
+  /* 選択中の地・ホバーの地が、畳み終わりに文字が消えた瞬間に縮まないよう、幅は左メニューと同じ長さ・緩急で縮め（max-width）、
+     高さは文字の有無で変わらないよう固定する */
+  :where(.app:has(> .side-handle)) .nav button{overflow:hidden;max-width:100%;transition:max-width .28s var(--ease-in-out)}
+  :where(.app:has(> .side-handle)) .nav button{height:36px}
+  :where(.app:has(> .side-handle)) .nav button svg{flex:none} /* 縮めるあいだにアイコンが押しつぶされないように */
+  .side-min .nav button{max-width:40px}
+  .side-set button{overflow:hidden;max-width:100%;transition:max-width .28s var(--ease-in-out)}
+  .side-min .side-set button{max-width:40px}
+  /* 畳み終わったら文字を置かない（残すとボタンが文字の幅のまま左メニューの外へ伸びる） */
+  .side-min-done .side-t{display:none}
+  /* 左メニューの中の行（EntityRow）は、畳むと顔だけにする（名前・補足は文字と一緒に消す） */
+  :where(.app:has(> .side-handle)) .side .erow .er-b{white-space:nowrap;transition:opacity .16s ease-out}
+  .side-min .side .erow .er-b{opacity:0}
+  .side-min-done .side .erow .er-b{display:none}
+  .side-min .shell-foot{opacity:0}
+  .side-min-done .shell-foot{display:none}
+  /* 畳んだときの名前の吹き出しは右に出す（base.css の [data-tip] と同じ見た目で、位置だけ変える） */
+  .side-min-done .side [data-tip]:hover::after{top:50%;left:calc(100% + 10px);transform:translateY(-50%);animation-name:tipInRight}
+  /* 畳む・広げるのつまみ。左メニューと本体の境目にまたがる丸いボタンで、ロゴの高さに置き、境目と同じ長さ・緩急で動く。
+     畳むと矢印を半回転する。ホバーで青く */
+  .app:where(:has(> .side-handle)){position:relative}
+  .side-handle{position:absolute;top:22px;left:calc(var(--side-full,236px) - 12px);z-index:20;display:grid;place-items:center;width:24px;height:24px;
+    border:1px solid var(--line-2);border-radius:50%;background:var(--panel);box-shadow:var(--shadow-1);color:var(--ink-3);
+    transition:left .28s var(--ease-in-out),color .12s,border-color .12s,box-shadow .12s,var(--press-back)}
+  .side-handle:hover{border-color:var(--pri);color:var(--pri);box-shadow:0 0 0 3px var(--pri-ring)}
+  .side-handle:active{background:var(--press);scale:var(--press-scale)}
+  .side-handle svg{transition:transform .28s var(--ease-in-out)}
+  .side-min .side-handle{left:calc(var(--side-rail,64px) - 12px)}
+  /* 左右の余白（--shell-x）はつまみの半分（12px）より狭くなるので、ヘッダーの左だけはつまみをよける */
+  :where(.app:has(> .side-handle)) .top{padding-left:max(var(--shell-x), 20px)}
+  .side-min .side-handle svg{transform:rotate(180deg)}
+}
+@keyframes tipInRight{from{opacity:0;transform:translate(-2px,-50%)}to{opacity:1;transform:translate(0,-50%)}}
+@media (prefers-reduced-motion: reduce){:where(.app:has(> .side-handle)) .side .erow .er-b,.app:where(:has(> .side-handle)),:where(.app:has(> .side-handle)) .side-t,:where(.app:has(> .side-handle)) .nav button,.side-handle,.side-handle svg{transition:none}}
+
+/* ---------- 詳細パネル（AppShell の panel） ---------- */
+/* 列の幅を 0 → パネル＋間に広げながら出す（閉じる動きの長さは、アプリが panel.closing を持つ時間と合わせる。0.2s）。
+   本体との間は段と段の間 + 2px で、外側の余白と一緒になめらかに縮む。幅（--panel-w）は窓に合わせて AppShell が shellLayout で決める */
+.pslot{--panel-w:var(--panel-full,380px);--panel-gap:calc(var(--shell-gap) + 2px);display:flex;flex:none;justify-content:flex-end;width:calc(var(--panel-w) + var(--panel-gap));padding-left:var(--panel-gap);overflow:hidden;animation:slotIn .3s var(--ease-in-out)}
+.pslot.closing{animation:slotOut .2s ease-in forwards}
+.panel{position:relative;flex:none;width:var(--panel-w);min-height:0;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);animation:fadeIn .22s ease-out}
+.pslot.closing > .panel{animation:fadeOut .2s ease-in forwards}
+@keyframes slotIn{from{width:0;padding-left:0}to{width:calc(var(--panel-w) + var(--panel-gap));padding-left:var(--panel-gap)}}
+@keyframes slotOut{from{width:calc(var(--panel-w) + var(--panel-gap));padding-left:var(--panel-gap)}to{width:0;padding-left:0}}
+
+/* ---------- ヘッダーの右（AppShell の search / tools）と組み替え ---------- */
+/* 検索欄（主役）と、それに付随する道具（補助。絞り込みなど）の置き場。道具のボタンはヘッダーの高さ */
+.sbar{display:flex;justify-content:flex-end;gap:8px;flex:1;max-width:640px;margin-left:auto}
+.sbar > .btn,.sbar > .popover > .btn{height:var(--control-h)}
+/* 道具の文字（data-fit="extra"）は、段が狭くなって検索欄の案内文（約 262px）が入らなくなるまで出す
+   （段の幅 = 検索欄 262 + 間 8 + 文字付きのボタン約 104 → 380px 未満でアイコンと件数だけ）。画面の幅ではなく段の幅で決める */
+.sbar.has-search{container-type:inline-size}
+@container (max-width:379px){
+  .sbar > .btn:has(> [data-fit="extra"]),.sbar > .popover > .btn:has(> [data-fit="extra"]){padding:0 12px}
+  .sbar > .btn > [data-fit="extra"],.sbar > .popover > .btn > [data-fit="extra"]{display:none}
+}
+/* ヘッダーの直後（補助の帯がないとき）から最初の段までの余白（--shell-top）をそろえる。閉じた帯（高さ 0 の .collapse）なら帯の上に付ける */
+.top + .shell-main > .content:first-child{padding-top:var(--shell-top)}
+.top + .shell-main > .collapse:first-child{margin-top:var(--shell-top)}
+/* 補助の帯（aux）の入れ物。並びには加わらない（中の帯がそのまま段になる） */
+.shell-aux{display:contents}
+@media (max-width:860px){
+  /* 1 段目にメニュー・画面名・範囲の選択、2 段目に検索欄と、その右に道具（検索に付随するもの）。
+     検索欄のない画面では、道具だけを 2 段目に落とさず 1 段目の右端に置く。範囲の選択は長ければ省略記号で詰める。ショートカットの手がかりは落とす */
+  .top{flex-wrap:wrap}
+  .ttl{flex:1}
+  .ttl .select{min-width:0;flex:0 1 auto}
+  .ttl .select-btn{max-width:100%}
+  .sbar.has-search{order:3;flex-basis:100%;max-width:none}
+  .sbar:not(.has-search){flex:none}
+  .top [data-fit="hint"]{display:none}
+}
+@media (max-width:600px){
+  /* 範囲の選択の一覧はヘッダーの幅いっぱいに出して折り返す（ボタンは省略記号で詰める）。検索欄のない画面の道具は、1 段目で範囲の名前に
+     幅を回すためアイコン（と件数）だけにする */
+  .top{position:relative}
+  .ttl .select{position:static}
+  .ttl .select .popover-body{left:var(--shell-x);right:var(--shell-x);top:calc(var(--shell-head-top) + var(--control-h) + 6px);grid-template-columns:minmax(0,1fr);width:auto;min-width:0;max-width:none}
+  .ttl .select-opt{white-space:normal}
+  .ttl .select-opt .sel-label{min-width:0}
+  .ttl .select-opt .sel-meta{flex:none}
+  .sbar:not(.has-search) > .btn:has(> [data-fit="extra"]),.sbar:not(.has-search) > .popover > .btn:has(> [data-fit="extra"]){padding:0 12px} /* design-ok: 文字を落としてアイコンだけになったボタン（組み方の切り替え。上の @container と同じ） */
+  .sbar:not(.has-search) > .btn > [data-fit="extra"],.sbar:not(.has-search) > .popover > .btn > [data-fit="extra"]{display:none}
+}
+@media (orientation:landscape) and (max-height:500px){
+  /* 縦が狭いので内容に高さを回す: 検索欄と道具もヘッダーの 1 段目に並べ、補助の帯（aux）は出さない */
+  .top{flex-wrap:nowrap}
+  .ttl{flex:0 1 auto}
+  .sbar.has-search{order:0;flex:1 1 0;max-width:640px}
+  .shell-aux{display:none}
+  .shell-aux + .collapse{margin-top:var(--shell-top)}
+  .shell-aux + .content{padding-top:var(--shell-top)}
+}

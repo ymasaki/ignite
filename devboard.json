@@ -1,0 +1,7 @@
+{
+  "workflow": {
+    "base": "main",
+    "setup": "npm ci",
+    "test": "bash scripts/test.sh"
+  }
+}

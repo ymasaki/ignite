@@ -1,0 +1,30 @@
+/* 小さな印（ui/Chip.tsx） */
+
+/* 状態の印（区分・役割・強調のラベル） */
+.tag{display:inline-block;padding:0 8px;border:1px solid var(--line-2);border-radius:99px;font-size:var(--fs-11);line-height:18px;color:var(--ink-2);white-space:nowrap}
+.tag.accent{border-color:transparent;background:var(--pri-soft);color:var(--pri-ink);font-weight:700}
+.tag.dashed{border-style:dashed}
+/* 押せる印（押すと対象を開くのでホバーで影） */
+.tag.link{cursor:pointer;transition:box-shadow .15s,var(--press-back)}
+.tag.link:hover{box-shadow:var(--shadow-hover)}
+.tag.link:active{box-shadow:var(--shadow-1);scale:var(--press-scale)}
+
+/* × で取り消せるタグ（絞り込みの差分・検索の絞り込み）。.strong は検索の絞り込み */
+.chip{display:inline-flex;align-items:center;gap:4px;padding:2px 6px 2px 10px;border-radius:99px;background:var(--pri-soft);color:var(--pri-ink);font-size:var(--fs-12);animation:chipIn .24s var(--ease-spring)}
+@keyframes chipIn{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.chip{animation:none}}
+.chip.has-lead{padding-left:4px}
+.chip.strong{font-weight:600}
+.chip button{display:grid;place-items:center;width:16px;height:16px;border-radius:99px;font-size:var(--fs-11)}
+.chip button:hover{background:var(--pri-soft-2)}
+.chip button{transition:var(--press-back)}
+.chip button:active{background:var(--pri-press);color:var(--pri-ink-2);scale:var(--press-scale)}
+
+/* ボタンの中の数字のラベル（絞り込みボタンの変えた数） */
+.badge{display:inline-block;margin-left:2px;padding:0 6px;border-radius:99px;background:var(--solid);color:var(--on-solid);font-size:var(--fs-11);font-weight:700;line-height:18px;white-space:nowrap}
+/* 出し入れ（Badge の count）: 列の幅を 0fr ↔ 1fr で動かし、ボタンの隙間（.btn の gap 6px）も一緒に詰める。
+   幅がなめらかに変わるので、ボタンの隣（検索欄など）も同じ速さで伸び縮みする */
+.badge-slot{display:inline-grid;grid-template-columns:1fr;transition:grid-template-columns .22s var(--ease-in-out),margin .22s var(--ease-in-out),opacity .2s ease-out}
+.badge-slot > span{min-width:0;overflow:hidden}
+.badge-slot.off{grid-template-columns:0fr;margin-left:-6px;opacity:0;transition-duration:.18s;transition-timing-function:ease-in}
+@media (prefers-reduced-motion: reduce){.badge-slot{transition:none}}

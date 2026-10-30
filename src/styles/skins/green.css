@@ -1,0 +1,16 @@
+/* スキン green（ブランドの緑を主要色に。DESIGN.md 2 章「スキンとダークモード」）。主要色まわりのトークンだけを差し替える
+   （地・線・文字のグレーは tokens.css が主要色を混ぜて作るので、ここで主要色を変えるだけで寄る）。右は元の色の名前。ダークモードの値は dark.css */
+:root[data-skin="green"]{
+  --pri:var(--skin-green);
+  --pri-ink:#007357;    /* green/700（薄い地の上の文字。600 では読みにくい） */
+  --pri-ink-2:#00543e;  /* green/800（下の一段濃い地の上で読める濃さ） */
+  --thumb:#a6eacf;      /* green/200。100 では溝のグレーとの差が小さく、選択が弱く見えるため */
+  --pri-soft:#e0f8ee;   /* green/50 と green/100 の間 */
+  --pri-soft-2:#cbf3e3; /* green/100 */
+  --pri-ring:rgba(0,192,147,.22);
+  --on-pri:#003728;     /* green/900。明るい緑の地の上では白が読めない（タイルの地図の数字など） */
+  --focus:#009672;      /* green/600。明るい緑ではフォーカスの枠が見えにくい */
+  --solid:#007357; --solid-hover:#00543e; /* ベタ塗りは濃い段（green/700・800）。明るい緑では白い文字が読みにくいため */
+  --link:#007357; --link-hover:#00543e; /* green/700・800 */
+  --chart-1:var(--pri); --chart-2:#7edfbc; --chart-3:#a6eacf; --chart-4:#cbf3e3; --chart-5:#effbf6; /* green/500・300・200・100・50 */
+}

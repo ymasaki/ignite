@@ -1,0 +1,13 @@
+/* スキン blue（ブランドの青を主要色に。DESIGN.md 2 章「スキンとダークモード」）。主要色まわりのトークンだけを差し替える
+   （地・線・文字のグレーは tokens.css が主要色を混ぜて作るので、ここで主要色を変えるだけで寄る）。右は元の色の名前。ダークモードの値は dark.css */
+:root[data-skin="blue"]{
+  --pri:var(--skin-blue);
+  --pri-ink:#0067c2;    /* blue/600 */
+  --pri-ink-2:#00529d;  /* blue/700 */
+  --pri-soft:#e6f1ff;   /* blue/50 と blue/100 の間 */
+  --pri-soft-2:#cee4ff; /* blue/100 */
+  --pri-ring:rgba(0,128,238,.18);
+  --solid:#0067c2; --solid-hover:#00529d; /* ベタ塗りは濃い段（blue/600・700。ほかのスキンとそろえる） */
+  --link:#0067c2; --link-hover:#00529d; /* blue/600・700 */
+  --chart-1:var(--pri); --chart-2:#7db8ff; --chart-3:#a7cfff; --chart-4:#cee4ff; --chart-5:#f3f8ff; /* blue/500・300・200・100・50 */
+}

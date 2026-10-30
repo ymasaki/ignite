@@ -1,0 +1,85 @@
+/* 区切り・見出し・項目の一覧・空の状態・パンくず（ui/Layout.tsx） */
+
+/* まとまりの見出し（詳細パネルの区切りなど）。下の薄い主要色の線がまとまりの頭の印（小見出し .subhead には線を引かない） */
+.section + .section{margin-top:4px}
+.section-h{display:flex;align-items:center;justify-content:space-between;margin:18px 0 8px;padding-bottom:6px;border-bottom:2px solid var(--pri-soft-2);font-size:var(--fs-14);font-weight:700}
+.section-t{margin:0;font:inherit}
+.section-c{margin-left:6px;font-size:var(--fs-12);font-weight:400;color:var(--ink-3)}
+
+/* 一覧の中の小見出し。.inset は行（.erow）と左端をそろえる */
+.subhead{display:flex;align-items:center;gap:6px;padding:10px 2px 4px var(--subhead-pl,2px);font-size:var(--fs-12);font-weight:700;color:var(--ink-2)} /* 左の余白は置き場所で変えられる（--subhead-pl） */
+.subhead.inset{padding:8px 8px 4px var(--subhead-pl,8px)}
+.subhead .sh-t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.subhead .sh-t button:hover{color:var(--pri-ink)}
+.subhead .sh-t button:active{color:var(--link-press)}
+.subhead .sh-c{font-weight:400;color:var(--ink-3)}
+.subhead .clogo{flex:none}
+
+/* ラベル：値 */
+.kv{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px 12px;margin:0;font-size:var(--fs-13)}
+.kv dt{color:var(--ink-3)}
+.kv dd{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0;overflow-wrap:anywhere}
+.kv dd.block{display:block}
+.kv dd small{color:var(--ink-3)}
+
+/* 一覧の画面（ListScreen）: 絞り込みの帯・知らせ・一覧 */
+.lscreen{position:absolute;inset:0;display:flex;flex-direction:column}
+.lscreen-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line)}
+/* 帯の中の切り替えは入力欄（.field）と同じ高さにそろえる */
+.lscreen-bar .seg{height:36px}
+.lscreen-bar .sfield{flex:1;min-width:180px;max-width:480px}
+/* 詰める段階ごとの見えない写し（ui/Fit.tsx の useFitStep）。置き場所と同じ隙間で横に並べて幅を測る */
+.fit-measure{position:absolute;width:0;height:0;overflow:hidden;visibility:hidden;pointer-events:none;gap:inherit}
+.fit-measure > div{position:absolute;display:flex;align-items:center;gap:inherit;width:max-content}
+.lscreen-n{margin-left:auto;font-size:var(--fs-12);color:var(--ink-3);white-space:nowrap}
+/* 枠（.board）の下の角丸の内側に合わせて角を切る。固定の列見出しなど地のある中身が枠の角を塗らないように */
+.lscreen-body{display:flex;flex:1;flex-direction:column;min-height:0;overflow:auto;border-radius:0 0 12px 12px}
+.lscreen > .notice{margin:12px 16px 0}
+.lscreen-list.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));align-content:start}
+
+/* 人が書いた本文（Prose）。改行を保つ。省略は Expandable（motion.css） */
+.prose{font-size:var(--fs-13);line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere}
+
+/* 知らせ（Notice）: 普段と違う状態を 1 行で */
+.notice{align-self:flex-start;padding:6px 12px;border-radius:8px;background:var(--warn-soft);color:var(--warn);font-size:var(--fs-12)}
+
+/* 空の状態。.empty は一覧の中の 1 行、.empty-state は画面いっぱいの案内 */
+.empty{margin:0;padding:8px 2px;font-size:var(--fs-13);color:var(--ink-3)}
+.empty.inset{padding:16px 12px}
+.empty-state{display:grid;flex:1;align-content:center;justify-items:center;gap:8px;padding:48px 24px;text-align:center;color:var(--ink-3)}
+.empty-state b{font-size:var(--fs-16);color:var(--ink)}
+.empty-state p{max-width:380px;margin:0;font-size:var(--fs-13);line-height:1.7}
+
+/* パンくず。.boxed は内容の上に重ねる枠付き */
+.crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:6px 4px;margin-top:2px;font-size:var(--fs-12);color:var(--ink-3)}
+/* 押せる面を 24px にする（WCAG 2.5.8）。余白と同じだけ負のマージンで戻し、並びの高さは変えない */
+.crumbs button{padding-block:3px;margin-block:-3px}
+.crumbs button:hover{color:var(--pri-ink)}
+.crumbs button:active{color:var(--link-press)}
+.crumbs [aria-current]{color:var(--ink-2)}
+/* 帯の中に置くパンくず（戻り先）。帯の文字の大きさのまま、リンクは太字のリンク色（--link） */
+.crumbs.inline{margin:0;font-size:inherit;line-height:inherit;white-space:nowrap}
+.crumbs.inline button{font-weight:700;color:var(--link)}
+.crumbs.inline button:hover{color:var(--link-hover)}
+.crumbs.inline button:active{color:var(--link-press)}
+.crumbs.boxed{gap:6px;margin:0 0 8px}
+.crumbs.boxed button{margin:0;padding:2px 6px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink-2)}
+.crumbs.boxed button:hover{border-color:var(--pri);color:var(--pri-ink)}
+.crumbs.boxed button:active{background:var(--press)}
+
+.lscreen-list.comparison{width:100%}
+
+/* まとまり（Section）を横に並べ、縦の線で区切る。線は置き場所で --section-divider に 0 を入れると消せる（折り返して積むときなど）。
+   上限を超えた行の「ほか N行」（まとまりの直下の LinkButton）は、行（.erow）の文字の左端にそろえる */
+.section-cols > .section{margin:0;padding:0 16px;border-left:var(--section-divider,1px solid var(--line));min-width:0}
+.section-cols > .section:first-child{border-left:0}
+.section-cols .section-h{margin-top:14px}
+.section-cols > .section > .linkbtn{display:block;padding:2px 8px 6px}
+
+/* 内容の面（Board）の中身。ListScreen などの全面に敷く部品の基準になる */
+.view{position:relative;flex:1;min-height:0}
+/* ダッシュボードの型（DashboardScreen）。段の間も外側の余白も --shell-* で決め、この中をスクロールする */
+.dash{display:flex;flex-direction:column;gap:var(--shell-gap);flex:1;min-height:0;overflow-y:auto;padding:var(--shell-top) var(--shell-x) var(--shell-bottom)}
+.shell-aux + .dash,.kpis-wrap + .dash{padding-top:0}
+/* 詳細パネルを持つ画面では .content の中に入る。外側の余白は .content が持つので二重にしない */
+.content > .dash{padding:0}

@@ -1,0 +1,30 @@
+/* 詳細パネルの中身の枠・見出し・本文（ui/Panel.tsx） */
+
+/* 開いたまま別の詳細に切り替えたときは、中身だけ静かに入れ替える */
+.pwrap{position:relative;display:flex;flex-direction:column;min-height:100%;animation:fadeIn .16s ease-out}
+
+/* ---------- 見出し（ui/Panel.tsx の PanelHeader）: 右上に操作・× を重ね → 大きな顔／アイコン＋名前 ---------- */
+.ph{position:absolute;top:0;right:0;z-index:2;display:flex;align-items:flex-start;gap:12px;padding:12px 12px 8px 18px}
+.ph + .prof{padding-top:20px}
+.prof{display:flex;align-items:center;gap:16px;padding:6px 18px 0}
+.prof-t{min-width:0}
+.prof-k{font-size:var(--fs-12);color:var(--ink-3)}
+.prof-n{margin:0;font-size:var(--fs-20);font-weight:700;line-height:1.3;overflow-wrap:anywhere}
+.prof-r{font-size:var(--fs-13);color:var(--ink-2)}
+/* 見出しの文字の列にそろえて置く操作 */
+.prof-act{display:inline-flex;align-items:center;gap:4px;margin-top:8px}
+/* 詳細パネルのタブは見出しの直下に、本文と同じ左右の余白で置く（画面側でクラスを付けなくても同じ位置になる） */
+.pwrap > .tabs{margin:16px 18px 0}
+
+/* スクロールで出る固定ヘッダー（高さ 0 の sticky に重ねるので本文は動かない。高さ 64px は ui/Panel.tsx の STICK_H） */
+.pstick{position:sticky;top:0;z-index:6;height:0}
+.pstick-bar{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;gap:12px;height:64px;padding:0 14px 0 18px;
+  background:color-mix(in srgb,var(--panel) 96%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);box-shadow:var(--shadow);
+  opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .14s ease-in,transform .14s ease-in}
+.pstick.on .pstick-bar{opacity:1;transform:none;pointer-events:auto;transition:opacity .18s ease-out,transform .2s var(--ease-in-out)}
+.pstick-t{display:flex;flex:1;flex-direction:column;min-width:0;line-height:1.3}
+.pstick-t b{overflow:hidden;font-size:var(--fs-16);text-overflow:ellipsis;white-space:nowrap}
+.pstick-t span{overflow:hidden;font-size:var(--fs-12);color:var(--ink-3);text-overflow:ellipsis;white-space:nowrap}
+
+/* ---------- 本文 ---------- */
+.pb{padding:4px 18px 22px}

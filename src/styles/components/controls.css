@@ -1,0 +1,153 @@
+/* 切り替え・タブ・ポップオーバー・引き出し・入力欄（ui/Controls.tsx） */
+
+/* 切り替え（Segmented）とタブ（Tabs）。選択中の地（.thumb、淡い選択の --thumb）が選んだボタンへスイッチのようにスライドする。
+   文字の太さは選択で変えない（幅が変わって並びがずれないように）。ボタンの間の隙間でもカーソルは指のまま */
+.seg{position:relative;display:inline-flex;gap:2px;max-width:100%;overflow-x:auto;scrollbar-width:none;padding:2px;cursor:pointer;background:var(--panel-2);border:1px solid var(--line);border-radius:10px}
+.seg button{position:relative;z-index:1;display:inline-flex;flex:none;white-space:nowrap;align-items:center;gap:4px;padding:4px 10px;border-radius:8px;font-size:var(--fs-12);font-weight:600;color:var(--ink-3);transition:color .2s ease-out}
+.seg .n{font-size:var(--fs-11);font-weight:400;color:var(--ink-3)}
+/* 狭いときの詰め方（Segmented の hideCounts / fill / dense。DESIGN.md 5 章）。件数は幅・隣との隙間（ボタンの gap 4px）・濃さをなめらかに縮めて隠す。
+   --seg-n-min は件数の最小幅（読み込みで桁が変わっても幅を揺らさないとき、置き場所で指定する） */
+.seg .n{display:inline-block;overflow:hidden;min-width:var(--seg-n-min,0);max-width:4em;white-space:nowrap;
+  transition:max-width .25s var(--ease-in-out),min-width .25s var(--ease-in-out),margin .25s var(--ease-in-out),opacity .2s ease-out}
+.seg.no-n .n{min-width:0;max-width:0;margin-left:-4px;opacity:0}
+.seg.fill{display:flex;width:100%}
+.seg.fill button{flex:1 1 auto;justify-content:center}
+.seg.dense button{min-width:24px;padding-left:6px;padding-right:6px}
+@media (prefers-reduced-motion: reduce){.seg .n{transition:none}}
+/* 件数の読み込み中（親に aria-busy）。空白にせず、数字の場所にスケルトンの棒を出す */
+.seg .n{position:relative}
+[aria-busy="true"] > .seg .n > *{visibility:hidden}
+[aria-busy="true"] > .seg .n::after{content:'';position:absolute;inset:3px 0;border-radius:6px;
+  background:linear-gradient(90deg,var(--line) 0%,var(--line-2) 40%,var(--line) 80%);background-size:250% 100%;animation:skelShine 1.4s ease-in-out infinite}
+[aria-busy="true"] > .seg button[aria-pressed="true"] .n::after{background:var(--pri-ink-2);opacity:.35;animation:none}
+@media (prefers-reduced-motion: reduce){[aria-busy="true"] > .seg .n::after{animation:none}}
+.tabs{position:relative;display:flex;gap:2px;padding:3px;cursor:pointer;background:var(--panel-2);border:1px solid var(--line);border-radius:10px}
+.tabs button{position:relative;z-index:1;flex:1;padding:5px 0;border-radius:8px;font-size:var(--fs-13);font-weight:600;color:var(--ink-3);transition:color .2s ease-out}
+.tabs .n{margin-left:4px;font-size:var(--fs-11);font-weight:400;color:var(--ink-3)}
+/* 名前の長さに合わせて幅を配る（Tabs の fit。長い名前が切れないように） */
+.tabs.fit{min-width:0}
+.tabs.fit button{flex:1 1 auto;padding:5px 8px;white-space:nowrap}
+/* 選んでいない項目のホバーは --hover-strong の地（沈んだ地の上でわかる濃さ。選択中の淡い主要色の地とは別の色） */
+.seg button,.tabs button{transition:color .2s ease-out,background-color .12s ease-out,var(--press-back)}
+.seg button:not([aria-pressed="true"]):hover,.tabs button:not([aria-selected="true"]):hover{color:var(--ink);background:var(--hover-strong)}
+/* 押している間は色を変えずに少し縮め、離すとばねで戻す（選択中の地がスライドしてくる動きと、色の変化を重ねないため。DESIGN.md 8 章「押している間」） */
+.seg button:not([aria-pressed="true"]):active,.tabs button:not([aria-selected="true"]):active{scale:var(--press-scale)}
+.seg button[aria-pressed="true"],.tabs button[aria-selected="true"]{color:var(--pri-ink-2)}
+.seg button[aria-pressed="true"] .n,.tabs button[aria-selected="true"] .n{color:var(--pri-ink-2)}
+/* 選択中は「淡い選択」（主要色の薄い地 --thumb・その上で読める濃い文字 --pri-ink-2。左メニューの現在地と同じ見せ方）。
+   枠は付けない（外側の枠の中にもう 1 つ枠が入ると、線が増えて選択が読み取りにくい）。
+   ベタ塗りにしない（白い文字が読める濃さまで塗ると、明るい主要色のテーマでそこだけ別のトーンになって浮くため。2026-09-30） */
+.seg .thumb,.tabs .thumb{position:absolute;top:0;left:0;border-radius:8px;background:var(--thumb);pointer-events:none}
+.seg.ready .thumb,.tabs.ready .thumb{transition:left .34s var(--ease-spring),top .34s var(--ease-spring),width .34s var(--ease-spring),height .34s var(--ease-spring)}
+@media (prefers-reduced-motion: reduce){.seg.ready .thumb,.tabs.ready .thumb{transition:none}}
+
+/* ポップオーバー */
+.popover{position:relative;flex:none}
+.popover-body{position:absolute;right:0;top:calc(var(--control-h) + 6px);z-index:85;display:grid;gap:14px;width:300px;padding:14px 16px 16px;
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow-2);animation:popIn .18s var(--ease-in-out)}
+@keyframes popIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.popover-body{animation:none}}
+/* 右に開くとき（折りたたんだ左メニューの「+N」）は、ボタンの下端にそろえて上へ伸ばす（ボタンが列の下にあるため） */
+.popover-body.right{top:auto;bottom:0;left:calc(100% + 8px);right:auto;animation-name:popInRight}
+@keyframes popInRight{from{opacity:0;transform:translateX(-4px)}to{opacity:1;transform:none}}
+@media (max-width:860px){.popover-body{width:min(300px,calc(100vw - 32px))}}
+
+/* 1 つを選ぶプルダウン（Select）。ボタンは .btn、一覧はポップオーバー。.lg はヘッダーに置く大きさ */
+.select-btn{max-width:340px;color:var(--ink)}
+/* 選んだものが変わって幅が変わるとき（Select が .resizing を付ける）。はみ出した文字は動いている間だけ隠す */
+.select-btn.resizing{overflow:hidden;transition:width .3s var(--ease-in-out)}
+/* 動いている間は名前を縮めない（省略記号で「…」に変わってちらつくため）。はみ出しは右端で隠れるだけにする */
+.select-btn.resizing .sel-label{flex:none;overflow:visible}
+.select-btn .sel-lead{display:inline-flex;align-items:center;color:var(--ink-3)}
+.select-btn .sel-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.select-btn .sel-meta{flex:none;font-size:var(--fs-12);font-weight:600;color:var(--ink-3)}
+.select-btn .sel-chev{flex:none;color:var(--ink-3);transition:transform .18s var(--ease-in-out)}
+.select-btn[aria-expanded="true"] .sel-chev{transform:rotate(180deg)}
+/* 幅が足りないとき（Select の fit）。名前を省略する前に、補足 → 先頭の印の順に隠す */
+.select-btn.fit-1 .sel-meta,.select-btn.fit-2 .sel-lead{display:none}
+.select.lg .select-btn{height:var(--control-h);padding:0 12px;font-size:var(--fs-14);font-weight:600}
+.select .popover-body{top:calc(100% + 6px);left:0;right:auto;gap:0;width:max-content;min-width:100%;max-width:400px;max-height:360px;overflow:auto;padding:6px}
+.select .popover-body>[role="listbox"]{min-width:0}
+.select-opt{display:flex;box-sizing:border-box;align-items:center;gap:8px;width:100%;padding:8px 16px 8px 12px;border-radius:8px;text-align:left;font-size:var(--fs-13);color:var(--ink);white-space:nowrap}
+.select-opt:hover{background:var(--hover)}
+/* キーボードで今どの選択肢にいるかは、フォーカスの枠で示す（地だけではホバーと見分けられない） */
+.select-opt:focus-visible{background:var(--hover);outline:2px solid var(--focus);outline-offset:-2px}
+.select-opt:active{background:var(--press)}
+.select-opt[aria-selected="true"]{font-weight:700}
+.select-opt .sel-label{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.select-opt .sel-lead{display:flex;align-items:center;flex:none;color:var(--ink-3)}
+.select-opt .sel-meta{margin-left:auto;padding-left:12px;font-size:var(--fs-12);font-weight:600;color:var(--ink-3)}
+.select-opt .sel-check{flex:none;margin-left:-2px;color:var(--pri);visibility:hidden}
+.select-opt[aria-selected="true"] .sel-check{visibility:visible}
+
+/* チェックボックスとラベル（Check） */
+
+/* 入力欄 */
+/* 入力欄。左右の余白は置き場所で変えられる（先頭のアイコン・末尾の手がかりの分。--field-pl / --field-pr）。.lg はヘッダーの大きさで置き場所の幅いっぱい */
+.field{height:36px;padding:0 var(--field-pr,12px) 0 var(--field-pl,12px);border:1px solid var(--line-2);border-radius:10px;background:var(--panel)}
+.field.lg{width:100%;height:var(--control-h);font-size:var(--fs-14)}
+/* 複数行の入力欄（ui/TextArea.tsx）。高さは行数で決まり、縦にだけ伸ばせる */
+.field.wide{display:block;width:100%;font:inherit;font-size:var(--fs-13);color:var(--ink)}
+.field.area{display:block;width:100%;height:auto;min-height:88px;padding:8px 12px;font:inherit;font-size:var(--fs-13);line-height:1.6;color:var(--ink);resize:vertical}
+.field:hover{border-color:var(--pri)}
+.field:focus{outline:none;border-color:var(--focus);box-shadow:0 0 0 3px var(--focus-ring)}
+/* タッチの端末では 16px（iOS は 16px 未満の入力欄にフォーカスすると画面を拡大してしまう。ページの拡大を止める maximum-scale は、ピンチでの拡大も止めるので使わない） */
+@media (pointer:coarse){.field,.field.lg,.field.area,.field.wide{font-size:var(--fs-16)}}
+/* 一覧の絞り込みの入力欄（SearchField）。先頭に虫眼鏡、F の行き先のときは右端に「F」の印（キーボードのない端末では出さない） */
+.sfield{position:relative;display:inline-flex;align-items:center;min-width:0}
+.sfield > .field{width:100%;padding-left:34px}
+.sfield:has(> .kbd-key) > .field{padding-right:36px}
+.sfield-ic{position:absolute;left:11px;color:var(--ink-3);pointer-events:none}
+.kbd-key{position:absolute;right:9px;padding:0 6px;border:1px solid var(--line-2);border-radius:6px;background:var(--panel-2);font:inherit;font-size:var(--fs-11);line-height:18px;color:var(--ink-3);pointer-events:none}
+@media (hover:none){.kbd-key{display:none}.sfield:has(> .kbd-key) > .field{padding-right:12px}}
+/* 印の中身は F。1 文字のショートカットを切っているとき（data-keys="off"）は F が効かないので、⌘K に差し替える（ヘッダーの検索の .kbd も同じ） */
+.k-mod,[data-keys="off"] .k-one{display:none}
+[data-keys="off"] .k-mod{display:inline}
+[data-keys="off"] .sfield:has(> .kbd-key) > .field{padding-right:44px}
+
+/* 引き出し（狭い画面の詳細）。スマホ幅では下から出るシート */
+.drawer-scrim{position:fixed;inset:0;z-index:65;background:var(--scrim);animation:fadeIn .2s ease-out}
+.drawer-scrim.closing{animation:fadeOut .18s ease-in forwards}
+.drawer{position:fixed;right:12px;top:12px;bottom:12px;z-index:70;width:min(400px,calc(100% - 24px));overflow:auto;
+/* 開いたときに引き出しそのものへフォーカスを移す（中の最初の操作へ飛ばさない）。入れ物なので枠は出さない */
+.drawer:focus-visible{outline:none}
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-2);animation:drawerIn .22s var(--ease-in-out)}
+.drawer.closing{animation:drawerOut .18s ease-in forwards}
+@keyframes drawerIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+@keyframes drawerOut{from{opacity:1;transform:none}to{opacity:0;transform:translateX(24px)}}
+@media (max-width:720px){
+  .drawer{left:0;right:0;top:auto;bottom:0;width:100%;height:80%;border-radius:14px 14px 0 0;animation-name:sheetIn}
+  .drawer.closing{animation-name:sheetOut}
+}
+/* 低い横長の画面（スマホの横向き）では、下からのシートだと内容がほぼ隠れるので、幅が狭くても右から出す */
+@media (orientation:landscape) and (max-height:500px){
+  .drawer{left:auto;right:8px;top:8px;bottom:8px;width:min(400px,calc(100% - 16px));height:auto;border-radius:14px;animation-name:drawerIn}
+  .drawer.closing{animation-name:drawerOut}
+}
+/* 畳んだ引き出し（Drawer の minimized。主役を変える操作のあと、裏の画面を見せて下の 1 行に残す。DESIGN.md 5 章）。
+   幕は掛けず、背面を操作できる。行を押す・上へ払うと広げる */
+.drawer.peek{top:auto;height:auto;overflow:visible;animation:peekIn .26s var(--ease-in-out)}
+.drawer-peek{display:flex;align-items:center;gap:4px;padding:6px 8px calc(6px + env(safe-area-inset-bottom)) 6px}
+.drawer-peek-open{display:flex;flex:1;align-items:center;gap:10px;min-width:0;padding:6px;border-radius:10px;text-align:left;color:var(--ink)}
+.drawer-peek-open:hover{background:var(--hover)}
+.drawer-peek-open:active{background:var(--press)}
+.drawer-peek-open > svg{flex:none;color:var(--ink-3)}
+.drawer-peek-t{display:flex;flex:1;flex-direction:column;min-width:0}
+.drawer-peek-t b,.drawer-peek-t small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.drawer-peek-t b{font-size:var(--fs-14);font-weight:700}
+.drawer-peek-t small{font-size:var(--fs-12);color:var(--ink-3)}
+@keyframes peekIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@keyframes sheetIn{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
+@keyframes sheetOut{from{opacity:1;transform:none}to{opacity:0;transform:translateY(40px)}}
+
+/* マーカー色（MarkPicker と、塗る側の [data-mark]）。塗る部品は --mk（地）・--mk-line（枠）を読む */
+[data-mark="1"]{--mk:var(--mark-1);--mk-line:var(--mark-1-line)}
+[data-mark="2"]{--mk:var(--mark-2);--mk-line:var(--mark-2-line)}
+[data-mark="3"]{--mk:var(--mark-3);--mk-line:var(--mark-3-line)}
+[data-mark="4"]{--mk:var(--mark-4);--mk-line:var(--mark-4-line)}
+[data-mark="5"]{--mk:var(--mark-5);--mk-line:var(--mark-5-line)}
+.marks{display:flex;flex-wrap:wrap;gap:8px}
+.mark-sw{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;color:var(--ink-2);background:var(--mk,var(--panel));border:2px solid var(--mk-line,var(--line-2));cursor:pointer;transition:box-shadow .12s,var(--press-back)}
+.mark-sw:hover{box-shadow:var(--shadow-hover)}
+.mark-sw:active{box-shadow:var(--shadow-1);scale:var(--press-scale)}
+.mark-sw[aria-pressed="true"]{box-shadow:0 0 0 3px var(--focus-ring);color:var(--ink)}

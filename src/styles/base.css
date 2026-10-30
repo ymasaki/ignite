@@ -1,0 +1,42 @@
+/* 土台: リセット・本文・フォーカス・ツールチップ・共通のアニメーション */
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body,#root{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:var(--fs-14);line-height:1.5;overflow:hidden}
+button,select,input{font:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer;padding:0}
+/* 押している間（DESIGN.md 8 章「押している間」）は押した瞬間に変える（ホバーの動きのまま 0.12s かけると、素早いクリックでは変わる前に離してしまう）。
+   部品の動きの指定に勝つように :is（a[href] の詳細度）で書く。離すと各部品の動きで戻る。タッチではブラウザ標準のタップの色を消す（部品の押している間の見た目と二重に出さない） */
+html{-webkit-tap-highlight-color:transparent}
+:is(a[href],button,summary,label,[role="button"],[role="tab"],[role="option"],[role="menuitem"],[role="link"],[role="switch"],[role="checkbox"],[role="radio"]):active{transition-duration:0s}
+/* 検索欄の × （ブラウザ標準の消去ボタン）も押せる見た目に */
+input[type="search"]::-webkit-search-cancel-button{cursor:pointer}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:6px}
+/* マウス・タッチ後の focus() が入力欄の :focus-visible を引き継いでも、枠は出さない。入力中の欄と「いつも」は保つ */
+:root[data-input="pointer"]:not([data-focus="always"]) :focus-visible:not(.field){outline:none}
+.num{font-variant-numeric:tabular-nums}
+/* 見えないが読み上げる文字（件数の知らせ・表の代わりの説明など） */
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+mark{background:var(--hl);color:inherit;border-radius:3px;padding:0 1px}
+
+/* アイコンだけのボタンなどの説明（title の代わり）。0.25s 待ってから出す。
+   ホバーできる端末だけ（タッチではタップした部品に :hover が残り、メニューを開いた後も吹き出しが出たままになるため） */
+[data-tip]{position:relative}
+@media (hover:hover){
+  [data-tip]:hover::after,[data-tip]:focus-visible::after{content:attr(data-tip);position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);z-index:120;
+    padding:4px 8px;border-radius:8px;background:var(--tip);color:var(--on-tip);font-size:var(--fs-12);font-weight:600;line-height:1.3;white-space:nowrap;pointer-events:none;
+    animation:tipIn .12s ease-out .25s both}
+}
+
+/* Esc で吹き出しを消す（WCAG 1.4.13。ui/Shell.tsx が付け、マウスを動かす・フォーカスを移すと外す） */
+:root[data-tips="off"] [data-tip]::after{display:none}
+
+@keyframes tipIn{from{opacity:0;transform:translate(-50%,-2px)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeOut{from{opacity:1}to{opacity:0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media (prefers-reduced-motion:reduce){
+  /* 回り続ける動き（更新中の回転など）は 1 回で止める（長さだけ縮めると、ちらつくほど速く回り続ける） */
+  *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}

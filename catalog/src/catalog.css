@@ -1,0 +1,9 @@
+/* カタログの配置。色・文字・枠は部品に任せる */
+.cat{display:flex;flex-direction:column;gap:24px;padding:16px 24px 24px;overflow-y:auto;height:100%}
+.cat-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));gap:12px}
+.cat-swatch{display:flex;align-items:center;gap:8px;min-width:0;font-size:var(--fs-12);color:var(--ink-2)}
+.cat-chip{flex:none;width:28px;height:28px;border:1px solid var(--line);border-radius:8px}
+.cat-scale{display:flex;align-items:baseline;gap:12px;color:var(--ink)}
+.cat-stack{display:flex;flex-direction:column;gap:8px;min-width:0}
+.cat-detail{display:flex;flex-direction:column;gap:16px;padding:0 18px 18px}

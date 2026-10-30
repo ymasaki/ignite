@@ -1,0 +1,65 @@
+/* 顔アイコンとアイコンの箱（ui/Avatar.tsx） */
+
+/* 顔アイコン: xs 20 / sm 26 / md 32 / lg 44 / xl 72px。写真がないときは頭文字（.c1〜.c6 はアバター色の例外） */
+.av{position:relative;display:grid;place-items:center;flex:none;overflow:hidden;width:32px;height:32px;border-radius:50%;font-size:13px;font-weight:700} /* design-ok: 頭文字は丸の大きさに合わせる（設定の文字の大きさで変えない） */
+.av.xs{width:20px;height:20px;font-size:10px} /* design-ok: 20px の顔アイコンの頭文字（DESIGN.md 3 章の例外） */
+.av.sm{width:26px;height:26px;font-size:11px} /* design-ok: 頭文字は丸に合わせる */
+.av.lg{width:44px;height:44px;font-size:16px} /* design-ok: 頭文字は丸に合わせる */
+.av.xl{width:72px;height:72px;font-size:26px} /* design-ok: 72px の顔アイコンの頭文字 */
+.av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;opacity:0;transition:opacity .35s ease-out}
+/* 写真を読み込んでいるあいだは、頭文字を隠した淡い丸にする（数百人ぶん並ぶので光らせるアニメーションは付けない）。
+   読み込めたら写真をフェードインさせ、読めなかったら頭文字に戻る（ui/Avatar.tsx の Avatar） */
+.av.wait{background:var(--line);color:transparent}
+.av img.ok{opacity:1}
+@media (prefers-reduced-motion: reduce){.av img{transition:none}}
+.c1{background:#dde8fb;color:#2856b3}.c2{background:#fbe3da;color:#a4492a}.c3{background:#dcf1e3;color:#2d7a4b}
+.c4{background:#ebe1f8;color:#6b3fa6}.c5{background:#fbefcf;color:#8a6410}.c6{background:#d7f0f0;color:#1f7272}
+
+/* 顔アイコンを重ねた並び。重なりは地の色の輪で区切る。置き場所の状態に合わせて輪（--av-ring）と濃さ（--av-opacity）を変えられる
+   （最後の顔だけ変えるときは --av-ring-last / --av-opacity-last） */
+.avstack{display:inline-flex;align-items:center;flex:none}
+.avstack > .av,.avstack > button > .av{box-shadow:var(--av-ring,0 0 0 2px var(--panel))}
+.avstack > .av,.avstack > button{opacity:var(--av-opacity,1)}
+.avstack > .av:last-child{box-shadow:var(--av-ring-last,var(--av-ring,0 0 0 2px var(--panel)));opacity:var(--av-opacity-last,var(--av-opacity,1))}
+.avstack > * + .av{margin-left:-6px}
+/* 押せる顔は、押せる範囲だけを周りに 2px 広げて 24px にする（WCAG 2.5.8。顔の大きさ・並び・行の高さは外側の -2px で打ち消して変えない）。
+   縁はボタンでなく中の顔に付ける。顔の間は、ボタンの左の余白から広げた分の 2px を引いた値 */
+.avstack > button{position:relative;margin:-2px;padding:2px;border-radius:50%}
+.avstack > * + button{margin-left:-8px}
+.avstack > button > .av{transition:box-shadow .12s}
+/* 押せる顔はホバーで縁を主要色にし、重なりの上に出す */
+.avstack > button:hover{z-index:1}
+.avstack > button:hover > .av{box-shadow:var(--av-ring-on)}
+.avstack > button:active > .av{box-shadow:0 0 0 3px var(--pri)}
+.avstack .more{margin-left:8px;font-size:var(--fs-12);color:var(--ink-3)}
+.avstack > button + .more{margin-left:10px}  /* 押せる顔の右の -2px を足し戻して、顔から 8px にそろえる */
+/* 置き場所の幅に合わせる並び（AvatarStack の fit）: 幅いっぱいに取って測り、顔の間（--av-gap。負の値は重なり）を幅に合わせて決める */
+.avstack.fit{display:flex;width:100%;min-width:0}
+.avstack.fit > * + .av{margin-left:var(--av-gap,-6px)}
+.avstack.fit > * + button{margin-left:calc(var(--av-gap,-6px) - 2px)}
+/* 詳細を開いている人の顔（aria-current）は、押せる顔のホバーと同じ縁で示し、重なりの上に出す */
+.avstack > button[aria-current]{z-index:1}
+.avstack > button[aria-current] > .av{box-shadow:var(--av-ring-on)}
+
+/* アイコンの箱: md 28 / lg 40 / xl 72px */
+.ico{display:grid;place-items:center;flex:none;width:28px;height:28px;border-radius:8px;background:var(--panel-2);border:1px solid var(--line);color:var(--ink-2)}
+.ico svg{width:16px;height:16px}
+.ico-ini{font-size:var(--fs-12);font-weight:700;line-height:1} /* 箱に入れる頭文字 */
+.ico.lg{width:40px;height:40px;border-radius:12px}
+.ico.lg svg{width:20px;height:20px}
+.ico.xl{width:72px;height:72px;border-radius:14px}
+.ico.xl svg{width:34px;height:34px}
+
+/* 顔アイコンの並び（AvatarGroup）。既定は折り返して並べ、stack は少し重ねて 1 行 */
+.avgroup{display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-width:0}
+/* 読み上げ用の名前（.sr-only）の位置の基準。基準が表のスクロールの外にあると、見えない文字がスクロールの外に出てページが横に送れてしまう */
+.avg-i,.avg-more{position:relative}
+.avg-i{display:inline-flex;border-radius:50%;transition:transform .15s var(--ease-spring)}
+.avg-i:hover{transform:scale(1.15);z-index:1}
+.avg-more{font-size:var(--fs-12);color:var(--ink-3)}
+.avgroup.stack{flex-wrap:nowrap;gap:0}
+.avgroup.stack > .avg-i{box-shadow:0 0 0 2px var(--panel)}
+.avgroup.stack > .avg-i + .avg-i{margin-left:-6px}
+.avgroup.stack > .avg-more{margin-left:6px}
+.avgroup.muted > .avg-i{opacity:.45}
+@media (prefers-reduced-motion: reduce){.avg-i{transition:none}}

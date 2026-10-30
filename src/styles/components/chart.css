@@ -1,0 +1,131 @@
+/* グラフの部品（ui/Chart.tsx）。1 色（--chart-1〜5 の濃淡）。並べ方はダッシュボードの型の格子（.chart-grid） */
+/* ダッシュボードの型の格子。1 枚 360px 以上で折り返し、wide のグラフは格子の横いっぱい（DESIGN.md 7 章） */
+.chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(360px,100%),1fr));gap:var(--shell-gap)}
+.chart-grid > .chart.wide{grid-column:1 / -1}
+/* 大小のタイル（ChartGrid の tiles）。4 列で span-2 は 2 マス。格子の幅で 2 列・1 列に減らす */
+.chart-tiles{container-type:inline-size}
+.chart-grid.tiles{grid-template-columns:repeat(4,minmax(0,1fr))}
+.chart-grid.tiles > .chart.span-2{grid-column:span 2}
+@container (max-width:900px){.chart-grid.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@container (max-width:520px){.chart-grid.tiles{grid-template-columns:minmax(0,1fr)}.chart-grid.tiles > .chart.span-2{grid-column:auto}}
+.chart{display:flex;flex-direction:column;gap:12px;min-width:0;padding:16px 18px;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+.chart-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-size:var(--fs-14);font-weight:700}
+/* 見出し（ChartCard の h2 など）。読み上げの見出しにするだけで、見た目は .chart-h のまま */
+.chart-t{margin:0;font:inherit}
+.chart-meta{font-size:var(--fs-12);font-weight:400;color:var(--ink-3)}
+
+/* 横棒 */
+.barlist{display:grid;gap:8px}
+.bl{display:grid;grid-template-columns:minmax(0,9em) minmax(0,1fr) minmax(3.5em,max-content);align-items:center;gap:10px;font-size:var(--fs-13)}
+.bl-l{overflow:hidden;color:var(--ink-2);text-overflow:ellipsis;white-space:nowrap}
+.bl-t{height:10px;border-radius:99px;background:var(--panel-2)}
+.bl-f{display:block;height:100%;border-radius:99px;background:var(--chart-1);transition:width .6s var(--ease-spring)}
+.bl-f.muted{background:var(--line-2)}
+.bl-v{text-align:right;font-size:var(--fs-12);color:var(--ink-3);white-space:nowrap}
+@media (prefers-reduced-motion: reduce){.bl-f{transition:none}}
+
+/* 折れ線 */
+.line{position:relative;min-width:0}
+/* ホバーの帯（LineChart の line-hits）。点ごとに縦の帯を並べ、重なった帯を薄く塗る */
+.line-hits{position:absolute;display:flex}
+.line-hits > span{flex:2;border-radius:6px}
+.line-hits > span.edge{flex:1}
+.line-hits > span:hover{background:var(--pri-soft);mix-blend-mode:multiply}
+.line-hits > span:active{background:var(--pri-soft-2)}
+.line svg{display:block}
+.line-grid{stroke:var(--line);stroke-width:1}
+.line-ax{fill:var(--ink-3);font-size:var(--fs-11)}
+.line-p{fill:none;stroke:var(--chart-1);stroke-width:2;stroke-linejoin:round}
+.line-p.soft{stroke:var(--chart-4);stroke-width:1.5}
+.line-legend{display:flex;gap:14px;margin-top:6px;font-size:var(--fs-12);color:var(--ink-3)}
+.line-legend span{display:inline-flex;align-items:center;gap:6px}
+.line-key{display:inline-block;width:12px;height:3px;border-radius:99px;background:var(--chart-1)}
+.line-key.soft{background:var(--chart-4)}
+.line-area-top{stop-color:var(--chart-1);stop-opacity:.18}
+.line-area-end{stop-color:var(--chart-1);stop-opacity:0}
+.line-dot{fill:var(--chart-1);stroke:var(--panel);stroke-width:2}
+.line-dot.soft{fill:var(--chart-4)}
+
+/* 大きな数字（Stat）。lg はタイルの主役（32px）、md は 24px */
+.stat{display:flex;flex-direction:column;gap:2px;min-width:0}
+.stat-l{font-size:var(--fs-12);color:var(--ink-3)}
+.stat-v{display:flex;align-items:baseline;flex-wrap:wrap;gap:0 8px;font-weight:700;line-height:1.15;color:var(--ink)}
+.stat.lg .stat-v{font-size:var(--fs-32)}
+.stat.md .stat-v{font-size:var(--fs-24)}
+.stat-v small{margin-left:-6px;font-size:var(--fs-13);font-weight:700;color:var(--ink-2)}
+.stat.muted .stat-v{color:var(--ink-2)}
+
+/* 積み上げの段の濃淡（StackColumns）。段の順に --chart-1 から */
+.chart-c1{background:var(--chart-1)}
+.chart-c2{background:var(--chart-2)}
+.chart-c3{background:var(--chart-3)}
+.chart-c4{background:var(--chart-4)}
+.chart-c5{background:var(--chart-5)}
+/* 凡例の「減った数」などの灰色（StackColumns） */
+.chart-muted{background:var(--line-2)}
+/* 下から伸びる縦の棒（StackColumns・Funnel） */
+@keyframes colGrow{from{transform:scaleY(0)}}
+
+/* 積み上げの縦の棒（StackColumns）。0 の線から上に内訳、下に減った数 */
+.stackcols{position:relative;display:grid;gap:6px;min-width:0} /* position は見えない表（.sr-only）の位置の基準 */
+.sc-cols{display:flex;gap:6px}
+.sc-col{flex:1;display:flex;flex-direction:column;min-width:0;border-radius:6px}
+.sc-col:hover{background:var(--hover)}
+.sc-col:active{background:var(--press)}
+.sc-up{display:flex;align-items:flex-end;justify-content:center;padding-top:18px;border-bottom:1px solid var(--edge)}
+.sc-stack{position:relative;display:flex;flex-direction:column-reverse;width:64%;max-width:40px;min-height:1px;transform-origin:bottom;animation:colGrow .6s var(--ease-spring) backwards}
+.sc-stack > i{display:block;min-height:1px}
+.sc-stack > i:last-of-type{border-radius:6px 6px 0 0}
+.sc-total{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);padding-bottom:2px;font-size:var(--fs-11);font-weight:700;color:var(--ink-2);white-space:nowrap}
+.sc-down{display:flex;justify-content:center;align-items:flex-start}
+.sc-down > i{display:block;width:64%;max-width:40px;background:var(--line-2);border-radius:0 0 6px 6px}
+.sc-labels{display:flex;gap:6px;font-size:var(--fs-11);color:var(--ink-3)}
+.sc-labels > span{flex:1;min-width:0;text-align:center;white-space:nowrap}
+.sc-labels > span.on{font-weight:700;color:var(--ink)}
+.sc-key{display:inline-block;width:10px;height:10px;border-radius:3px}
+@media (prefers-reduced-motion: reduce){.sc-stack{animation:none}}
+
+/* 面積と濃さのタイルの地図（TileMap）。濃さは --r（0〜1）で --chart-1 と --chart-5 を混ぜる */
+.tilemap{display:grid;gap:8px;min-width:0}
+.tm-area{position:relative;min-width:0}
+.tm-tile{--tm-bg:color-mix(in srgb,var(--chart-1) calc(var(--r) * 90%),var(--chart-5));position:absolute;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;padding:8px 10px;overflow:hidden;border:2px solid var(--panel);border-radius:10px;text-align:left;color:var(--ink);background:var(--tm-bg);transition:box-shadow .15s}
+.tm-tile.dark{color:var(--on-pri)}
+/* 文字は地の明るさで黒か白を選ぶ（明るさ L が 50 を境に、どちらかは必ず 4.5 以上になる。ブランドの赤・青は中間の明るさで、
+   決まった 1 色では濃い地・薄い地の両方で 4.5 に届かないため）。relative color の使えない環境では上の 2 行のまま */
+.tm-tile:not(.none){color:lch(from var(--tm-bg) calc((50 - l) * 100) 0 0)}
+.tm-tile.none{background:var(--panel-2);color:var(--ink-3)}
+.tm-tile:hover{box-shadow:inset 0 0 0 2px var(--ink-2)}
+.tm-tile:active{box-shadow:inset 0 0 0 2px var(--ink)}
+.tm-tile[aria-pressed=true]{box-shadow:inset 0 0 0 3px var(--ink)}
+.tm-l{order:-1;margin-bottom:auto;overflow:hidden;font-size:var(--fs-12);font-weight:700;text-overflow:ellipsis;white-space:nowrap}
+.tm-v{font-size:var(--fs-20);font-weight:700;line-height:1.15}
+.tm-s{overflow:hidden;font-size:var(--fs-11);text-overflow:ellipsis;white-space:nowrap}
+.tm-tile.sm{padding:6px 8px}
+.tm-tile.sm .tm-v{font-size:var(--fs-14)}
+.tm-tile.sm .tm-s,.tm-tile.xs .tm-l,.tm-tile.xs .tm-s{display:none}
+.tm-tile.xs{justify-content:center;padding:4px;align-items:center}
+.tm-tile.xs .tm-v{font-size:var(--fs-11)}
+.tm-scale{display:flex;align-items:center;gap:8px;font-size:var(--fs-11);color:var(--ink-3)}
+.tm-scale > i{flex:0 1 160px;height:8px;border-radius:99px;background:linear-gradient(90deg,var(--chart-5),var(--chart-1) 90%)}
+
+/* 数字に添える小さな推移の線（Sparkline）。横は枠いっぱいに伸ばし、線の太さは変えない */
+.spark{display:block;width:100%;overflow:visible}
+.spark path,.spark line{fill:none;stroke:var(--chart-1);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.spark .spark-dot{stroke-width:6}
+
+/* 段ごとに減っていく数（Funnel）。段は横に並べ、枠が狭ければ 2 列に折り返す */
+.funnel-wrap{container-type:inline-size}
+.funnel{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:16px 0}
+.fn-step{display:flex;flex-direction:column;gap:8px;min-width:0;padding:0 16px;border-left:1px solid var(--line)}
+.fn-step:first-child{padding-left:0;border-left:0}
+.fn-step:last-child{padding-right:0}
+.fn-col{display:flex;align-items:flex-end;height:96px}
+.fn-col > i{display:block;width:100%;min-height:3px;border-radius:6px 6px 0 0;transform-origin:bottom;animation:colGrow .6s var(--ease-spring) backwards}
+.fn-rate{font-size:var(--fs-12);color:var(--ink-3)}
+.fn-rate b{font-weight:700;color:var(--ink)}
+@container (max-width:640px){
+  .funnel{grid-auto-flow:row;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .fn-step:nth-child(odd){padding-left:0;border-left:0}
+  .fn-step:nth-child(even){padding-right:0}
+}
+@media (prefers-reduced-motion: reduce){.fn-col > i{animation:none}}

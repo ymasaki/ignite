@@ -1,0 +1,42 @@
+/* ボタン類（ui/Button.tsx） */
+
+/* 通常のボタン。主ボタン（.pri）は 1 画面に 1 つまで。.on は押し込まれている状態（絞り込み中など） */
+.btn{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border:1px solid var(--line-2);border-radius:10px;background:var(--panel);font-size:var(--fs-13);white-space:nowrap}
+.btn:hover{border-color:var(--pri);color:var(--pri-ink)}
+.btn:active{background:var(--press)}
+/* 押している間は縮め、離すとばねで戻す（ボタン・アイコンのボタンは小さな部品。DESIGN.md 8 章「押している間」） */
+.btn,.icon-btn{transition:var(--press-back)}
+.btn:active,.icon-btn:active{scale:var(--press-scale)}
+.btn.on{border-color:var(--pri);color:var(--pri-ink);background:var(--pri-soft)}
+.btn.on:hover{background:var(--pri-soft-2);color:var(--pri-ink-2)}
+.btn.on:active{background:var(--pri-press);color:var(--pri-ink-2)}
+.btn.pri{background:var(--solid);border-color:var(--solid);color:var(--on-solid)}
+.btn.pri:hover{background:var(--solid-hover);border-color:var(--solid-hover);color:var(--on-solid)}
+.btn.pri:active{background:var(--solid-press);border-color:var(--solid-press)}
+/* 押せないあいだ（入力が空・送信中など）は薄くし、ホバーで変えない */
+.btn:disabled{opacity:.45;cursor:default;pointer-events:none}
+
+/* アイコンだけのボタン。大きさ・枠・角丸は置き場所で変えられる（--icon-btn-size / --icon-btn-border / --icon-btn-radius。並べた操作の高さをそろえるときなど） */
+.icon-btn{display:grid;place-items:center;flex:none;width:var(--icon-btn-size,30px);height:var(--icon-btn-size,30px);border:var(--icon-btn-border,0);border-radius:var(--icon-btn-radius,8px);color:var(--ink-2)}
+.icon-btn:hover{background:var(--hover);color:var(--ink)}
+.icon-btn:active{background:var(--press);color:var(--ink)}
+/* 入/切のあるもの（お気に入りの ☆）は、入のときに主要色 */
+.icon-btn[aria-pressed="true"],.icon-btn[aria-pressed="true"]:hover{color:var(--pri)}
+.icon-btn.lg{width:var(--control-h);height:var(--control-h);border:1px solid var(--line-2);border-radius:10px;background:var(--panel)}
+.icon-btn.lg:active{background:var(--press)}
+
+/* 文字だけのボタン */
+.linkbtn{font-size:var(--fs-12);font-weight:600;color:var(--link)}
+.linkbtn:hover{color:var(--link-hover)}
+.linkbtn:active{color:var(--link-press)}
+.linkbtn.extlink{display:inline-flex;align-items:center;gap:4px;overflow-wrap:anywhere}
+
+/* 値そのものがコピーのボタン。ホバー（またはキーボードで入ったとき）で地が付き、右にコピーのアイコンが出る（ui/CopyText.tsx） */
+.copytext{display:inline-flex;align-items:center;gap:4px;min-width:0;max-width:100%;margin:-2px -6px;padding:2px 6px;border-radius:6px;text-align:left}
+.copytext:hover,.copytext:focus-visible{background:var(--pri-soft);color:var(--pri-ink)}
+.copytext:active{background:var(--pri-soft-2);color:var(--pri-ink-2)}
+.copytext .ct-v{min-width:0;overflow-wrap:anywhere}
+.copytext .ct-i{display:grid;place-items:center;flex:none;color:var(--ink-3);opacity:0;transition:opacity .12s ease-out}
+.copytext:hover .ct-i,.copytext:focus-visible .ct-i,.copytext.copied .ct-i{opacity:1;color:inherit}
+.copytext.copied .ct-i{color:var(--ok-ink)}
+

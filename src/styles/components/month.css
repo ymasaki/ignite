@@ -1,0 +1,13 @@
+/* 対象月の送り（MonthStepper）: ‹ 月 › を 1 つの枠に。高さは入力欄（.field）と同じ 36px */
+.stepper{display:inline-flex;flex:none;align-items:stretch;height:36px;border:1px solid var(--line-2);border-radius:10px;background:var(--panel)}
+.stepper .icon-btn{width:32px;height:auto;border-radius:8px 0 0 8px}
+.stepper .icon-btn:last-child{border-radius:0 8px 8px 0}
+.stepper .icon-btn:disabled{color:var(--line-2);background:none;cursor:default}
+.stepper .popover{display:flex;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+.stepper .select-btn{height:auto;border:0;border-radius:0;padding:0 10px;font-size:var(--fs-14);font-weight:700}
+.stepper .select-btn:hover{color:var(--ink);background:var(--hover)}
+.stepper .select-btn:active{background:var(--press)}
+/* 補足（「今月」）を隠す（MonthStepper の hideMeta）。幅・隣との隙間（ボタンの gap 6px）・濃さをなめらかに縮める */
+.stepper .sel-meta{display:inline-block;overflow:hidden;max-width:4em;white-space:nowrap;transition:max-width .25s var(--ease-in-out),margin .25s var(--ease-in-out),opacity .2s ease-out}
+.stepper.no-meta .sel-meta{max-width:0;margin-left:-6px;opacity:0}
+@media (prefers-reduced-motion: reduce){.stepper .sel-meta{transition:none}}

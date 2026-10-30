@@ -1,0 +1,68 @@
+/* ダークモード（<html data-mode="dark">。DESIGN.md 2 章「スキンとダークモード」）。色のトークンだけを差し替える。
+   スキン（skins/）の後に読む。地・線・文字は暗い無彩色に主要色をわずかに混ぜ、主要色そのものはライトと同じ。
+   薄い地・グラフの濃淡は、主要色を暗い地に混ぜて作る（スキンを足しても、主要色を決めれば濃淡がそろう） */
+:root[data-mode="dark"]{
+  color-scheme:dark;
+
+  /* 地と線（暗い無彩色に、主要色をわずかに混ぜる。ライトと同じくテーマカラーに寄せる） */
+  --bg:color-mix(in srgb,var(--pri) 1.5%,#18181b);
+  --panel:color-mix(in srgb,var(--pri) 1.5%,#232327);
+  --panel-2:color-mix(in srgb,var(--pri) 2%,#2b2b30);
+  --hover:color-mix(in srgb,var(--pri) 3%,#2f2f34);
+  --hover-strong:color-mix(in srgb,var(--pri) 3%,#35353b);
+  --press:color-mix(in srgb,var(--pri) 3.5%,#38383d);
+  --line:color-mix(in srgb,var(--pri) 2.5%,#36363c);
+  --line-2:color-mix(in srgb,var(--pri) 3%,#4a4a52);
+  --edge:color-mix(in srgb,var(--pri) 3.5%,#6a6a72);
+
+  /* 文字 */
+  --ink:color-mix(in srgb,var(--pri) 1.5%,#ececee);
+  --ink-2:color-mix(in srgb,var(--pri) 2.5%,#b4b4ba);
+  --ink-3:color-mix(in srgb,var(--pri) 3%,#a6a6ae);
+
+  /* 主要色の濃淡（薄い地は暗い地に主要色を混ぜる。その上の文字は明るい赤） */
+  --pri-ink:#ff9c80;
+  --thumb:var(--pri-soft-2);
+  --pri-ink-2:var(--pri-ink); /* 暗い地では、薄い地の上の文字と同じ明るい色で読める（スキンごとの --pri-ink に従う） */
+  --pri-soft:color-mix(in srgb,var(--pri) 16%,var(--panel));
+  --pri-soft-2:color-mix(in srgb,var(--pri) 30%,var(--panel));
+  --pri-ring:color-mix(in srgb,var(--pri) 34%,transparent);
+  --pri-press:color-mix(in srgb,var(--pri) 38%,var(--panel)); /* 押している間の淡い選択の地（--pri-soft-2 の次の段） */
+
+  /* 役割ごとの色（ベタ塗りとホバーはライトと同じ濃い段。白い文字が読める濃さを保つ） */
+  --link:#ff9c80; --link-hover:#ffbdaa;
+  --link-press:color-mix(in srgb,var(--link-hover) 60%,#fff); /* 暗い地では明るくして一段進める */
+  --tip:#ececee; --on-tip:#18181b;
+  --chart-1:var(--pri);
+  --chart-2:color-mix(in srgb,var(--pri) 68%,var(--panel));
+  --chart-3:color-mix(in srgb,var(--pri) 46%,var(--panel));
+  --chart-4:color-mix(in srgb,var(--pri) 28%,var(--panel));
+  --chart-5:color-mix(in srgb,var(--pri) 13%,var(--panel));
+
+  /* 意味の色 */
+  --ok-soft:#12382c; --ok-ink:#51d2a8;
+  --warn:#ffbe65; --warn-soft:#3d2e12;
+  --hl:#6b4a00;
+  --mark-1:#3b3112; --mark-1-line:#e6b63a;
+  --mark-2:#163527; --mark-2-line:#4cc27f;
+  --mark-3:#1b2c4d; --mark-3-line:#6f9bff;
+  --mark-4:#2c2449; --mark-4-line:#ad88ff;
+  --mark-5:#421b2b; --mark-5-line:#ff7aa3;
+  --scrim:rgba(0,0,0,.55);
+
+  /* 影（暗い地では濃くしないと見えない） */
+  --shadow-1:0 1px 2px rgba(0,0,0,.4);
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.3);
+  --shadow-hover:0 1px 2px rgba(0,0,0,.35),0 2px 6px rgba(0,0,0,.35);
+  --shadow-2:0 2px 4px rgba(0,0,0,.35),0 12px 32px rgba(0,0,0,.5);
+}
+
+/* スキンごとのダークモード（薄い地の上の文字とリンクを、そのスキンの明るい色に。） */
+:root[data-mode="dark"][data-skin="blue"]{
+  --pri-ink:#7db8ff;
+  --link:#7db8ff; --link-hover:#a7cfff;
+}
+:root[data-mode="dark"][data-skin="green"]{
+  --pri-ink:#7edfbc;
+  --link:#7edfbc; --link-hover:#a6eacf;
+}

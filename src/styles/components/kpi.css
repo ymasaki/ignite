@@ -1,0 +1,60 @@
+/* KPI の 1 枠（ui/Kpi.tsx）と、幅に合わせて畳む帯（KpiBand）。折り返して並べる帯（.kpis）は shell.css */
+.kpi{position:relative;display:flex;align-items:center;gap:10px;padding:10px 18px;border-right:1px solid var(--line);white-space:nowrap;text-align:left;color:var(--ink)}
+.kpi-action{position:absolute;inset:0;width:100%;height:100%;border-radius:inherit}
+/* 畳む枠の overflow:hidden に切られないよう、強いコントラストの 3px まで内側に収める */
+.kpi-action:focus-visible,:root[data-focus="always"] .kpi-action:focus{outline-offset:-3px}
+.kpi-ic{display:grid;place-items:center;flex-shrink:0;width:34px;height:34px;border-radius:8px;background:var(--pri-soft);color:var(--pri);transition:background .16s,color .16s}
+.kpi-b{display:flex;flex-direction:column}
+.kpi-l{font-size:var(--fs-12);color:var(--ink-3)}
+.kpi-v{font-size:var(--fs-20);font-weight:700;line-height:1.1}
+.kpi-v small{margin-left:2px;font-size:var(--fs-12);font-weight:600;color:var(--ink-2)}
+/* 数字の下の比較（Kpi の sub）と、前の期間との差（Delta）。良くなった差は緑、悪くなった差は茶。
+   position は読み上げ用の「（改善）」（.sr-only）の位置の基準（表のスクロールの外に出さない） */
+.kpi-s{display:flex;align-items:baseline;gap:6px;margin-top:2px;font-size:var(--fs-11);color:var(--ink-3)}
+.delta{position:relative;font-size:var(--fs-12);font-weight:700;white-space:nowrap}
+.delta.good{color:var(--ok-ink)}.delta.bad{color:var(--warn)}.delta.flat{color:var(--ink-3)}
+/* 押せる枠: ホバーで地、押し込まれた状態（その値で絞り込み・強調中）は淡い選択（薄い主要色の地、アイコンは一段濃い薄い地に濃い主要色、ラベルを主要色に）。ベタ塗りにしない */
+.kpi.press{transition:background .16s}
+.kpi.press:hover{background:var(--hover)}
+.kpi.press:active{background:var(--press)}
+.kpi.press.on{background:var(--pri-soft)}
+.kpi.press.on .kpi-ic{background:var(--solid-bright);color:var(--on-solid)}
+.kpi.press.on .kpi-l{color:var(--pri-ink)}
+/* 押し込まれた枠のホバー（押すと戻る）は一段濃い薄い地 */
+.kpi.press.on:hover{background:var(--pri-soft-2)}
+.kpi.press.on:hover .kpi-l{color:var(--pri-ink-2)}
+.kpi.press.on:active{background:var(--pri-press)}
+.kpi.press.on:active .kpi-l{color:var(--pri-ink-2)}
+/* 押した瞬間に変える（土台の base.css は押す面の .kpi-action だけなので、地を持つ枠にも書く。畳む帯の動きの指定より強く） */
+.kpi.press:active,.kpis-wrap > .kpis > .kpi.fold.press:active{transition-duration:0s}
+
+/* ---------- 幅に合わせて畳む帯（ui/Kpi.tsx の KpiBand） ---------- */
+/* 帯は折り返さず、入らないまとまりを 1 枠にまとめる（.kpis だけなら折り返す）。.kpis-measure は幅を測るための見えない写し */
+.kpis-wrap{position:relative;margin:var(--shell-top) var(--shell-x) var(--shell-gap)}
+.kpis-wrap > .kpis{flex-wrap:nowrap}
+.kpis-wrap > .kpis > .kpi{box-shadow:none}
+.kpis-measure{position:absolute;top:0;left:0;width:0;height:0;overflow:hidden;visibility:hidden;pointer-events:none}
+.kpis-measure > .kpis{position:absolute;width:max-content}
+/* 畳んだ段で使わない項目。幅・余白・線・透明度を 0 にして、切り替わりをなめらかに。
+   幅は本来の幅（--kpi-w、KpiBand が測る）と 0 のあいだで動かす（大きめの上限で動かすと止まって見えてからガクッと動く） */
+.kpis-wrap > .kpis > .kpi.fold{max-width:var(--kpi-w,320px);overflow:hidden;transition:max-width .28s var(--ease-in-out),padding .28s var(--ease-in-out),border-right-width .28s var(--ease-in-out),opacity .2s ease-out,border-color .28s,background .16s}
+.kpis-wrap > .kpis > .kpi.hide{max-width:0;padding-left:0;padding-right:0;opacity:0;border-right-width:0}
+@media (prefers-reduced-motion: reduce){.kpis-wrap > .kpis > .kpi.fold{transition:none}}
+/* まとめた枠を押して開く一覧（1 つずつの枠を縦に並べる）。枠の下に浮かせ、高さの上限を超えたら中だけスクロール（位置の left は KpiBand が決める） */
+.kpi-pop{position:absolute;top:calc(100% + 6px);left:0;z-index:85;display:grid;min-width:200px;max-width:calc(100vw - 32px);max-height:min(360px,60vh);overflow:auto;padding:6px;
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow-2);animation:popIn .18s var(--ease-in-out)}
+.kpi-pop > .kpi{padding:6px 10px;border-right:0;border-radius:8px}
+@media (prefers-reduced-motion: reduce){.kpi-pop{animation:none}}
+/* 初めて出したときと画面を切り替えた直後（.instant、KpiBand の resetKey）は動かさずにすぐ出す */
+.kpis-wrap.instant > .kpis > .kpi.fold,.kpis-wrap.instant .roll-col,.kpis-wrap.instant .roll-strip{transition:none}
+/* 枠の余白とアイコンは、窓の幅でなめらかに詰める（375 → 1180px で、上下 6 → 10、左右 10 → 18、間 6 → 10、アイコン 28 → 34px。区切りで段を付けない。
+   広い窓では上限で止め、狭めると主役に幅・高さを回すよう下限まで詰める。隠した枠（.hide）にも当て、上下の余白で帯の高さを保たせない（左右は .hide の 0 が勝つ）） */
+.kpis-wrap > .kpis > .kpi{padding:clamp(6px, calc(6px + (100vw - 375px) * 4 / 805), 10px) clamp(10px, calc(10px + (100vw - 375px) * 8 / 805), 18px);gap:clamp(6px, calc(6px + (100vw - 375px) * 4 / 805), 10px)}
+.kpis-wrap .kpi-ic{width:clamp(28px, calc(28px + (100vw - 375px) * 6 / 805), 34px);height:clamp(28px, calc(28px + (100vw - 375px) * 6 / 805), 34px)}
+/* スマホ幅: 左詰めのまま（余りは帯の右端にまとめる）。入らないときは先頭の枠だけが縮み、名前を省略記号で詰める */
+@media (max-width:600px){
+  .kpis-wrap > .kpis{overflow:hidden}
+  .kpis-wrap > .kpis > .kpi:first-child{flex:0 1 auto;min-width:0}
+  .kpis-wrap .kpi-b{min-width:0}
+  .kpis-wrap .kpi-l{overflow:hidden;text-overflow:ellipsis}
+}

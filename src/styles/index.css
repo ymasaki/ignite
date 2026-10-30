@@ -1,0 +1,23 @@
+/* 汎用のデザインシステムのスタイルの入口。変数 → 土台 → 部品の順に読む。
+   アプリはこの後にテーマ（トークンの上書き・追加）→ アプリの部品 → 画面の配置を読む（カスケード。DESIGN.md） */
+@import './tokens.css';
+@import './skins/blue.css';
+@import './skins/green.css';
+@import './dark.css';
+@import './base.css';
+@import './assist.css';
+
+@import './components/button.css';
+@import './components/controls.css';
+@import './components/chip.css';
+@import './components/avatar.css';
+@import './components/list.css';
+@import './components/layout.css';
+@import './components/month.css';
+@import './components/motion.css';
+@import './components/kpi.css';
+@import './components/chart.css';
+@import './components/shell.css';
+@import './components/table.css';
+@import './components/settings.css';
+@import './components/panel.css';

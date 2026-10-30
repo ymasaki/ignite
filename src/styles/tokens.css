@@ -1,0 +1,120 @@
+/* デザイントークン（DESIGN.md の 2〜6 章）。色・影・大きさ・動きはここの変数だけを使う。
+   アプリはテーマで値の上書きと、アプリ固有のトークンの追加だけをする。
+   ここの色は既定のスキン（red）のライトモードの値。右に色の段の名前を書く。
+   ほかのスキンは skins/、ダークモードは dark.css が、色のトークンだけを差し替える（DESIGN.md 2 章「スキンとダークモード」） */
+:root{
+  color-scheme:light;
+
+  /* 地・線・文字は無彩色のグレーに、主要色をわずかに混ぜる（テーマカラーに寄せたグレー。スキンごとに雰囲気が変わる）。
+     右は混ぜる前の色の名前 */
+  --bg:color-mix(in srgb,var(--pri) 1.5%,#f6f6f7);      /* neutral/100 */
+  --panel:#ffffff;                                    /* bg/surface */
+  --panel-2:color-mix(in srgb,var(--pri) 1%,#fafafb); /* neutral/50。一段沈んだ地（表の見出し、ホバー） */
+  --hover:color-mix(in srgb,var(--pri) 2%,#f5f5f6); /* 地のない部品（行・項目・アイコンのボタン）のホバーの地。白い地の上でわかり、重くならない濃さ（DESIGN.md 8 章「ホバー」） */
+  --hover-strong:color-mix(in srgb,var(--pri) 2.5%,#f0f0f2); /* 沈んだ地（--panel-2）の上の項目のホバーの地（切り替え・タブの選んでいない項目）。--hover では地と見分けにくいため */
+  /* 押している間（:active）の地。--hover の次の段（DESIGN.md 8 章「押している間」）。その上の --ink-3 が 4.5 を保てる濃さまで */
+  --press:color-mix(in srgb,var(--pri) 2.5%,#eeeef0);
+  --line:color-mix(in srgb,var(--pri) 2%,#e2e2e3);    /* border/subtle */
+  --line-2:color-mix(in srgb,var(--pri) 2.5%,#c9c9cb);  /* border/default */
+  --edge:color-mix(in srgb,var(--pri) 3%,#b0b0b2);    /* border/strong。要素どうしをつなぐ線（つながった行・ツリーの線） */
+
+  /* 文字 */
+  --ink:color-mix(in srgb,var(--pri) 1.5%,#3c3c43);   /* text/default */
+  --ink-2:color-mix(in srgb,var(--pri) 2.5%,#67676c); /* text/secondary */
+  --ink-3:color-mix(in srgb,var(--pri) 3%,#69696e); /* text/tertiary（#7b7b7f）を、小さな文字でも読める濃さ（薄い主要色の地の上でも 4.5:1）まで下げた */
+
+  /* スキンの主要色（ブランドカラー。設定の見本にも使う） */
+  --skin-red:#f04600; --skin-blue:#0080ee; --skin-green:#00c093;
+
+  /* 主要色（ブランドの赤）と濃淡 */
+  --pri:var(--skin-red);
+  --pri-ink:#c13600;    /* text/brand（red/600） */
+  --pri-ink-2:#9a2900;  /* red/700。切り替え・タブの選択中の文字（--thumb の上で読める濃さ。800 は茶色に寄るので 700） */
+  --thumb:var(--pri-soft-2); /* 切り替え・タブの選択中の地 */
+  --pri-soft:#ffece7;   /* red/50（#fff5f3）と red/100 の間。50 は白い地の上でほとんど見えないため */
+  --pri-soft-2:#ffdad0; /* bg/selected-hover（red/100） */
+  --pri-ring:rgba(240,70,0,.18);
+  --av-ring-on:0 0 0 1px var(--panel),0 0 0 2px var(--pri); /* 選んでいる・ホバーした顔アイコンの輪（地の色のすき間 1px ＋ 主要色 1px）。顔を出す場所はすべてこれを使う */
+  --on-pri:#ffffff;
+
+  /* 役割ごとの色（部品は主要色のほかにこちらを読む。スキン・ダークモードが役割ごとに色を変えられるように） */
+  --solid:#c13600; --solid-hover:#9a2900; --on-solid:#ffffff; /* ベタ塗りの地（主ボタン、切り替え・タブの選択中）とその上の文字。主要色の濃い段（red/600・700）。明るい赤は警戒の色に見え、白い文字も読みにくいため */
+  --solid-bright:color-mix(in srgb,var(--pri) 55%,var(--solid)); /* 白いアイコンをのせる明るめのベタ塗り（押した KPI のアイコン）。主要色と --solid の中間で、--solid より浮かず、白いアイコンが 3:1 以上で見える */
+  --link:#c13600; --link-hover:#9a2900;             /* 文字だけのリンク（red/600・700。白地で読める濃さ） */
+  /* 押している間（DESIGN.md 8 章「押している間」）。ホバーの色からもう一段進める（スキンごとに値を持たず、ホバーの色から混ぜて作る）:
+     ベタ塗りと文字だけのリンクは黒を混ぜて濃く、淡い選択の地は主要色を混ぜて濃く（その上の文字は --pri-ink-2） */
+  --solid-press:color-mix(in srgb,var(--solid-hover) 78%,#000);
+  --link-press:color-mix(in srgb,var(--link-hover) 78%,#000);
+  --pri-press:color-mix(in srgb,var(--pri) 14%,var(--pri-soft-2));
+  --focus:var(--pri); --focus-ring:var(--pri-ring); /* キーボードのフォーカスと入力中の欄 */
+  --tip:var(--ink); --on-tip:#ffffff;               /* 吹き出し（ツールチップ）の地と文字 */
+  /* グラフ・表の濃淡（1 色。1 がいちばん濃い。red/500・300・200・100・50） */
+  --chart-1:var(--pri); --chart-2:#ff9c80; --chart-3:#ffbdaa; --chart-4:#ffdad0; --chart-5:#fff5f3;
+
+  /* 意味の色 */
+  --ok-soft:#cbf3e3; --ok-ink:#007357;  /* green/100、text/success */
+  --warn:#946000; --warn-soft:#fff6ec;  /* text/warning、bg/warning-subtle */
+  --hl:#ffeacf;                         /* yellow/100。検索語のハイライト */
+  /* マーカー色（利用者が選んで塗るハイライト。黄・緑・青・紫・桃。地と、色の見本・枠の濃い色。DESIGN.md 2 章の例外） */
+  --mark-1:#fff2c2; --mark-1-line:#a87700;
+  --mark-2:#dcf5e5; --mark-2-line:#23854a;
+  --mark-3:#e5eeff; --mark-3-line:#3768d0;
+  --mark-4:#f3edfe; --mark-4-line:#8456d0;
+  --mark-5:#ffebf0; --mark-5-line:#cc3a6f;
+  --scrim:rgba(0,0,0,.3);
+
+  /* 影 */
+  --shadow-1:0 1px 2px rgba(0,0,0,.08);
+  --shadow:0 1px 2px rgba(0,0,0,.05),0 4px 16px rgba(0,0,0,.06);
+  --shadow-hover:0 1px 2px rgba(0,0,0,.06),0 2px 6px rgba(0,0,0,.07);
+  --shadow-2:0 2px 4px rgba(0,0,0,.06),0 12px 32px rgba(0,0,0,.12);
+
+  /* 大きさ */
+  --control-h:40px;
+
+  /* 画面の段組みの余白（外側の余白。ヘッダーの下の段: KPI・内容の枠）。窓の大きさに合わせて上限と下限のあいだをなめらかに変える
+     （DESIGN.md 5 章「外側の余白」。区切りで段を付けない）。横の余白は幅で、縦の余白は幅と高さの小さいほうで決める。
+     上限は広い窓でも内容の枠に幅・高さを回せる大きさで止める（大きな窓で余白だけが育たないように。2026-09-30）。
+     左右は窓を狭めると最初に詰める余白で、左メニューを畳む区切り（986px 未満）より前に下限の 8px になる
+     （区切りとパネルの幅は下限の 8px で計算している。ui/shellLayout.ts の SHELL_SIZES.gutter。1180px より広いと主役が数 px 狭くなるだけ） */
+  --shell-x:clamp(8px, calc(8px + (100vw - 1180px) * 4 / 260), 12px);    /* 左右: 幅 1180 → 1440px で 8 → 12 */
+  --shell-top:clamp(6px, calc(6px + (100vh - 500px) * 2 / 300), 8px);     /* ヘッダーから最初の段: 高さ 500 → 800px で 6 → 8 */
+  --shell-gap:min(clamp(8px, calc(8px + (100vw - 860px) * 2 / 580), 10px), clamp(6px, calc(6px + (100vh - 500px) * 4 / 300), 10px));       /* 段と段の間: 幅 860 → 1440px で 8 → 10、高さ 500 → 800px で 6 → 10 */
+  --shell-bottom:clamp(8px, calc(8px + (100vh - 500px) * 4 / 300), 12px); /* 最後の段の下: 高さ 500 → 800px で 8 → 12（左右・左メニューとの間と同じ 12px で止める） */
+  /* ヘッダーの余白（同じく区切りで段を付けない）。幅はスマホ（375px）から左メニューを畳む前（1180px）までで、縦は高さ 500 → 800px で詰める */
+  --shell-head-top:min(clamp(10px, calc(10px + (100vw - 375px) * 2 / 805), 12px), clamp(6px, calc(6px + (100vh - 500px) * 6 / 300), 12px)); /* 上: 10 → 12、低い画面は 6 まで */
+  --shell-head-bottom:min(clamp(4px, calc(4px + (100vw - 860px) * 2 / 320), 6px), clamp(0px, calc((100vh - 500px) * 6 / 300), 6px));       /* 下: 幅 860 → 1180px で 4 → 6、低い画面は 0 まで */
+  --shell-head-gap:clamp(8px, calc(8px + (100vw - 375px) * 8 / 805), 16px);   /* 画面名の組と右の操作の間: 8 → 16 */
+  --shell-head-row:clamp(8px, calc(8px + (100vw - 375px) * 2 / 485), 10px);   /* 2 段に組んだときの段の間: 375 → 860px で 8 → 10 */
+  --shell-title-gap:clamp(8px, calc(8px + (100vw - 375px) * 6 / 805), 14px);  /* 画面名と範囲の選択（表示する範囲の切り替え）の間: 8 → 14 */
+
+  /* 動き */
+  --ease-in-out:cubic-bezier(.2,.7,.2,1);
+  /* 少しだけ行き過ぎて戻る（スイッチの切り替えの手応え） */
+  --ease-spring:cubic-bezier(.34,1.32,.5,1);
+  /* 押している間に小さな部品（ボタン・アイコンのボタン・切り替え・タブ・チップ・見本）を縮める量と、離したときにばねで戻る動き（DESIGN.md 8 章「押している間」）。
+     縮める指定は scale（transform と別の指定）で書き、部品の transform の動きと重ねない */
+  --press-scale:.96;
+  --press-back:scale .32s var(--ease-spring);
+
+  /* 文字の大きさの目盛り（3 章）。部品は font-size にこのトークンだけを使う。設定の「文字の大きさ」（assist.ts）が --text-scale を変え、
+     文字だけを大きくする（枠の寸法・余白は変えない） */
+  --text-scale:1;
+  --fs-11:calc(11px * var(--text-scale)); --fs-12:calc(12px * var(--text-scale)); --fs-13:calc(13px * var(--text-scale)); --fs-14:calc(14px * var(--text-scale));
+  --fs-16:calc(16px * var(--text-scale)); --fs-20:calc(20px * var(--text-scale)); --fs-24:calc(24px * var(--text-scale)); --fs-32:calc(32px * var(--text-scale));
+
+  --font:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI","Meiryo",system-ui,sans-serif;
+}
+
+/* 外側の余白を長さとして登録する（vw・vh を含む式を、各要素で計算済みの px として読めるように。監査・JS が値を測る） */
+@property --shell-x{syntax:'<length>';inherits:true;initial-value:12px}
+@property --shell-top{syntax:'<length>';inherits:true;initial-value:8px}
+@property --shell-gap{syntax:'<length>';inherits:true;initial-value:10px}
+@property --shell-bottom{syntax:'<length>';inherits:true;initial-value:12px}
+@property --shell-head-top{syntax:'<length>';inherits:true;initial-value:12px}
+@property --shell-head-bottom{syntax:'<length>';inherits:true;initial-value:6px}
+@property --shell-head-gap{syntax:'<length>';inherits:true;initial-value:16px}
+@property --shell-head-row{syntax:'<length>';inherits:true;initial-value:10px}
+@property --shell-title-gap{syntax:'<length>';inherits:true;initial-value:14px}
+:root[data-text="large"]{--text-scale:1.125}
+:root[data-text="larger"]{--text-scale:1.25}

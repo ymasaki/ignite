@@ -1,0 +1,12 @@
+{
+  "source": ["src", "catalog/src"],
+  "screens": ["catalog/src"],
+  "parts": ["src/ui"],
+  "styles": ["src/styles", "catalog/src"],
+  "themes": ["src/styles/tokens.css", "src/styles/dark.css", "src/styles/assist.css", "src/styles/skins"],
+  "self": true,
+  "forbiddenWords": [
+    { "pattern": "組織|部署|部門|会社|社員|役員|役職|入社|退職|所属|兼務|kubell|OrgNavi", "message": "Ignite に業務の語を書かない。素の値を受け取る部品にする" },
+    { "pattern": "from\\s+['\"]@/", "message": "Ignite からアプリ（@/）を読まない" }
+  ]
+}

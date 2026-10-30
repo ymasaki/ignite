@@ -1,0 +1,58 @@
+{
+  "name": "@ymasaki/ignite",
+  "version": "1.0.0",
+  "description": "Web・デスクトップのアプリで同じ見た目と使い勝手をそろえるデザインシステム",
+  "type": "module",
+  "license": "UNLICENSED",
+  "repository": { "type": "git", "url": "git+https://github.com/ymasaki/ignite.git" },
+  "publishConfig": { "registry": "https://npm.pkg.github.com" },
+  "sideEffects": ["*.css"],
+  "main": "./dist/index.js",
+  "types": "./dist/src/index.d.ts",
+  "bin": { "ignite": "./dist/cli.js" },
+  "exports": {
+    ".": { "types": "./dist/src/index.d.ts", "default": "./dist/index.js" },
+    "./styles.css": "./dist/styles.css",
+    "./tokens.css": "./dist/tokens.css",
+    "./audit": { "types": "./dist/audit/index.d.ts", "default": "./dist/audit.js" },
+    "./DESIGN.md": "./DESIGN.md",
+    "./package.json": "./package.json"
+  },
+  "files": ["dist", "DESIGN.md", "CHANGELOG.md", "docs", "templates"],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "prepare": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "catalog": "vite catalog",
+    "check:design": "node dist/cli.js check",
+    "audit:design": "playwright test -c catalog/playwright.audit.config.ts",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "peerDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.60.0",
+    "@tabler/icons-react": "^3.48.0",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
+  },
+  "peerDependenciesMeta": {
+    "@axe-core/playwright": { "optional": true },
+    "@playwright/test": { "optional": true }
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.60.0",
+    "@tabler/icons-react": "^3.48.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "esbuild": "^0.28.0",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "typescript": "^5.7.0",
+    "vite": "^8.0.11",
+    "vitest": "^5.0.2"
+  }
+}

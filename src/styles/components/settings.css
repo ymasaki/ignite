@@ -1,0 +1,49 @@
+/* 設定の画面（ui/Settings.tsx）。ほかの画面と同じ 1 枚の面（.board）の中に、まとまり（見出しと行）を縦 1 列に並べ、面の中でスクロールする。
+   行は読みやすい幅（720px）で止める（詳細パネルを開いて内容の領域が狭くなっても、並びが変わらない）。
+   外側の余白は持たない（アプリの枠の内容の段 .content の余白に任せる。ほかの画面と左端がそろう） */
+/* 面は行の幅（720px）＋左右の余白で止め、左に寄せる（広い窓で、中身のない白い面が右に広がらないように） */
+.settings-board{max-width:768px}
+.settings{display:flex;flex-direction:column;gap:36px;flex:1;min-width:0;min-height:0;overflow-y:auto;padding:8px 24px 24px;border-radius:14px}
+.setting-group{flex:none;width:100%;max-width:720px;min-width:0}
+/* 面の下端に固定する段（まとめて保存する画面の「保存」と知らせ）。行と同じ幅で、上に線を引く */
+.settings-foot{display:flex;flex:none;align-items:center;justify-content:flex-end;gap:12px;max-width:768px;padding:12px 24px;border-top:1px solid var(--line);font-size:var(--fs-12);color:var(--ink-3)}
+/* まとまりの見出し。まとまりの切れ目がわかるように、間を広く取り（上の gap）、見出しを一段大きくして下に主要色の薄い線を引く（Section の見出しと同じ線） */
+.setting-h{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;border-bottom:2px solid var(--pri-soft-2)}
+.setting-h h2{margin:0;font-size:var(--fs-16);font-weight:700}
+.setting-h + .setting-row,.setting-h + .setting-body{border-top:0}
+.setting-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;min-height:56px;padding:8px 0;border-top:1px solid var(--line);font-size:var(--fs-13)}
+.setting-l{display:flex;flex-direction:column;min-width:0;color:var(--ink-2)}
+.setting-l small{font-size:var(--fs-12);color:var(--ink-3)}
+.setting-v{display:flex;flex-wrap:wrap;align-items:center;gap:8px;min-width:0;color:var(--ink)}
+/* 行の右端に置いたプルダウンの一覧は、右端をそろえて左へ開く（既定の左そろえだと、面の右端からはみ出して切れる） */
+.setting-v .select .popover-body{left:auto;right:0}
+/* 1 行の入力欄（TextField）を置いた行は、値の側を広げる（狭い幅では名前の下に回って幅いっぱい） */
+.setting-v:has(> .field.wide){flex:1 1 280px;max-width:420px}
+/* 押せる行（詳細を開く）。まとまりの左右の余白まで地を広げ、ホバーは一覧の行と同じ地 */
+/* 行の上の線は、ほかの行と同じ幅で引く（行の箱は左右に 12px 広く角丸なので、線を箱の枠で引くと長く、両端が曲がる） */
+.setting-row.press{position:relative;width:calc(100% + 24px);margin:0 -12px;padding:8px 12px;border-top:0;border-radius:8px;text-align:left}
+.setting-row.press::before{content:"";position:absolute;top:0;left:12px;right:12px;border-top:1px solid var(--line)}
+.setting-h + .setting-row.press::before{content:none}
+.setting-row.press:hover{background:var(--hover)}
+.setting-row.press:active{background:var(--press)}
+.setting-row.press.on{background:var(--pri-soft)}
+.setting-row.press.on .setting-l{color:var(--pri-ink)}
+.setting-row.press.on:hover{background:var(--pri-soft-2)}
+.setting-row.press.on:hover .setting-l{color:var(--pri-ink-2)}
+.setting-row.press.on:active{background:var(--pri-press)}
+.setting-row.press.on:active .setting-l{color:var(--pri-ink-2)}
+.setting-go{flex:none;color:var(--ink-3)}
+.setting-key{min-width:24px;padding:0 6px;border:1px solid var(--line-2);border-radius:6px;background:var(--panel-2);font:inherit;font-size:var(--fs-12);line-height:20px;text-align:center;color:var(--ink-2)}
+/* まとまりの中の自由な中身（入力欄と送信のボタン、カードなど）。行と同じく上に線を引く */
+.setting-body{display:grid;gap:8px;padding:12px 0 8px;border-top:1px solid var(--line)}
+.setting-actions{display:flex;align-items:center;justify-content:flex-end;gap:12px;min-height:34px;font-size:var(--fs-12);color:var(--ink-3)}
+.setting-note{margin-right:auto}
+/* テーマカラーの見本（実際の色の丸で選ぶ）。選んでいるものは枠と地で示す */
+.swatches{display:flex;flex-wrap:wrap;gap:8px}
+.swatch{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 12px 0 8px;border:1px solid var(--line-2);border-radius:99px;background:var(--panel);font-size:var(--fs-13);color:var(--ink-2)}
+.swatch:hover{background:var(--hover)}
+.swatch{transition:var(--press-back)}
+.swatch:active{background:var(--press);scale:var(--press-scale)}
+.swatch[aria-pressed="true"]{border-color:var(--pri);background:var(--pri-soft);color:var(--pri-ink);box-shadow:0 0 0 3px var(--pri-ring)}
+.sw{width:18px;height:18px;border-radius:50%}
+.sw-red{background:var(--skin-red)}.sw-blue{background:var(--skin-blue)}.sw-green{background:var(--skin-green)}
