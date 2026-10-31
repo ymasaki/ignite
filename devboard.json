@@ -1,4 +1,8 @@
 {
+  "icon": "docs/logo/ignite-icon.svg",
+  "staging": {
+    "url": "http://localhost:5199"
+  },
   "workflow": {
     "base": "main",
     "setup": "npm ci",
