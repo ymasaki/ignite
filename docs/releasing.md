@@ -33,9 +33,11 @@
 ## 公開
 
 1. `package.json` の版と `CHANGELOG.md` を直す
-2. `bash scripts/test.sh` を通す
+2. `bash scripts/test.sh` を通す。`npm pack --pack-destination /tmp` で公開せず配布物も確認する
 3. `git tag v1.2.0` を付けて push する
 4. `npm publish`（`publishConfig` で GitHub Packages へ。`write:packages` の権限が要る）
+
+`npm pack` と `npm publish` は `prepack` でビルドしてから配布物を作ります。開発依存を含めて `npm ci` しておきます。`--ignore-scripts` はこの保証を省くため、通常の配布では付けません。`prepare` は開発時と Git 経由の導入に備えて維持しています。
 
 ## 最初の公開の前に要ること
 

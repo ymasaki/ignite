@@ -1,8 +1,10 @@
 # Ignite を採用する
 
+Node.js 22.12.0 以上を使います。以下の `npx ignite` は、導入済みの Ignite の CLI を実行します。
+
 ## 1. 取得の設定
 
-Ignite は GitHub Packages の Private パッケージとして配ります。アプリのリポジトリの `.npmrc` に次を書き、`read:packages` の権限を持つトークンを環境変数 `GITHUB_TOKEN` に入れます（トークンをコミットしない）。
+Ignite は GitHub Packages の Private パッケージとして配ります。アプリのリポジトリの `.npmrc` に次を書き、パッケージへのアクセス権と `read:packages` の権限を持つ Personal access token (classic)を環境変数 `GITHUB_TOKEN` に入れます（トークンをコミットしない）。
 
 ```
 @ymasaki:registry=https://npm.pkg.github.com
@@ -17,6 +19,12 @@ npm install -D @playwright/test @axe-core/playwright
 npx playwright install chromium
 ```
 
+`init --app` のひな形を起動・ビルドする場合は、開発依存も入れます。
+
+```sh
+npm install -D vite @vitejs/plugin-react typescript @types/react @types/react-dom
+```
+
 新しいアプリは `npx ignite init --app`、既存のアプリは `npx ignite init` を実行します。どちらも、置いてあるファイルは上書きしません。
 
 | 置かれるもの | 役割 |
@@ -26,7 +34,7 @@ npx playwright install chromium
 | `playwright.ignite.config.ts` | 監査の実行の設定。ポート 5317 を使う |
 | `AGENTS.md` の Ignite の節（`CLAUDE.md` があればそこにも） | AI エージェント向けの決まり |
 | `.claude/skills/ignite-audit`・`.agents/skills/ignite-audit` | 監査のスキル |
-| `package.json` の `ignite:check`・`ignite:audit` | 実行の入口 |
+| `package.json` の `ignite:check`・`ignite:audit`・`ignite:sync`・`ignite:upgrade` | 実行の入口 |
 
 ## 3. アプリに組み込む（既存のアプリ）
 
@@ -76,7 +84,8 @@ npm run ignite:audit    # 描いた画面の監査。結果は test-results-audi
 ## 更新を取り込む
 
 ```sh
-npx ignite upgrade           # 最新へ。1.2.0 のように版も指定できる
+npm run ignite:upgrade       # 最新へ。major の更新も含む
+# npm run ignite:upgrade -- 1.2.0 で版を指定できる
 npm run ignite:audit         # 見た目の確認
 ```
 
@@ -95,3 +104,17 @@ npm run ignite:audit         # 見た目の確認
 
 - CSS のクラス名とトークン名は Ignite の公開の約束です。ただし、部品の見た目をアプリの CSS で上書きしないでください（更新で壊れます）。必要なものは Ignite に修飾を足します。
 - Ignite 以外のアプリのコードを Ignite に書きません。アプリの層の決まりは `DESIGN.md` 0 章にあります。
+
+## 更新を確定する
+
+更新前に作業をコミットし、更新後は `package.json` とロックファイル、同期された規約・スキルを一緒にコミットします。CI や別の端末では `npm ci` で同じ版を再現します（取得の認証設定も必要です）。
+
+`ignite upgrade` の検査が失敗しても、パッケージと規約は更新済みです。表示された変更履歴に沿ってアプリを修正し、`npm run ignite:check` と `npm run ignite:audit` を通します。自動では元に戻りません。
+
+古い採用アプリで `ignite:upgrade` がまだない場合は、まず旧版にもある `npx ignite upgrade` で 1.1.1 以降へ更新し、その後 `npx ignite init` を実行すると追加されます。既存のスクリプトは保持されます。
+
+## レジストリ公開前に試す
+
+Ignite 側で `npm pack --pack-destination /tmp` を実行して作った `.tgz` を、採用アプリ側で `npm install /絶対パス/ymasaki-ignite-1.1.1.tgz` として導入できます。その後の `init` は同じです。更新も `npx ignite upgrade /絶対パス/次の版.tgz` で試せます。
+
+`.tgz` のローカルパスを記録したロックファイルは、別の端末でそのまま使えません。継続利用では非公開レジストリへ配布した版に切り替えてください。

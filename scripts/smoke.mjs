@@ -40,6 +40,15 @@ try {
   assert(init.status === 0, 'ignite init --app が通る', init.stdout + init.stderr)
   assert(read('AGENTS.md').includes('アプリ固有の決まり') && read('AGENTS.md').includes(`ignite:begin ${pack.version}`), 'AGENTS.md に Ignite の節が足され、元の文は残る')
   assert(fs.existsSync(path.join(app, '.claude/skills/ignite-audit/SKILL.md')), '監査のスキルが置かれる')
+  const scripts = JSON.parse(read('package.json')).scripts
+  assert(scripts['ignite:upgrade'] === 'ignite upgrade' && scripts['ignite:sync'] === 'ignite sync', '更新と同期の npm スクリプトが置かれる')
+  scripts['ignite:upgrade'] = 'echo custom-upgrade'
+  const custom = JSON.parse(read('package.json'))
+  custom.scripts = scripts
+  fs.writeFileSync(path.join(app, 'package.json'), JSON.stringify(custom))
+  assert(ignite('init', '--app').status === 0, 'init を再実行できる')
+  assert(JSON.parse(read('package.json')).scripts['ignite:upgrade'] === 'echo custom-upgrade', '既存の更新スクリプトを保持する')
+
   run('npx', ['tsc', '--noEmit'])
   ok('型が通る')
   run('npx', ['vite', 'build'])

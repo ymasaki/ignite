@@ -16,12 +16,14 @@ Web アプリで同じ見た目・使い勝手・UX をそろえるデザイン�
 
 ## 使い始める
 
-[docs/adopting.md](docs/adopting.md) を見てください。新しいアプリなら次の 2 行で動きます。
+[docs/adopting.md](docs/adopting.md) を見てください。Node.js 22.12.0 以上と、非公開の GitHub Packages を取得する認証設定が必要です。設定後、次のコマンドで部品とひな形を取り込めます。
 
 ```sh
 npm install @ymasaki/ignite react react-dom @tabler/icons-react
 npx ignite init --app
 ```
+
+起動・監査に必要な開発依存の導入も含め、[採用手順](docs/adopting.md)に沿って進めてください。更新は `npm run ignite:upgrade`、規約だけの同期は `npm run ignite:sync` です。
 
 ## 開発
 

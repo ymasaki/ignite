@@ -56,7 +56,7 @@ function init(args: string[]): number {
   const pj = path.join(root, 'package.json')
   if (fs.existsSync(pj)) {
     const pkg = JSON.parse(fs.readFileSync(pj, 'utf8')) as { scripts?: Record<string, string> }
-    pkg.scripts = { 'ignite:check': 'ignite check', 'ignite:audit': 'playwright test -c playwright.ignite.config.ts', ...pkg.scripts }
+    pkg.scripts = { 'ignite:sync': 'ignite sync', 'ignite:upgrade': 'ignite upgrade', 'ignite:check': 'ignite check', 'ignite:audit': 'playwright test -c playwright.ignite.config.ts', ...pkg.scripts }
     fs.writeFileSync(pj, `${JSON.stringify(pkg, null, 2)}\n`)
   }
   const synced = sync(root, self)
