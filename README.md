@@ -1,3 +1,5 @@
+<img src="docs/logo/ignite-icon.svg" alt="Ignite のロゴ" width="72" height="72">
+
 # Ignite
 
 Web アプリで同じ見た目・使い勝手・UX をそろえるデザインシステムです。デザインの決まり、React の UI 部品、決まりどおりかを確かめる監査を 1 つのパッケージで配ります。デスクトップアプリへの展開は次の段階です。
