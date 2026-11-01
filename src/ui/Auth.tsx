@@ -21,8 +21,8 @@ export function AuthScreen({ mark, name, title, footer, children }: { mark?: Rea
       <div className="auth-column">
         <section className="auth-card" aria-labelledby={titleId}>
           <div className="auth-brand">
-            {mark}
-            <span>{name}</span>
+            {mark && <span className="auth-mark">{mark}</span>}
+            <span className="auth-name">{name}</span>
           </div>
           <h1 className="auth-title" id={titleId}>{title}</h1>
           {children}
