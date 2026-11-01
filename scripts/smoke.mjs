@@ -56,6 +56,26 @@ try {
   assert(ignite('init', '--app').status === 0, 'init を再実行できる')
   assert(JSON.parse(read('package.json')).scripts['ignite:upgrade'] === 'echo custom-upgrade', '既存の更新スクリプトを保持する')
 
+  // 配布された公開型と実行経路の両方を使って、採用側の拡張を接続する。
+  const auditFile = path.join(app, 'e2e/ignite.audit.ts')
+  fs.writeFileSync(auditFile, fs.readFileSync(auditFile, 'utf8').replace('defineIgniteAudit({', `
+const extension: import('@ymasaki/ignite/audit').AuditScreen = {
+  name: '拡張', path: '/',
+  axe: {
+    prepare: async (page) => { await page.evaluate(() => { document.body.dataset.axePrepared = 'yes' }) },
+    restore: async (page) => {
+      if (await page.locator('body').getAttribute('data-axe-prepared') !== 'yes') throw new Error('prepare did not run')
+      await page.evaluate(() => { delete document.body.dataset.axePrepared })
+    },
+  },
+  layout: { replace: [], measure: async (page) => {
+    if (await page.locator('body').getAttribute('data-axe-prepared')) throw new Error('axe preparation leaked into layout')
+    const findings: import('@ymasaki/ignite/audit').AuditFinding[] = []
+    return findings
+  } },
+}
+defineIgniteAudit({`).replace('screens: [', 'screens: [extension,'))
+
   // 別端末を模し、生成物・node_modules・npm キャッシュを引き継がず lockfile だけで復元する。
   const clean = path.join(tmp, 'clean-app')
   fs.cpSync(app, clean, { recursive: true, filter: (source) => !['node_modules', 'dist'].includes(path.basename(source)) })

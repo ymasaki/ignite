@@ -2,10 +2,15 @@
 
 採用アプリは `npx ignite upgrade` でこの内容を確かめて取り込む。形式は [docs/releasing.md](docs/releasing.md)。
 
-## 未公開
+## 1.2.0（2026-11-02）
+
+### 追加
+
+- 画面監査にaxe専用の前処理・復元と、段組みの一部を採用側の測定で置換する設定を追加。設定なしの既存監査は維持
 
 ### 修正
 
+- サブディレクトリからの `ignite check --staged` でもGitのindexを読めるよう修正
 - 固定版の相対vendor配布とPrivate Packagesへの切替条件を明記
 - 配布の通し確認に、空キャッシュ・スクリプト無効でのlockfile復元と公開入口の検証を追加
 

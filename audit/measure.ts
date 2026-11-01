@@ -1,6 +1,8 @@
 // DESIGN.md の決まりのうち、描いた画面で測れるもの。page.evaluate の中で動くので、外の変数を読まない（引数で受ける）。
 import type { Page } from '@playwright/test'
 
+export type LayoutMeasurement = 'rows' | 'boardLeft' | 'boardRight' | 'boardBottom'
+
 export interface MeasureArgs {
   FONT_SIZES: number[]
   FONT_WEIGHTS: string[]
@@ -10,11 +12,12 @@ export interface MeasureArgs {
   overflow: string
   bars: string
   frames: string
+  skipLayout?: LayoutMeasurement[]
 }
 export type Measured = { rule: string; where: string; expected: string; actual: string }
 
 export function measure(page: Page, args: MeasureArgs): Promise<Measured[]> {
-  return page.evaluate(({ FONT_SIZES, FONT_WEIGHTS, RADII, SHELL, rows: rowSel, overflow, bars, frames }) => {
+  return page.evaluate(({ FONT_SIZES, FONT_WEIGHTS, RADII, SHELL, rows: rowSel, overflow, bars, frames, skipLayout = [] }) => {
     const out: Measured[] = []
     const root = getComputedStyle(document.querySelector('.mainwrap') || document.documentElement)
     const px = (v: string) => parseFloat(root.getPropertyValue(v))
@@ -40,7 +43,7 @@ export function measure(page: Page, args: MeasureArgs): Promise<Measured[]> {
     // 段は本体（main.shell-main、display:contents）の子。位置は箱を持つ .mainwrap で測る
     const body = main?.querySelector(':scope > .shell-main') || main
     if (main && body && header) {
-      const rows = [...body.querySelectorAll(rowSel)].filter(visible)
+      const rows = skipLayout.includes('rows') ? [] : [...body.querySelectorAll(rowSel)].filter(visible)
       let prev = header.getBoundingClientRect().bottom
       rows.forEach((row, i) => {
         const r = row.getBoundingClientRect()
@@ -55,10 +58,10 @@ export function measure(page: Page, args: MeasureArgs): Promise<Measured[]> {
         const m = main.getBoundingClientRect()
         const panel = document.querySelector('.pslot')
         const right = panel && visible(panel) ? panel.getBoundingClientRect().right : b.right
-        if (!near(b.left - m.left, shell.x)) out.push({ rule: '段組みの余白（5 章）', where: '内容の枠の左', expected: `${shell.x}px（--shell-x）`, actual: `${Math.round(b.left - m.left)}px` })
+        if (!skipLayout.includes('boardLeft') && !near(b.left - m.left, shell.x)) out.push({ rule: '段組みの余白（5 章）', where: '内容の枠の左', expected: `${shell.x}px（--shell-x）`, actual: `${Math.round(b.left - m.left)}px` })
         // 設定の面は行の幅で止めて左に寄せる（7 章「画面の型」の設定）ので、右は測らない
-        if (!board.classList.contains('settings-board') && !near(m.right - right, shell.x)) out.push({ rule: '段組みの余白（5 章）', where: '内容の枠（詳細パネルを含む）の右', expected: `${shell.x}px（--shell-x）`, actual: `${Math.round(m.right - right)}px` })
-        if (!near(m.bottom - b.bottom, shell.bottom)) out.push({ rule: '段組みの余白（5 章）', where: '内容の枠の下', expected: `${shell.bottom}px（--shell-bottom）`, actual: `${Math.round(m.bottom - b.bottom)}px` })
+        if (!skipLayout.includes('boardRight') && !board.classList.contains('settings-board') && !near(m.right - right, shell.x)) out.push({ rule: '段組みの余白（5 章）', where: '内容の枠（詳細パネルを含む）の右', expected: `${shell.x}px（--shell-x）`, actual: `${Math.round(m.right - right)}px` })
+        if (!skipLayout.includes('boardBottom') && !near(m.bottom - b.bottom, shell.bottom)) out.push({ rule: '段組みの余白（5 章）', where: '内容の枠の下', expected: `${shell.bottom}px（--shell-bottom）`, actual: `${Math.round(m.bottom - b.bottom)}px` })
       }
       // 5 章: ヘッダーの左端は内容の段と同じ --shell-x。左メニューのつまみがあるときは、つまみから 8px 離す
       const first = [...header.children].find(visible)

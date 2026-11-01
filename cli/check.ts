@@ -319,7 +319,7 @@ const git = (root: string, args: string[]) => execFileSync('git', args, { cwd: r
 /** コミットされる内容（git の index）を読む。並行して作業中のファイルを巻き込まない */
 function stagedFiles(root: string, config: CheckConfig): Map<string, string> {
   const out = new Map<string, string>()
-  for (const name of git(root, ['ls-files', '--cached', '--', ...config.source]).split('\n').filter(Boolean)) out.set(name, git(root, ['show', `:${name}`]))
+  for (const name of git(root, ['ls-files', '--cached', '--', ...config.source]).split('\n').filter(Boolean)) out.set(name, git(root, ['show', `:./${name}`]))
   return out
 }
 

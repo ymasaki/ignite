@@ -8,7 +8,11 @@ import type { Assist } from '../src/assist'
 import { contrastRatio, contrastRulesFor, type ContrastRule } from '../src/contrast'
 import { SKINS } from '../src/skin'
 import { SHELL_SIZES, shellBreakpoints } from '../src/ui/shellLayout'
-import { measure } from './measure'
+import { measure, type LayoutMeasurement, type Measured } from './measure'
+import { withPreparation } from './lifecycle'
+
+export type { LayoutMeasurement } from './measure'
+export type AuditFinding = Measured
 
 export interface AuditScreen {
   name: string
@@ -18,6 +22,10 @@ export interface AuditScreen {
   act?: (page: Page) => Promise<unknown>
   /** アクセシビリティの設定を選んだ状態で開く */
   assist?: Partial<Assist>
+  /** axe の測定中だけ適用する処理。prepare の途中失敗でも restore を呼ぶ */
+  axe?: { prepare: (page: Page) => Promise<unknown>; restore: (page: Page) => Promise<unknown> }
+  /** 指定した段組み測定を採用側で置換する。他の共通測定は維持する */
+  layout?: { replace: LayoutMeasurement[]; measure: (page: Page) => Promise<AuditFinding[]> }
 }
 export interface AuditWidth {
   name: string
@@ -187,7 +195,13 @@ export function defineIgniteAudit(config: IgniteAuditConfig): void {
         // 出てくる動き（フェードイン・パネルの出し入れ）が終わってから測る
         await page.waitForTimeout(1200)
         await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
-        for (const f of [...(await measure(page, args)), ...(await axe(page))]) {
+        const measured = await measure(page, { ...args, skipLayout: s.layout?.replace })
+        const extra = s.layout ? await s.layout.measure(page) : []
+        const hooks = s.axe
+        const accessible = hooks
+          ? await withPreparation(() => hooks.prepare(page), () => hooks.restore(page), () => axe(page))
+          : await axe(page)
+        for (const f of [...measured, ...extra, ...accessible]) {
           if (exceptions.some((e) => e.match.test(`${f.rule.replace(/（.*）/, '')} ${f.where} ${f.expected} ${f.actual}`))) continue
           record(`${f.rule} ${f.where} ${f.expected} ${f.actual}`, f, `${s.name}（${w.name}）`)
         }

@@ -4,7 +4,7 @@ Node.js 22.12.0 以上を使います。以下の `npx ignite` は、導入済�
 
 ## 1. 取得の設定
 
-2026-11-01現在、OrgNavi向けの固定版は **1.1.1の相対vendorアーカイブ**です。GitHub Packagesは正式配布の第一候補ですが、現認証は`read:packages`不足（HTTP 403）で、公開済みか・取得できるかは未確認です。レジストリの設定だけでは取得成立としません。現時点の導入は末尾の「相対アーカイブで継続利用する」に従ってください。
+2026-11-01に承認されたOrgNavi向け初回固定版は **1.1.1の相対vendorアーカイブ**です。監査拡張を使う場合は1.2.0以降の固定版アーカイブを同じ手順で取得し、配布担当が渡す版・元コミット・SHA256を照合します。GitHub Packagesは正式配布の第一候補ですが、現認証は`read:packages`不足（HTTP 403）で、公開済みか・取得できるかは未確認です。レジストリの設定だけでは取得成立としません。導入は末尾の「相対アーカイブで継続利用する」に従ってください。
 
 
 GitHub Packagesが利用可能になった場合はPrivateパッケージとして取得します。アプリのリポジトリの `.npmrc` に次を書き、パッケージへのアクセス権と `read:packages` の権限を持つ Personal access token (classic)を環境変数 `GITHUB_TOKEN` に入れます（トークンをコミットしない）。
@@ -84,6 +84,19 @@ defineIgniteAudit({
 npx ignite check        # ソースの検査。pre-commit では --staged
 npm run ignite:audit    # 描いた画面の監査。結果は test-results-audit/report.md
 ```
+
+### 特殊な画面の測定を接続する（1.2.0以降）
+
+共通規則と監査実装はIgniteが管理し、採用側は画面URL・操作・測定対象と固有の測定を管理します。アプリ固有のスクロールや業務操作のテストは採用側に残します。
+
+`screens` の各画面に次の任意設定を渡せます。設定なしなら従来の監査です。
+
+- `axe: { prepare, restore }`: `(page: Page) => Promise<unknown>` の組。通常測定の後、axe測定中だけ前処理を適用し、`finally`で復元を待ちます。前処理の途中やaxeが失敗しても復元を試み、復元失敗も監査失敗にします。採用側は途中準備からでも復元できる処理を実装してください。
+- `layout: { replace, measure }`: `replace` は公開型 `LayoutMeasurement` の配列。`rows`（ヘッダーから先頭の段と段間）、`boardLeft`・`boardRight`・`boardBottom`（内容枠の各辺）だけを指定できます。`measure` は `(page: Page) => Promise<AuditFinding[]>` で、置換した全測定を採用側で引き継ぎます。ヘッダー左端、文字、角丸、横溢れ、操作の重なり等は共通測定のままです。
+
+`AuditFinding` は `{ rule: string; where: string; expected: string; actual: string }`。両公開型は `@ymasaki/ignite/audit` から読みます。追加結果も共通の例外処理・レポートに入り、callbackの失敗は監査失敗になります。追加測定は通常測定後・axe前処理前に実行します。
+
+置換は誤検知を隠すために使わず、対象となる規則と代替測定の対応をアプリの規約に記録してください。callbackが存在するだけでは検査範囲の同等性は保証されません。既存画面・幅・状態の測定対応表と違反を入れた試験で採用側でも確認します。監査設定・固有テストは `sync` で上書きせず、Ignite管理の規約節とskillだけを同期します。
 
 ## 更新を取り込む
 
