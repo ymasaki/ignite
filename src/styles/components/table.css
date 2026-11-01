@@ -5,6 +5,9 @@
 .data-table th:first-child{text-align:left}
 .data-table.dense th,.data-table.dense td{padding:8px 10px}
 .data-table thead{background:var(--panel-2)}
+/* 行にポインタを載せると、その行の地を変える（色つきのセルの上にも重ねる） */
+.data-table tbody tr{transition:background-color .12s}
+@media (hover:hover){.data-table tbody tr:hover > td{background-image:linear-gradient(var(--hover-strong),var(--hover-strong))}}
 .data-table .heat-0{background:var(--panel)}
 .data-table .heat-1{background:color-mix(in srgb,var(--chart-1) 10%,var(--panel))}
 .data-table .heat-2{background:color-mix(in srgb,var(--chart-1) 12%,var(--panel))}

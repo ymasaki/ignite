@@ -124,7 +124,9 @@ export function LineChart({ series, height = 180, xLabels = [], fit = false, are
           帯はグラフの範囲に収める（両端の点の帯は半分の幅。点が 1 つなら範囲いっぱいの 1 本） */}
       <div className="line-hits" style={{ left: L, width: W - L - R, top: T, height: H - T - B }}>
         {Array.from({ length: points }, (_, i) => (
-          <span key={i} className={points > 1 && (i === 0 || i === points - 1) ? 'edge' : ''} data-tip={[xLabels[i], ...series.filter((s) => s.values[i] != null).map((s) => `${series.length > 1 ? `${s.label} ` : ''}${s.values[i]}${unit}`)].filter(Boolean).join('　')} />
+          <span key={i} className={points > 1 && (i === 0 || i === points - 1) ? 'edge' : ''} data-tip={[xLabels[i], ...series.filter((s) => s.values[i] != null).map((s) => `${series.length > 1 ? `${s.label} ` : ''}${s.values[i]}${unit}`)].filter(Boolean).join('　')}>
+            {series.map((s) => s.values[i] != null && <i key={s.label} className="line-pt" style={{ top: y(s.values[i]!) - T }} aria-hidden="true" />)}
+          </span>
         ))}
       </div>
       {legend && (

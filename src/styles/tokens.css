@@ -58,7 +58,8 @@
   --danger:#c01f3a; --danger-soft:#ffecee;              /* text/danger、bg/danger-subtle */
   --danger-solid:#c01f3a; --danger-solid-hover:#9d1830; --on-danger:#ffffff; /* 危険なボタンの地（白い文字が読める濃さ） */
   --danger-solid-press:color-mix(in srgb,var(--danger-solid-hover) 78%,#000);
-  --hl:#ffeacf;                         /* yellow/100。検索語のハイライト */
+  --hl-line:#f2a31b;                    /* 検索語の下線 */
+  --hl:#ffe08a;                         /* yellow/100。検索語のハイライト */
   /* マーカー色（利用者が選んで塗るハイライト。黄・緑・青・紫・桃。地と、色の見本・枠の濃い色。DESIGN.md 2 章の例外） */
   --mark-1:#fff2c2; --mark-1-line:#a87700;
   --mark-2:#dcf5e5; --mark-2-line:#23854a;

@@ -54,8 +54,9 @@
 .avgroup{display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-width:0}
 /* 読み上げ用の名前（.sr-only）の位置の基準。基準が表のスクロールの外にあると、見えない文字がスクロールの外に出てページが横に送れてしまう */
 .avg-i,.avg-more{position:relative}
-.avg-i{display:inline-flex;border-radius:50%;transition:transform .15s var(--ease-spring)}
-.avg-i:hover{transform:scale(1.15);z-index:1}
+.avg-i{display:inline-flex;border-radius:50%;transition:transform .38s var(--ease-spring)}
+.avg-i:hover{transform:scale(1.2);z-index:1}
+@media (prefers-reduced-motion: reduce){.avg-i{transition:none}}
 .avg-more{font-size:var(--fs-12);color:var(--ink-3)}
 .avgroup.stack{flex-wrap:nowrap;gap:0}
 .avgroup.stack > .avg-i{box-shadow:0 0 0 2px var(--panel)}

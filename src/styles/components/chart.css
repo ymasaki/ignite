@@ -135,3 +135,19 @@
   .sc-col:nth-child(-n+2):hover::after,.line-hits > span:first-child:hover::after{left:0;transform:none;animation-name:tipInEdge}
   .sc-col:nth-last-child(-n+2):hover::after,.line-hits > span:last-child:hover::after{left:auto;right:0;transform:none;animation-name:tipInEdge}
 }
+
+/* ホバーした要素を強調し、ほかを薄くする */
+.bl-f,.sc-col{transition:opacity .15s,filter .15s,background-color .15s}
+@media (hover:hover){
+  .barlist:hover .bl:not(:hover){opacity:.5}
+  .bl:hover .bl-f{filter:saturate(1.25) brightness(.92)}
+  .sc-cols:hover .sc-col:not(:hover){opacity:.55}
+  .line-hits > span{position:relative}
+  .line-hits > span:hover::before{content:"";position:absolute;top:0;bottom:0;left:50%;width:1px;background:var(--pri);opacity:.35}
+  .line-hits > span.edge:first-child:hover::before{left:0}
+  .line-hits > span.edge:last-child:hover::before{left:100%}
+  .line-pt{display:none;position:absolute;left:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:var(--panel);border:2px solid var(--chart-1);box-sizing:border-box;pointer-events:none}
+  .line-hits > span.edge:first-child .line-pt{left:0}
+  .line-hits > span.edge:last-child .line-pt{left:100%}
+  .line-hits > span:hover .line-pt{display:block}
+}
