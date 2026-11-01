@@ -3,7 +3,7 @@
 import { IconChevronDown, IconChevronLeft, IconChevronRight, IconDots } from '@tabler/icons-react'
 import { useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { Button, IconButton } from './Button'
-import { Popover } from './Controls'
+import { Popover, useThumb } from './Controls'
 import { Collapse } from './Motion'
 
 /** 並べるページの番号。最初・最後・今のページの前後を残し、間を '…' にする（1 つだけ飛ぶなら番号のまま） */
@@ -17,10 +17,12 @@ export function pageItems(page: number, count: number, around = 1): (number | '�
 
 /** 長い一覧のページ送り（1 ページ目が 1）。枠が狭ければ番号の代わりに「3 / 20」を出す */
 export function Pagination({ page, count, onChange, label = 'ページ送り' }: { page: number; count: number; onChange: (page: number) => void; label?: string }) {
+  const { ref, thumb, ready } = useThumb(String(page))
   if (count <= 1) return null
   return (
     <nav className="pagination" aria-label={label}>
-      <div className="pg-row">
+      <div className={`pg-row${ready ? ' ready' : ''}`} ref={ref}>
+        <span className="thumb" ref={thumb} aria-hidden="true" />
         <IconButton label="前のページ" disabled={page <= 1} onClick={() => onChange(page - 1)}><IconChevronLeft size={16} stroke={1.8} /></IconButton>
         {pageItems(page, count).map((p, i) => (p === '…' ? <span key={`gap${i}`} className="pg-gap" aria-hidden="true">…</span> : <button key={p} type="button" className="pg-n num" aria-label={`${p}ページ目`} aria-current={p === page ? 'page' : undefined} onClick={() => p !== page && onChange(p)}>{p}</button>))}
         <span className="pg-cur num">{page} / {count}</span>

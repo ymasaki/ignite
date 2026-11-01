@@ -32,6 +32,8 @@ mark{background:var(--hl);color:inherit;border-radius:3px;padding:0 1px}
 :root[data-tips="off"] [data-tip]::after{display:none}
 
 @keyframes tipIn{from{opacity:0;transform:translate(-50%,-2px)}to{opacity:1;transform:translate(-50%,0)}}
+/* 端に近い吹き出し用（中央ぞろえだと窓の外へはみ出すため、部品の端にそろえる） */
+@keyframes tipInEdge{from{opacity:0;transform:translateY(-2px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes fadeOut{from{opacity:1}to{opacity:0}}
 @keyframes spin{to{transform:rotate(360deg)}}

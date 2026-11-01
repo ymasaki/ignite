@@ -75,7 +75,7 @@ export function DatePicker({ value, onChange, label, min, max, placeholder = 'æ—
       className="select datepicker"
       trigger={(open, toggle) => (
         <button ref={btn} id={f.id} type="button" disabled={disabled} className={`btn select-btn ${open ? 'on' : ''}`} aria-invalid={f.invalid || undefined} aria-haspopup="dialog" aria-expanded={open} aria-label={`${f.label ?? ''}: ${shown}`} aria-describedby={f.describedBy} onClick={toggle}>
-          <IconCalendar className="sel-chev" size={15} stroke={1.8} aria-hidden="true" />
+          <IconCalendar className="sel-ico" size={15} stroke={1.8} aria-hidden="true" />
           <span className="sel-label num">{shown}</span>
         </button>
       )}

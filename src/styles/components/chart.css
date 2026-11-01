@@ -129,3 +129,9 @@
   .fn-step:nth-child(even){padding-right:0}
 }
 @media (prefers-reduced-motion: reduce){.fn-col > i{animation:none}}
+
+/* 左右の端に近い列の吹き出しは、列の端にそろえて窓の外へ出さない */
+@media (hover:hover){
+  .sc-col:nth-child(-n+2):hover::after,.line-hits > span:first-child:hover::after{left:0;transform:none;animation-name:tipInEdge}
+  .sc-col:nth-last-child(-n+2):hover::after,.line-hits > span:last-child:hover::after{left:auto;right:0;transform:none;animation-name:tipInEdge}
+}

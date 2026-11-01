@@ -184,6 +184,9 @@ export function FormsPage() {
   const [date, setDate] = useState<string | null>('2026-10-15')
   const [plan, setPlan] = useState<string | null>('a')
   const [mail, setMail] = useState(true)
+  const [view, setView] = useState('list')
+  const [part, setPart] = useState(false)
+  const [partMixed, setPartMixed] = useState(true)
   const [news, setNews] = useState(false)
   const [live, setLive] = useState(true)
   const [role, setRole] = useState('edit')
@@ -205,11 +208,11 @@ export function FormsPage() {
             <FormField label="拠点" hint="打って絞り込む"><Combobox value={city} onChange={setCity} options={CITIES} placeholder="拠点の名前" /></FormField>
             <FormField label="期限"><DatePicker value={date} onChange={setDate} clearable min="2026-01-01" max="2027-12-31" today="2026-10-30" /></FormField>
             <FormField label="プラン" group><RadioGroup value={plan} onChange={setPlan} options={[{ value: 'a', label: '標準', hint: '月 100 件まで' }, { value: 'b', label: '大容量', hint: '月 1,000 件まで' }, { value: 'c', label: '無制限', disabled: true }]} /></FormField>
-            <RadioGroup label="表示" inline value="list" onChange={() => undefined} options={[{ value: 'list', label: '一覧' }, { value: 'grid', label: '格子' }]} />
+            <RadioGroup label="表示" inline value={view} onChange={setView} options={[{ value: 'list', label: '一覧' }, { value: 'grid', label: '格子' }]} />
             <div className="cat-stack">
               <Checkbox label="メールで受け取る" checked={mail} onChange={setMail} />
               <Checkbox label="お知らせを受け取る" hint="月に 1 回" checked={news} onChange={setNews} />
-              <Checkbox label="一部を選んだ状態" checked={false} indeterminate onChange={() => undefined} />
+              <Checkbox label="一部を選んだ状態" checked={part} indeterminate={!part && partMixed} onChange={(v) => (setPartMixed(false), setPart(v))} />
               <Checkbox label="選べない項目" checked disabled onChange={() => undefined} />
             </div>
             <div className="cat-stack">

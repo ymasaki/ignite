@@ -11,7 +11,7 @@
 /* 数字の下の比較（Kpi の sub）と、前の期間との差（Delta）。良くなった差は緑、悪くなった差は茶。
    position は読み上げ用の「（改善）」（.sr-only）の位置の基準（表のスクロールの外に出さない） */
 .kpi-s{display:flex;align-items:baseline;gap:6px;margin-top:2px;font-size:var(--fs-11);color:var(--ink-3)}
-.delta{position:relative;font-size:var(--fs-12);font-weight:700;white-space:nowrap}
+.delta{position:relative;font-size:var(--fs-12);font-weight:400;white-space:nowrap}
 .delta.good{color:var(--ok-ink)}.delta.bad{color:var(--warn)}.delta.flat{color:var(--ink-3)}
 /* 押せる枠: ホバーで地、押し込まれた状態（その値で絞り込み・強調中）は淡い選択（薄い主要色の地、アイコンは一段濃い薄い地に濃い主要色、ラベルを主要色に）。ベタ塗りにしない */
 .kpi.press{transition:background .16s}

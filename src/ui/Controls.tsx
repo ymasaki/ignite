@@ -13,7 +13,7 @@ import { RollingNumber, reducedMotion } from './Motion'
  * 幅の変化で置き直すのはスライドしていないときだけ。動かしはじめてよいか（ready）は状態で持ち、枠のクラスに描く
  * （DOM のクラスを直接足すと、修飾でクラス名が変わって描き直したときに消えるため）
  */
-function useThumb(value: string) {
+export function useThumb(value: string) {
   const ref = useRef<HTMLDivElement>(null)
   const thumb = useRef<HTMLSpanElement>(null)
   const [ready, setReady] = useState(false)
@@ -23,7 +23,7 @@ function useThumb(value: string) {
     if (!box || !th) return
     let sliding = false
     const place = () => {
-      const on = box.querySelector<HTMLElement>('[aria-pressed="true"], [aria-selected="true"]')
+      const on = box.querySelector<HTMLElement>('[aria-pressed="true"], [aria-selected="true"], [aria-current="page"]')
       th.style.opacity = on ? '1' : '0'
       if (!on || !box.clientWidth) return
       th.style.left = `${(on.offsetLeft / box.clientWidth) * 100}%`

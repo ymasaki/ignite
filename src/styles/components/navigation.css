@@ -2,11 +2,14 @@
 
 /* ページ送り。全部出したときの幅（番号 7 つ × 34px ＋ 前後のボタン）が入らなければ「3 / 20」にする */
 .pagination{container-type:inline-size;width:100%}
-.pg-row{display:flex;align-items:center;justify-content:center;gap:2px}
-.pg-n{display:grid;place-items:center;min-width:30px;height:30px;padding:0 6px;border-radius:8px;font-size:var(--fs-13);color:var(--ink-2);transition:var(--press-back)}
+.pg-row{position:relative;display:flex;align-items:center;justify-content:center;gap:2px}
+.pg-n{position:relative;display:grid;place-items:center;min-width:30px;height:30px;padding:0 6px;border-radius:8px;font-size:var(--fs-13);color:var(--ink-2);transition:var(--press-back)}
 .pg-n:hover{background:var(--hover);color:var(--ink)}
 .pg-n:active{background:var(--press);scale:var(--press-scale)}
-.pg-n[aria-current="page"]{background:var(--thumb);color:var(--pri-ink-2);font-weight:700}
+.pg-row .thumb{position:absolute;top:0;left:0;border-radius:8px;background:var(--thumb);pointer-events:none}
+.pg-row.ready .thumb{transition:left .34s var(--ease-spring),top .34s var(--ease-spring),width .34s var(--ease-spring),height .34s var(--ease-spring)}
+@media (prefers-reduced-motion: reduce){.pg-row.ready .thumb{transition:none}}
+.pg-n[aria-current="page"],.pg-n[aria-current="page"]:hover{background:transparent;color:var(--pri-ink-2);font-weight:700}
 .pg-gap{min-width:24px;text-align:center;color:var(--ink-3)}
 .pg-cur{display:none;padding:0 var(--space-2);font-size:var(--fs-13);color:var(--ink-2)}
 @container (max-width:320px){.pg-n,.pg-gap{display:none}.pg-cur{display:block}}
