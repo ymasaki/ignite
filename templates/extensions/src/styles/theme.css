@@ -1,0 +1,3 @@
+/* アプリ固有のトークン。Ignite の mode/skin と同じ属性・公開トークンを使う */
+:root { --appx-state-ink:var(--ink-2); --appx-state-bg:var(--panel-2); }
+:root[data-mode="dark"] { --appx-state-bg:var(--panel); }

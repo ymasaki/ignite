@@ -23,11 +23,31 @@ function assert(cond, label, detail = '') {
 const read = (f) => fs.readFileSync(path.join(app, f), 'utf8')
 const ignite = (...args) => attempt('npx', ['ignite', ...args])
 
+function verifySampleAudit(label) {
+  const file = path.join(app, 'src/ui/SampleRow.tsx')
+  const original = read('src/ui/SampleRow.tsx')
+  const broken = original.replace("? '準備済み'", "? '未設定'")
+  assert(broken !== original, `${label}: 例の違反を作れる`)
+  const args = ['run', 'ignite:audit', '--', '--grep', 'ホーム（PC）|決まりから外れたところがない']
+  try {
+    fs.writeFileSync(file, broken)
+    const result = attempt('npm', args)
+    const report = read('test-results-audit/report.md')
+    assert(result.status === 1 && report.includes('| アプリの状態表示 | `.appx-state` | 準備済み | 未設定 |'), `${label}: サンプル固有の違反で失敗しレポートに載る`, result.stdout + result.stderr + report)
+  } finally {
+    fs.writeFileSync(file, original)
+  }
+  const corrected = attempt('npm', args)
+  assert(corrected.status === 0 && !read('test-results-audit/report.md').includes('| アプリの状態表示 |'), `${label}: 正しい拡張に戻すと成功する`, corrected.stdout + corrected.stderr)
+}
+
 try {
   console.log('1. パッケージを作る')
   const pack = JSON.parse(run('npm', ['pack', '--json', '--pack-destination', tmp, '--ignore-scripts'], repo))[0]
   const v1 = path.join(tmp, pack.filename)
   const files = pack.files.map((f) => f.path)
+  const sampleFiles = files.filter((f) => f.startsWith('templates/extensions/')).map((f) => f.slice('templates/extensions/'.length))
+  assert(sampleFiles.includes('src/ui/SampleRow.tsx') && sampleFiles.includes('e2e/extensions.ts') && files.includes('docs/extensions.md'), '拡張ガイドと実行例が配布される')
   for (const f of ['dist/index.js', 'dist/styles.css', 'dist/cli.js', 'dist/audit.js', 'dist/src/index.d.ts', 'DESIGN.md', 'CHANGELOG.md', 'templates/agent/rules.md', 'templates/app/src/app/App.tsx']) assert(files.includes(f), `${f} が入っている`)
   const manifest = JSON.parse(run('tar', ['xOf', v1, 'package/package.json'], tmp))
   const entries = (value) => typeof value === 'string' ? [value] : Object.values(value).flatMap(entries)
@@ -45,6 +65,13 @@ try {
   run('npm', ['install', '--no-audit', '--no-fund', `./vendor/${pack.filename}`, 'react', 'react-dom', '@tabler/icons-react', 'vite', '@vitejs/plugin-react', 'typescript', '@types/react', '@types/react-dom', '@playwright/test', '@axe-core/playwright'])
   const init = ignite('init', '--app')
   assert(init.status === 0, 'ignite init --app が通る', init.stdout + init.stderr)
+  fs.cpSync(path.join(app, 'node_modules', name, 'templates/extensions'), app, { recursive: true })
+  const owned = new Map()
+  for (const f of sampleFiles) {
+    fs.appendFileSync(path.join(app, f), '\n/* アプリでカスタマイズした拡張。更新時に保持する */\n')
+    owned.set(f, read(f))
+  }
+  const assertOwned = (label) => assert(sampleFiles.every((f) => read(f) === owned.get(f)), label)
   assert(read('AGENTS.md').includes('アプリ固有の決まり') && read('AGENTS.md').includes(`ignite:begin ${pack.version}`), 'AGENTS.md に Ignite の節が足され、元の文は残る')
   assert(fs.existsSync(path.join(app, '.claude/skills/ignite-audit/SKILL.md')), '監査のスキルが置かれる')
   const scripts = JSON.parse(read('package.json')).scripts
@@ -54,6 +81,7 @@ try {
   custom.scripts = scripts
   fs.writeFileSync(path.join(app, 'package.json'), JSON.stringify(custom))
   assert(ignite('init', '--app').status === 0, 'init を再実行できる')
+  assertOwned('init はコピー後にカスタマイズした拡張を上書きしない')
   assert(JSON.parse(read('package.json')).scripts['ignite:upgrade'] === 'echo custom-upgrade', '既存の更新スクリプトを保持する')
 
   // 配布された公開型と実行経路の両方を使って、採用側の拡張を接続する。
@@ -78,6 +106,7 @@ const extension: import('@ymasaki/ignite/audit').AuditScreen = {
   } },
 }
 defineIgniteAudit({`).replace('screens: [', 'screens: [extension,'))
+  owned.set('e2e/ignite.audit.ts', read('e2e/ignite.audit.ts'))
 
   // 別端末を模し、生成物・node_modules・npm キャッシュを引き継がず lockfile だけで復元する。
   const clean = path.join(tmp, 'clean-app')
@@ -116,6 +145,13 @@ defineIgniteAudit({`).replace('screens: [', 'screens: [extension,'))
     console.log('4. 描いた画面の監査')
     const audit = attempt('npm', ['run', 'ignite:audit'])
     assert(audit.status === 0, '監査が通る', audit.stdout.slice(-3000))
+    if (process.env.IGNITE_SMOKE_ARTIFACTS) {
+      fs.mkdirSync(process.env.IGNITE_SMOKE_ARTIFACTS, { recursive: true })
+      const shot = fs.readdirSync(path.join(app, 'test-results-audit')).find((f) => /ホーム-PC\.png$/.test(f))
+      assert(shot, '例の画面画像がある')
+      fs.copyFileSync(path.join(app, 'test-results-audit', shot), path.join(process.env.IGNITE_SMOKE_ARTIFACTS, 'extension-sample.png'))
+    }
+    verifySampleAudit('更新前')
     const css = path.join(app, 'src/styles/app.css')
     const clean = fs.readFileSync(css, 'utf8')
     fs.writeFileSync(css, `${clean}.lscreen-n{font-size:15px}\n.board{border-radius:7px}\n`)
@@ -163,6 +199,7 @@ defineIgniteAudit({`).replace('screens: [', 'screens: [extension,'))
   assert(read('AGENTS.md').includes(`ignite:begin ${next}`) && read('AGENTS.md').includes(MARK) && read('AGENTS.md').includes('アプリ固有の決まり'), 'AI の決まりが更新され、アプリの文は残る')
   assert(!read('AGENTS.md').includes(`ignite:begin ${pack.version}`), '古い節が残らない')
   assert(ignite('sync', '--check').status === 0, 'ignite sync --check が通る')
+  assertOwned('upgrade と sync はカスタマイズしたテーマ・部品・固有監査を保持する')
   fs.writeFileSync(path.join(app, 'src/app/marker.ts'), `import { smokeMarker } from '${name}'\nconsole.log(smokeMarker)\n`)
   fs.appendFileSync(path.join(app, 'src/main.tsx'), "import './app/marker'\n")
   const updated = path.join(tmp, 'updated-app')
@@ -175,6 +212,9 @@ defineIgniteAudit({`).replace('screens: [', 'screens: [extension,'))
   ok('相対vendorで更新したlockfileから空環境復元・型・ビルドが通る')
   const built = fs.readdirSync(path.join(app, 'dist/assets')).map((f) => fs.readFileSync(path.join(app, 'dist/assets', f), 'utf8')).join('')
   assert(built.includes(MARK), '更新した部品がビルドに入る')
+  assert(ignite('check').status === 0, '更新後のサンプルも静的検査が通る')
+  assertOwned('空環境で復元してもアプリ所有の拡張は同一')
+  if (!skipAudit) verifySampleAudit('更新後')
   console.log('\nsmoke: すべて通過')
 } finally {
   fs.rmSync(tmp, { recursive: true, force: true })

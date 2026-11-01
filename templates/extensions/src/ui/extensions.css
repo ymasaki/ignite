@@ -1,0 +1,9 @@
+/* Ignite のセレクタを上書きせず、自分の部品だけに適用する */
+.appx-state {
+  color:var(--appx-state-ink);
+  background:var(--appx-state-bg);
+  font-size:var(--fs-13);
+  padding:var(--space-1) var(--space-2);
+  border-radius:6px;
+  white-space:nowrap;
+}
