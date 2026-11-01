@@ -70,7 +70,10 @@ const extension: import('@ymasaki/ignite/audit').AuditScreen = {
   },
   layout: { replace: [], measure: async (page) => {
     if (await page.locator('body').getAttribute('data-axe-prepared')) throw new Error('axe preparation leaked into layout')
-    const findings: import('@ymasaki/ignite/audit').AuditFinding[] = []
+    const enabled = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--smoke-extra-finding').trim() === 'yes')
+    const findings: import('@ymasaki/ignite/audit').AuditFinding[] = enabled
+      ? [{ rule: 'smoke-extra-rule', where: 'smoke-target', expected: '0', actual: '1' }]
+      : []
     return findings
   } },
 }
@@ -119,6 +122,19 @@ defineIgniteAudit({`).replace('screens: [', 'screens: [extension,'))
     const failed = attempt('npm', ['run', 'ignite:audit'])
     const report = read('test-results-audit/report.md')
     assert(failed.status !== 0 && report.includes('文字の大きさ') && report.includes('15px') && report.includes('角丸'), '描いた画面のずれを監査が見つける', report.slice(0, 1500))
+    fs.writeFileSync(css, `${clean}\n:root{--smoke-extra-finding:yes}\n`)
+    // 画面の測定と、記録した指摘で失敗させる集計テストを一緒に実行する。
+    const extraArgs = ['run', 'ignite:audit', '--', '--grep', '拡張（PC）|決まりから外れたところがない']
+    const extraFailed = attempt('npm', extraArgs)
+    const extraReport = read('test-results-audit/report.md')
+    assert(extraFailed.status === 1 && extraReport.includes('| smoke-extra-rule | `smoke-target` | 0 | 1 |'), '追加測定の違反で監査が失敗し、共通レポートに載る', extraFailed.stdout + extraFailed.stderr + extraReport)
+    const originalAudit = read('e2e/ignite.audit.ts')
+    fs.writeFileSync(path.join(app, 'e2e/ignite.audit.ts'), originalAudit.replace('defineIgniteAudit({', `defineIgniteAudit({
+  exceptions: [{ match: /^smoke-extra-rule smoke-target 0 1$/, why: 'smokeで追加測定の例外処理を確かめる' }],`))
+    const excepted = attempt('npm', extraArgs)
+    const exceptedReport = read('test-results-audit/report.md')
+    assert(excepted.status === 0 && !exceptedReport.includes('smoke-extra-rule'), '対応する例外で追加測定の指摘が除外され、監査が通る', excepted.stdout + excepted.stderr + exceptedReport)
+    fs.writeFileSync(path.join(app, 'e2e/ignite.audit.ts'), originalAudit)
     fs.writeFileSync(css, clean)
   }
 
