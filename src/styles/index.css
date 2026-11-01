@@ -22,6 +22,7 @@
 @import './components/settings.css';
 @import './components/panel.css';
 @import './components/form.css';
+@import './components/auth.css';
 @import './components/overlay.css';
 @import './components/navigation.css';
 @import './components/progress.css';

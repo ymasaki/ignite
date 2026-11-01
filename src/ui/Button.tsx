@@ -7,10 +7,10 @@ import { Spinner } from './Progress'
 
 type Native = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'>
 
-/** variant="danger" は取り消せない操作だけ（削除の確定など）。loading は処理中: 先頭のアイコンを回転に替え、押しても何も起きない（フォーカスは保つ） */
-export function Button({ variant = 'default', icon, active = false, loading = false, className = '', onClick, children, ...rest }: Native & { variant?: 'default' | 'primary' | 'danger'; icon?: ReactNode; active?: boolean; loading?: boolean }) {
+/** variant="danger" は取り消せない操作だけ（削除の確定など）。loading は処理中: 先頭のアイコンを回転に替え、押しても何も起きない（フォーカスは保ち、type="submit" でも送らない） */
+export function Button({ type = 'button', variant = 'default', icon, active = false, loading = false, className = '', onClick, children, ...rest }: Native & { type?: 'button' | 'submit'; variant?: 'default' | 'primary' | 'danger'; icon?: ReactNode; active?: boolean; loading?: boolean }) {
   return (
-    <button type="button" className={`btn ${variant === 'primary' ? 'pri' : variant === 'danger' ? 'danger' : ''} ${active ? 'on' : ''} ${loading ? 'busy' : ''} ${className}`} aria-busy={loading || undefined} aria-disabled={loading || undefined} onClick={loading ? undefined : onClick} {...rest}>
+    <button type={type} className={`btn ${variant === 'primary' ? 'pri' : variant === 'danger' ? 'danger' : ''} ${active ? 'on' : ''} ${loading ? 'busy' : ''} ${className}`} aria-busy={loading || undefined} aria-disabled={loading || undefined} onClick={loading ? (e) => e.preventDefault() : onClick} {...rest}>
       {loading ? <Spinner label="" /> : icon}
       {children}
     </button>

@@ -4,6 +4,11 @@
 
 ## 未リリース
 
+### 追加
+
+- ログインの画面の型 `AuthScreen` と入力 `LoginForm`、パスワードの欄 `PasswordField` を追加
+- `TextField` に `type`・`autoComplete`・`name`・`autoCapitalize`、`Button` に `type="submit"` を追加。既存の使い方は変わらない
+
 ### 修正
 
 - `DatePicker` のアイコンが開くと逆さまになるのを直し、日付の数字を曜日の列の中央にそろえた

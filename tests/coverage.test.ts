@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { validateLogin } from '../src/ui/Auth'
 import { filterOptions, parseNumber, stepNumber } from '../src/ui/Form'
 import { addDays, addMonths, clampDate, monthGrid } from '../src/ui/calendar'
 import { pageItems } from '../src/ui/Navigation'
@@ -40,6 +41,17 @@ describe('数の入力', () => {
     expect(stepNumber(10, 1, 1, 0, 10)).toBe(10)
     expect(stepNumber(null, 1, 1, 5)).toBe(6)
     expect(stepNumber(0, 1e-7, 1e-7)).toBe(1e-7)
+  })
+})
+
+describe('ログインの検証', () => {
+  it('空はエラーの文を返し、見出しの語を使う', () => {
+    expect(validateLogin({ identifier: ' ', password: '' }, 'ユーザー名', 'text')).toEqual({ identifier: 'ユーザー名を入れてください', password: 'パスワードを入れてください' })
+  })
+  it('メールアドレスは形だけを見る。text では見ない', () => {
+    expect(validateLogin({ identifier: 'abc', password: 'x' }, 'メールアドレス', 'email').identifier).toBe('メールアドレスの形で入れてください')
+    expect(validateLogin({ identifier: 'a@b', password: 'x' }, 'メールアドレス', 'email')).toEqual({ identifier: undefined, password: undefined })
+    expect(validateLogin({ identifier: 'abc', password: 'x' }, 'ユーザー名', 'text').identifier).toBeUndefined()
   })
 })
 

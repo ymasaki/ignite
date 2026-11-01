@@ -1,0 +1,24 @@
+/* ログインの画面の型と中身（ui/Auth.tsx）。body がスクロールしないので、画面の中をスクロールする */
+.auth-screen{display:flex;height:100%;padding:var(--space-4);overflow:auto;background:var(--bg)}
+/* 中央寄せは margin:auto（align-items:center だと低い窓で上が切れる） */
+.auth-column{display:grid;gap:var(--space-4);width:100%;max-width:400px;margin:auto}
+.auth-card{display:grid;gap:var(--space-5);min-width:0;padding:var(--space-5);border:1px solid var(--line);border-radius:14px;background:var(--panel);box-shadow:var(--shadow)}
+.auth-brand{display:flex;align-items:center;gap:var(--space-2);min-width:0;margin-bottom:calc(var(--space-2) * -1);font-size:var(--fs-16);font-weight:700;color:var(--ink)}
+.auth-brand span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.auth-title{margin:0;font-size:var(--fs-24);font-weight:700;line-height:1.3;color:var(--ink)}
+.auth-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:var(--space-2) var(--space-3);font-size:var(--fs-12);color:var(--ink-3)}
+
+.login{display:grid;gap:var(--space-4);min-width:0}
+.login-form{display:grid;gap:var(--space-4);min-width:0}
+.login-notice{padding-bottom:var(--space-4)}
+/* 縦に積む面の入力は、主ボタンと同じ高さにそろえる */
+.login-form .field{height:var(--control-h)}
+/* 先頭は知らせの Collapse。閉じた箱のぶん段の間が増えないよう、隙間は開いた知らせの下の余白（.login-notice）で作る */
+.login-form > :first-child{margin-bottom:calc(var(--space-4) * -1)}
+.login-row{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2) var(--space-4)}
+.login-forgot{margin-left:auto}
+.btn.login-submit,.login-alt .btn{justify-content:center;width:100%}
+.btn.login-submit{height:var(--control-h)}
+.login-alt{display:grid;gap:var(--space-2)}
+.login-sep{display:flex;align-items:center;gap:var(--space-3);font-size:var(--fs-12);color:var(--ink-3)}
+.login-sep::before,.login-sep::after{content:"";flex:1;height:1px;background:var(--line)}

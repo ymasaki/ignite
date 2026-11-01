@@ -1,6 +1,7 @@
 import { IconChartLine, IconChecks, IconClock, IconListCheck } from '@tabler/icons-react'
-import { Avatar, AssistSettings, BarList, Board, ChartCard, ChartGrid, DashboardScreen, Delta, EmptyState, EntityRow, Funnel, IconBox, KeyValues, Kpi, KpiBand, LineChart, LinkButton, ListScreen, PanelBody, PanelFrame, PanelHeader, SearchField, Section, Segmented, SettingBody, SettingGroup, SettingKey, SettingRow, SettingsScreen, Sparkline, StackColumns, Stat, Tag, ThemeSettings, TileMap } from '@ymasaki/ignite'
-import { useState } from 'react'
+import { IconBrandGoogle, IconKey } from '@tabler/icons-react'
+import { AuthScreen, Avatar, AssistSettings, BarList, Board, Button, ChartCard, ChartGrid, DashboardScreen, Delta, EmptyState, EntityRow, Funnel, IconBox, KeyValues, Kpi, KpiBand, LineChart, LinkButton, ListScreen, LoginForm, PanelBody, PanelFrame, PanelHeader, SearchField, Section, Segmented, SettingBody, SettingGroup, SettingKey, SettingRow, SettingsScreen, Sparkline, StackColumns, Stat, Tag, ThemeSettings, TileMap } from '@ymasaki/ignite'
+import { useRef, useState, type ReactNode } from 'react'
 import { MONTHS, PROJECTS } from './data'
 
 export function ListPage({ selected, onOpen }: { selected: string | null; onOpen: (id: string) => void }) {
@@ -66,6 +67,50 @@ export function DashboardPage() {
   )
 }
 DashboardPage.Band = Band
+
+/** ログインの型。見本なので、送ると少し待って必ず失敗する */
+export function LoginPage({ mark, onBack }: { mark: ReactNode; onBack: () => void }) {
+  const [kind, setKind] = useState('basic')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string>()
+  const timer = useRef(0)
+  const submit = () => {
+    setError(undefined)
+    setLoading(true)
+    window.clearTimeout(timer.current)
+    timer.current = window.setTimeout(() => {
+      setLoading(false)
+      setError('メールアドレスかパスワードが違います')
+    }, 800)
+  }
+  return (
+    <AuthScreen
+      mark={mark}
+      name="Ignite"
+      title="ログイン"
+      footer={
+        <>
+          <Segmented label="見本の形" value={kind} onChange={setKind} options={[{ value: 'basic', label: '基本' }, { value: 'alt', label: '別の方法あり' }]} />
+          <LinkButton onClick={onBack}>カタログへ戻る</LinkButton>
+        </>
+      }
+    >
+      <LoginForm
+        onSubmit={submit}
+        loading={loading}
+        error={error}
+        remember
+        onForgot={() => undefined}
+        alternatives={kind === 'alt' ? (
+          <>
+            <Button icon={<IconBrandGoogle size={16} stroke={1.8} aria-hidden="true" />}>Google でログインする</Button>
+            <Button icon={<IconKey size={16} stroke={1.8} aria-hidden="true" />}>パスキーでログインする</Button>
+          </>
+        ) : undefined}
+      />
+    </AuthScreen>
+  )
+}
 
 export function SettingsPage() {
   return (

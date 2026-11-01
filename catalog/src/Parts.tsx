@@ -1,5 +1,5 @@
 import { IconCopy, IconDownload, IconPencil, IconPlus, IconSearch, IconSettings, IconTrash } from '@tabler/icons-react'
-import { Accordion, AnimatedList, Appear, Avatar, AvatarGroup, Badge, Board, Button, Checkbox, Chip, Collapse, Combobox, ConfirmDialog, CopyText, Crumbs, DataTable, DatePicker, Dialog, EmptyState, EntityRow, ExternalLink, Expandable, focusFirstInvalid, FormField, Highlight, IconBox, IconButton, KeyValues, LinkButton, MarkPicker, Menu, MonthStepper, Notice, NumberField, Pagination, Popover, ProgressBar, Prose, RadioGroup, RollingNumber, ScreenBar, SearchField, Section, Segmented, Select, Skeleton, Spinner, Stepper, Steps, SubHeading, Switch, Tabs, Tag, TextArea, TextField, toast, useScrollFocus, type TableSort } from '@ymasaki/ignite'
+import { Accordion, AnimatedList, Appear, Avatar, AvatarGroup, Badge, Board, Button, Checkbox, Chip, Collapse, Combobox, ConfirmDialog, CopyText, Crumbs, DataTable, DatePicker, Dialog, EmptyState, EntityRow, ExternalLink, Expandable, focusFirstInvalid, FormField, Highlight, IconBox, IconButton, KeyValues, LinkButton, MarkPicker, Menu, MonthStepper, Notice, NumberField, Pagination, PasswordField, Popover, ProgressBar, Prose, RadioGroup, RollingNumber, ScreenBar, SearchField, Section, Segmented, Select, Skeleton, Spinner, Stepper, Steps, SubHeading, Switch, Tabs, Tag, TextArea, TextField, toast, useScrollFocus, type TableSort } from '@ymasaki/ignite'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { MONTHS, PROJECTS } from './data'
 
@@ -192,6 +192,7 @@ export function FormsPage() {
   const [role, setRole] = useState('edit')
   const [sent, setSent] = useState(false)
   const [channel, setChannel] = useState<string | null>(null)
+  const [secret, setSecret] = useState('')
   return (
     <Page label="フォームの部品">
         <Section level={2} title="入力欄の枠">
@@ -199,6 +200,7 @@ export function FormsPage() {
             <FormField label="名前" required hint="画面に出る名前" error={sent && !name ? '名前を入れてください' : undefined}><TextField value={name} onChange={setName} placeholder="佐藤 葵" /></FormField>
             <FormField label="権限"><Select value={role} onChange={setRole} options={[{ value: 'edit', label: '編集できる' }, { value: 'view', label: '見るだけ' }]} /></FormField>
             <FormField label="通知先" group required error={sent && !channel ? '通知先を選んでください' : undefined}><RadioGroup value={channel} onChange={setChannel} inline options={[{ value: 'mail', label: 'メール' }, { value: 'chat', label: 'チャット' }]} /></FormField>
+            <FormField label="新しいパスワード"><PasswordField value={secret} onChange={setSecret} autoComplete="new-password" /></FormField>
             <FormField label="メモ" hint="200 字まで"><TextArea value="" onChange={() => undefined} maxLength={200} rows={2} /></FormField>
             <div className="cat-row"><Button variant="primary" onClick={() => { setSent(true); if (name && channel) toast('保存しました', { tone: 'ok' }); else requestAnimationFrame(() => focusFirstInvalid()) }}>保存する</Button></div>
           </div>

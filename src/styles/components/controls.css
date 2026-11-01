@@ -102,6 +102,10 @@
 .field:disabled{opacity:.45;pointer-events:none}
 /* タッチの端末では 16px（iOS は 16px 未満の入力欄にフォーカスすると画面を拡大してしまう。ページの拡大を止める maximum-scale は、ピンチでの拡大も止めるので使わない） */
 @media (pointer:coarse){.field,.field.lg,.field.area,.field.wide{font-size:var(--fs-16)}}
+/* パスワードの欄。右端に表示の切り替えを重ねる（ブラウザ標準の表示ボタンと二重にしない） */
+.pw-field{position:relative;display:block;--field-pr:40px}
+.pw-field > .field::-ms-reveal{display:none}
+.pw-toggle{position:absolute;right:3px;top:50%;translate:0 -50%}
 /* 一覧の絞り込みの入力欄（SearchField）。先頭に虫眼鏡、F の行き先のときは右端に「F」の印（キーボードのない端末では出さない） */
 .sfield{position:relative;display:inline-flex;align-items:center;min-width:0}
 .sfield > .field{width:100%;padding-left:34px}

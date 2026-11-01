@@ -50,10 +50,10 @@ const RADII = new Set(['0', '3px', '6px', '8px', '10px', '12px', '14px', '99px',
 // 素のまま書かない要素と、代わりに使う部品
 const RAW_TAGS: Record<string, string> = {
   button: 'Button / IconButton / LinkButton',
-  input: 'SearchField / TextField / Checkbox / NumberField',
+  input: 'SearchField / TextField / PasswordField / Checkbox / NumberField',
   select: 'Select / Combobox',
   textarea: 'TextArea',
-  h1: 'AppShell の title',
+  h1: 'AppShell / AuthScreen の title',
   h2: 'Section / SubHeading',
   h3: 'Section / SubHeading',
   h4: 'SubHeading',

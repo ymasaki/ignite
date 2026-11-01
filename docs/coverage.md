@@ -19,6 +19,7 @@ Ignite に何があり、何が足りないかの記録。2026-10-30 に比べ�
 | 入/切 | Toggle / ToggleSwitch / Switch | 3 | **なし** | `Switch` |
 | 入力欄の枠 | Form / FormControl / Field | 3 | **なし** | `FormField` |
 | 文字の入力 | Text input / TextInput・Textarea / Input・Textarea | 3 | あり | `FormField` と組む |
+| パスワードの入力 | Password input / — / — | 1 | **なし** | `PasswordField` |
 | 選択 | Select・Dropdown / Select / Select・Dropdown | 3 | あり | `disabled` を追加 |
 | 候補から選ぶ | —（Dropdown）/ Autocomplete / Combobox | 2 | **なし** | `Combobox` |
 | 数の入力 | Number input / — / Spin button | 2 | **なし** | `NumberField` |

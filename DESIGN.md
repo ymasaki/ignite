@@ -292,14 +292,16 @@
 
 | 部品 | ファイル / CSS | 使いどころ・決まり |
 |---|---|---|
-| `Button` | `Button.tsx` / `button.css` | 通常と `variant="primary"`（1 画面に 1 つまで）、`variant="danger"`（取り消せない操作の確定だけ。一覧の行などに常に並べない）。`active` で押し込まれた状態、`icon` で先頭のアイコン、`loading` で処理中（アイコンが回転に替わり、フォーカスを保ったまま押せなくなる） |
+| `Button` | `Button.tsx` / `button.css` | 通常と `variant="primary"`（1 画面に 1 つまで）、`variant="danger"`（取り消せない操作の確定だけ。一覧の行などに常に並べない）。`active` で押し込まれた状態、`icon` で先頭のアイコン、`loading` で処理中（アイコンが回転に替わり、フォーカスを保ったまま押せなくなる）、`type="submit"` はフォームを送る（処理中は送らない） |
 | `IconButton` | 同上 | アイコンだけのボタン。`label` は必須（`aria-label` と `data-tip` になる）。`size="lg"` はヘッダー。置き場所で大きさ・枠・角丸を変えるときは `--icon-btn-size` / `--icon-btn-border` / `--icon-btn-radius` |
 | `LinkButton` / `ExternalLink` | 同上 | 文字だけのボタン / 外部のページへのリンク（新しいタブ、末尾に外部リンクのアイコン） |
 | `CopyText` | `CopyText.tsx` / `button.css` | 値そのものがコピーのボタン。コピー後は「コピーしました」 |
 | `Segmented` | `Controls.tsx` / `controls.css` | 排他の切り替え。`count` で件数。選択中の地がスライドする（`--ease-spring`）。選択中は「淡い選択」（`--thumb` の地・`--pri-ink-2` の文字。枠は付けない。`Tabs` も同じ）で、ベタ塗りにしない。文字の太さは選択で変えない。狭いときの修飾: `hideCounts`（件数をなめらかに隠す）/ `fill`（置き場所の幅いっぱいに伸ばす）/ `dense`（ボタンの左右の余白 10 → 6px）/ `short`（選択肢の `short` を出す）。件数の最小幅は置き場所で `--seg-n-min` |
 | `SearchField` | 同上 | 一覧の絞り込みの入力欄。先頭に虫眼鏡。placeholder は対象 3 つまで。画面の主な検索欄は `shortcut`（F / ⌘K）。F の行き先は画面に 1 つだけで、`useFocusShortcut` の `priority` の大きい欄（アプリのヘッダーの検索など）が優先。行き先になっている欄にだけ右端に「F」の印を出す（キーボードのない端末では出さない）。入力欄の地は `.field`（`lg` は幅いっぱいの大きい欄、左右の余白は置き場所で `--field-pl` / `--field-pr`） |
 | `MarkPicker` | `Mark.tsx` / `controls.css` | マーカー色を選ぶ丸い見本の並び（なし・黄・緑・青・紫・桃。選んだものは `aria-pressed` とチェック）。名前は `MARK_NAMES` |
-| `TextArea` / `TextField` | `TextArea.tsx` / `controls.css` | 文字を書く入力欄。`TextArea` は複数行（`.field.area`）、`TextField` は 1 行で幅いっぱい（`.field.wide`。設定の行に置くと値の側が広がる。`secret` でトークンなどを伏せる）。上限は `maxLength` で止め、残りの字数は出さない |
+| `TextArea` / `TextField` | `TextArea.tsx` / `controls.css` | 文字を書く入力欄。`TextArea` は複数行（`.field.area`）、`TextField` は 1 行で幅いっぱい（`.field.wide`。設定の行に置くと値の側が広がる。`secret` でトークンなどを伏せる）。`type`（`email`・`tel`・`url`）・`autoComplete`・`name`・`autoCapitalize` で欄の種類をブラウザと端末に伝える。上限は `maxLength` で止め、残りの字数は出さない |
+| `PasswordField` | `TextArea.tsx` / `controls.css` | パスワードの欄。右端のボタンで打った文字を確かめられ（`aria-pressed`）、フォームを送ると伏せた形へ戻す。`autoComplete` はログインなら既定の `current-password`、新しく決める欄は `new-password`。トークンなど覚えさせない値は `TextField` の `secret` |
+| `AuthScreen` / `LoginForm` | `Auth.tsx` / `auth.css` | ログインの画面の型（`AppShell` の外に置く。7 章「画面の型」）/ ログインの入力。認証は持たず、`onSubmit` に検証済みの値を渡し、結果を `loading`・`error` で受け取る。`identifierType` と `identifierLabel` でユーザー名に、`remember`・`onForgot`・`alternatives` で項目を足す |
 | `FormField` | `Field.tsx` / `form.css` | 入力欄の見出し（上）・補足 `hint`・エラー `error`・`required`（「必須」の印）を 1 つにまとめる枠。中に入力の部品を 1 つ置き、その部品の `label` は省ける（見出しが名前になり、補足とエラーは欄と一緒に読まれる）。複数の項目を選ぶ部品は `group`。送信で検証に失敗したら `focusFirstInvalid()` で最初のエラーへ移す。検証のタイミングは「欄を離れたとき」か「送信のとき」で、打っている途中にエラーを出さない |
 | `Checkbox` | `Form.tsx` / `form.css` | 1 項目の入/切。保存のボタンと一緒に使う（押してすぐ効くなら `Switch`）。`hint` で補足、`indeterminate` で一部選択、`hideLabel` で名前を隠す（表の中） |
 | `RadioGroup` | 同上 | 文面まで見せて 1 つを選ぶ。選択肢が短く 5 つまでなら `Segmented`、多いなら `Select`。`hint` で各項目の補足、`inline` で横並び |
@@ -368,6 +370,7 @@
 | ダッシュボード | `.kpis`（または `KpiBand`）＋ `Kpi`、`.chart-grid` ＋ `ChartCard` | 上に KPI の帯、その下に `ChartCard` の格子（`.chart-grid`。1 枚 360px 以上で折り返す。枠が 360px より狭いときは枠の幅）。グラフは `BarList`・`LineChart` の 1 色。指標の定義は `ChartCard` の `meta` に短く書く |
 | 設定 | `SettingsScreen` ＋ `SettingGroup` ＋ `SettingRow`（`Settings.tsx` / `settings.css`） | 左メニューの下の `SettingsButton`（「設定」）で、内容の領域を切り替えて出す（ヘッダーは画面名だけ。メニューの項目を選ぶと戻る）。ほかの画面と同じ 1 枚の面（`.board`）の中に、まとまり（見出し 16px・下に主要色の薄い線、その下に行。まとまりの間は 36px）を縦 1 列に並べ、面の中でスクロールする（まとまりをばらばらのカードにしない。スクロールでヘッダーの下がぶつ切れになるため）。行は 720px で止め、面もその幅（768px）で止めて左に寄せる（広い窓で空の面を広げない）。中は「左に名前、右に選ぶ部品・値」の `SettingRow`（`onClick` を渡すと行ごと押せて、詳細パネルを開く）、自由な中身は `SettingBody`、キーは `SettingKey`。選んだらその場で効かせ、保存のボタンを置かない（例外: 見る人全員に効くなど書き終えてから当てたい設定は、入口の行から別の設定の画面に分け、`SettingsScreen` の `footer`（面の下端に固定する段）に「保存」「元に戻す」を置く。変えたときだけ押せる。ほかの設定の画面に保存のボタンを混ぜない）。テーマカラーの見本（`.swatch`）は、選んでも文字の太さを変えない（幅が変わらないように）。`SettingBody` の `note` は、送る前に知っておくべきことを 1 つだけ短く添える例外（9 章の「説明文を書かない」の例外。例: 名前つきで届くこと）。どのアプリにも `ThemeSettings`（テーマカラー・表示モード）を置く |
 | バージョン履歴 | `ReleasePanel`（`Releases.tsx`。形と日付ごとのまとめ方は `releases.ts`） | 設定の「このアプリについて → バージョン」の行から右の詳細パネルに開く。同じ日の版を 1 つのまとまり（見出しは日付と版の範囲）にし、その中を機能追加・改善・不具合修正の順に分ける。履歴の中身はアプリが持つ |
+| ログイン | `AuthScreen` ＋ `LoginForm` | `AppShell` の外に置く。窓の中央に幅 400px までの 1 枚の面（角丸 14・`--shadow`）を置き、上からアプリの印と名前、画面名の `h1`（24px）、入力の順に並べる。主ボタン（幅いっぱい）だけを主要色で塗り、飾りの絵や説明文を置かない。面の内側は 24px（画面にこの面しかないので、ほかの面より広くとる）。入力欄と主ボタンは `--control-h` にそろえ、両方とも必須なので「必須」の印は出さない。別の方法（`alternatives`）は「または」の線の下に通常のボタンで並べ、主ボタンを増やさない。再設定のリンクは入力欄の後に置く（Tab の順が欄の間に割り込まない）。窓が低いときは画面の中をスクロールする。入力の誤りは欄の下、認証の失敗は面の上の `Notice` に出し、どちらの欄が違うかを書かない（「メールアドレスかパスワードが違います」）。失敗したらメールアドレスを残し、パスワードの欄へ移る |
 | 詳細パネル | `PanelFrame` ＋ `PanelHeader` ＋ `PanelBody`（`Panel.tsx` / `panel.css`）＋ `Section` | 見出し（右上に `actions`・×、大きなアイコン、補足、名前、行。名前が隠れたら固定ヘッダー `.pstick`）の下に `Section` を並べ、中身は `KeyValues`・`EntityRow`・`Tag`・`Prose`。切り替えは見出しの直下に `Tabs`（1 つ目は「概要」）。タブの下に切り替え・検索の帯を重ねない |
 
 - 一覧の 1 行を押すと、パネルに詳しい中身を出す。一覧の行に詳細を全部並べない。
