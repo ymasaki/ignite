@@ -9,9 +9,9 @@
 .auth-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:var(--space-2) var(--space-3);font-size:var(--fs-12);color:var(--ink-3)}
 
 .login{display:grid;gap:var(--space-4);min-width:0}
-.login-form{display:grid;gap:var(--space-4);min-width:0}
-.login-notice{padding-bottom:var(--space-4)}
-/* 先頭は知らせの Collapse。閉じた箱のぶん段の間が増えないよう、隙間は開いた知らせの下の余白（.login-notice）で作る */
+.login-form{display:flex;flex-direction:column;gap:var(--space-4);min-width:0}
+.login-notice{display:grid;padding-bottom:var(--space-4)}
+/* 先頭は知らせの Collapse。閉じた箱のぶん段の間が増えないよう、負の余白で消し、開いたときの隙間は .login-notice が持つ（grid の行は負にならないので flex で並べる） */
 .login-form > :first-child{margin-bottom:calc(var(--space-4) * -1)}
 .login-row{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2) var(--space-4)}
 .login-forgot{margin-left:auto}
