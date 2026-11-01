@@ -1,7 +1,8 @@
 {
   "icon": "docs/logo/ignite-icon.svg",
   "staging": {
-    "url": "http://localhost:5199"
+    "url": "http://localhost:5199",
+    "start": "bash scripts/start-catalog.sh"
   },
   "workflow": {
     "base": "main",
