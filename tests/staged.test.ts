@@ -5,18 +5,23 @@ import path from 'node:path'
 import { expect, it, vi } from 'vitest'
 import { main } from '../cli/check'
 
-it.each(['.', 'app'])('--staged は %s から index を読み、未stageの内容を読まない', (subdir) => {
+const tokenTheme = ':root{--ink:#123456}\n[data-mode="dark"]{--ink:#abcdef}\n'
+const cases = ['.', 'app'].flatMap((subdir) => [
+  { subdir, themes: [], bad: '.a{color:#123456}\n', good: '.a{color:var(--ink)}\n' },
+  { subdir, themes: ['web/styles'], bad: '.seg{padding:8px}\n', good: tokenTheme },
+  { subdir, themes: ['web/styles'], bad: '@media(max-width:600px){.x{padding:8px}}\n', good: tokenTheme },
+])
+
+it.each(cases)('--staged は $subdir から index を読み、テーマ指定 $themes でも $bad を検査する', ({ subdir, themes, bad, good }) => {
   const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'ignite-staged-'))
   const root = path.join(repo, subdir)
   const log = vi.spyOn(console, 'log').mockImplementation(() => {})
   try {
     fs.mkdirSync(path.join(root, 'web/styles'), { recursive: true })
-    fs.writeFileSync(path.join(root, 'ignite.config.json'), JSON.stringify({ source: ['web'], styles: ['web/styles'] }))
+    fs.writeFileSync(path.join(root, 'ignite.config.json'), JSON.stringify({ source: ['web'], styles: ['web/styles'], themes }))
     const css = path.join(root, 'web/styles/a.css')
     const git = (...args: string[]) => execFileSync('git', args, { cwd: repo, stdio: 'pipe' })
     git('init', '--quiet')
-    const bad = '.a{color:#123456}\n'
-    const good = '.a{color:var(--ink)}\n'
     fs.writeFileSync(css, bad)
     git('add', '.')
     fs.writeFileSync(css, good)

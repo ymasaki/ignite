@@ -271,10 +271,11 @@ export function run(files: Map<string, string>, config: CheckConfig, added?: (fi
     if (!css && !code) continue
     const theme = within(file, config.themes)
     problems.push(...checkMedia(file, text))
-    if (css && !theme) problems.push(...checkMediaSpacing(file, text), ...checkCss(file, text))
+    if (css) problems.push(...checkMediaSpacing(file, text))
+    if (css && !theme) problems.push(...checkCss(file, text))
     if (css && !config.self) {
       problems.push(...checkShellCss(file, text))
-      const found = theme ? [] : checkOverride(file, text)
+      const found = checkOverride(file, text)
       const lines = added?.(file)
       problems.push(...found.filter((p) => lines?.has(p.line) ?? !added))
       if (added) warnings.push(...found.filter((p) => !lines?.has(p.line)))

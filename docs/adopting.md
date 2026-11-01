@@ -63,6 +63,8 @@ npm install -D vite @vitejs/plugin-react typescript @types/react @types/react-do
 | `forbiddenWords` | 画面に直書きしない語（`pattern`・`message`・`allow`）。会社に依存する語など |
 | `maxText` | 文言の上限（既定 32） |
 
+`themes` は色トークン等の定義を許可する指定です。区切り内の余白変更と既存部品の見た目の上書きは、1.2.1以降はテーマCSSでも通常・stagedともに検査します。
+
 `e2e/ignite.audit.ts` には画面を足していきます。
 
 ```ts
