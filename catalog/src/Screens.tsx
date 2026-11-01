@@ -1,5 +1,5 @@
 import { IconChartLine, IconChecks, IconClock, IconListCheck } from '@tabler/icons-react'
-import { IconBrandGoogle, IconKey } from '@tabler/icons-react'
+import { IconBrandAppleFilled, IconBrandGoogle, IconShieldLock } from '@tabler/icons-react'
 import { AuthScreen, Avatar, AssistSettings, BarList, Board, Button, ChartCard, ChartGrid, DashboardScreen, Delta, EmptyState, EntityRow, Funnel, IconBox, KeyValues, Kpi, KpiBand, LineChart, LinkButton, ListScreen, LoginForm, PanelBody, PanelFrame, PanelHeader, SearchField, Section, Segmented, SettingBody, SettingGroup, SettingKey, SettingRow, SettingsScreen, Sparkline, StackColumns, Stat, Tag, ThemeSettings, TileMap } from '@ymasaki/ignite'
 import { useRef, useState, type ReactNode } from 'react'
 import { MONTHS, PROJECTS } from './data'
@@ -90,7 +90,7 @@ export function LoginPage({ mark, onBack }: { mark: ReactNode; onBack: () => voi
       title="ログイン"
       footer={
         <>
-          <Segmented label="見本の形" value={kind} onChange={setKind} options={[{ value: 'basic', label: '基本' }, { value: 'alt', label: '別の方法あり' }]} />
+          <Segmented label="見本の形" value={kind} onChange={setKind} options={[{ value: 'basic', label: '基本' }, { value: 'alt', label: '外部認証あり' }]} />
           <LinkButton onClick={onBack}>カタログへ戻る</LinkButton>
         </>
       }
@@ -104,7 +104,8 @@ export function LoginPage({ mark, onBack }: { mark: ReactNode; onBack: () => voi
         alternatives={kind === 'alt' ? (
           <>
             <Button icon={<IconBrandGoogle size={16} stroke={1.8} aria-hidden="true" />}>Google でログインする</Button>
-            <Button icon={<IconKey size={16} stroke={1.8} aria-hidden="true" />}>パスキーでログインする</Button>
+            <Button icon={<IconBrandAppleFilled size={16} aria-hidden="true" />}>Apple でログインする</Button>
+            <Button icon={<IconShieldLock size={16} stroke={1.8} aria-hidden="true" />}>Okta でログインする</Button>
           </>
         ) : undefined}
       />

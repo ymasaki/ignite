@@ -460,3 +460,12 @@ test('AuthScreen: 低い窓では画面の中をスクロールして主ボタ�
   await expect(page.getByRole('button', { name: 'ログインする' })).toBeInViewport()
   expect(await screen.evaluate((el) => el.scrollTop > 0 && document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
 })
+
+test('LoginForm: 外部認証のボタンは主ボタンの下に並び、Enter では送らない', async ({ page }) => {
+  await open(page, 'login')
+  await page.getByRole('button', { name: '外部認証あり' }).click()
+  for (const name of ['Google', 'Apple', 'Okta']) await expect(page.getByRole('button', { name: `${name} でログインする` })).toBeVisible()
+  await page.getByRole('button', { name: 'Google でログインする' }).focus()
+  await page.keyboard.press('Enter')
+  await expect(page.getByText('メールアドレスを入れてください')).toHaveCount(0)
+})
