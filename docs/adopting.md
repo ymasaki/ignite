@@ -87,15 +87,17 @@ npm run ignite:audit    # 描いた画面の監査。結果は test-results-audi
 
 ## 更新を取り込む
 
-以下の引数なし更新はレジストリ配布の利用開始後に使います。相対アーカイブ利用中は末尾の手順で次版tgzを指定してください。
+レジストリ配布では変更履歴を確認し、更新版を明示して固定します（以下は1.2.0の例）。相対アーカイブ利用中は末尾の手順で次版tgzを指定してください。
 
 ```sh
-npm run ignite:upgrade       # 最新へ。major の更新も含む
-# npm run ignite:upgrade -- 1.2.0 で版を指定できる
+npm install --save-exact @ymasaki/ignite@1.2.0 --ignore-scripts --no-audit --no-fund
+# node_modules/@ymasaki/ignite/CHANGELOG.md の変更点・移行手順を確認
+npx ignite sync
+npx ignite check
 npm run ignite:audit         # 見た目の確認
 ```
 
-`ignite upgrade` は次を行います。
+`ignite upgrade` も次をまとめて行えます。ただしレジストリ更新では通常のnpm設定で範囲指定が保存されるため、固定版方針では上記の手順を使います。
 
 1. パッケージを更新する（部品・トークン・`DESIGN.md`・検査・監査がまとめて新しくなる）
 2. 取り込んだ版の変更点を表示する。破壊的変更があれば手順とともに知らせる
@@ -117,7 +119,7 @@ npm run ignite:audit         # 見た目の確認
 
 `ignite upgrade` の検査が失敗しても、パッケージと規約は更新済みです。表示された変更履歴に沿ってアプリを修正し、`npm run ignite:check` と `npm run ignite:audit` を通します。自動では元に戻りません。
 
-古い採用アプリで `ignite:upgrade` がまだない場合は、まず旧版にもある `npx ignite upgrade` で 1.1.1 以降へ更新し、その後 `npx ignite init` を実行すると追加されます。既存のスクリプトは保持されます。
+古い採用アプリで `ignite:upgrade` がまだない場合は、上記の固定版インストールで 1.1.1 以降へ更新し、その後 `npx ignite init` を実行すると追加されます。既存のスクリプトは保持されます。
 
 ## 相対アーカイブで継続利用する
 
@@ -134,6 +136,8 @@ npm install --save-exact ./vendor/ymasaki-ignite-1.1.1.tgz --ignore-scripts --no
 
 依存は `file:vendor/ymasaki-ignite-1.1.1.tgz` になります。アーカイブ、package.json、package-lock.jsonを一緒にコミットします。`*.tgz` が無視されている場合はこのファイルだけ例外にします。絶対パスや別チェックアウトへの参照は使いません。別端末では非公開リポジトリへの読取権限が必要ですが、Ignite用のPackagesトークンは不要です。通常のnpm依存の取得にはネットワークが必要です。
 
+初回導入時は「2. 入れる」の `npx ignite init`（新規ひな形は `--app`）で初期化してから確認します。
+
 ```sh
 npm ci --include=dev --ignore-scripts --no-audit --no-fund
 node node_modules/@ymasaki/ignite/dist/cli.js sync --check
@@ -146,6 +150,8 @@ node node_modules/@ymasaki/ignite/dist/cli.js sync --check
 人がPrivateのまま固定版を発行し、利用者ごとにパッケージのReadアクセスを付けます。classic PATは取得用に `read:packages` が必要です。トークンは端末の秘密管理またはCIのsecretから環境変数へ渡し、値をチャット・Git・コマンド引数へ書きません。GitHub Actionsの `GITHUB_TOKEN` はローカル端末のPATとは別で、採用リポジトリへのPackages読取許可が必要です。
 
 各端末で冒頭の `.npmrc` と環境変数を用意し、`npm view @ymasaki/ignite@1.1.1 version --registry=https://npm.pkg.github.com` の成功を確認します。401/403は認証・権限、404は未発行または不可視の可能性があり、404だけで未発行と判断しません。
+
+1.1.1をそのまま移す場合、人は承認済みtgzそのものを発行します（[発行手順](releasing.md#承認済みアーカイブをそのまま発行する)）。取得側でも空フォルダ・空キャッシュで `npm pack @ymasaki/ignite@1.1.1 --ignore-scripts --registry=https://npm.pkg.github.com --cache ./empty-cache` を実行し、取得tgzのSHA256が上記の承認済みハッシュと一致することを確認します。不一致なら切替を止めます。文書を含め内容が変わる場合はpatch版を上げ、変更履歴・新ハッシュを確認して別版への更新として扱います。
 
 その後 `npm install --save-exact @ymasaki/ignite@1.1.1 --ignore-scripts --no-audit --no-fund` で依存とlockfileを更新します。既存node_modules・distのない別コピーと空の `--cache` で上記ci、公開入口、型チェック、ビルドを確認してから切替を確定します。成功前にvendorを削除しません。
 

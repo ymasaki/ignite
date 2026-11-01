@@ -50,3 +50,13 @@ Private リポジトリ `ymasaki/ignite` が存在することを確認し、`pa
 発行は人が行います。classic PATのwrite:packagesとパッケージへのWrite権限を用意し、秘密管理から環境変数へ渡したうえでユーザー設定（Git管理外）でnpm.pkg.github.comへの認証を設定します。上の確認とpackを通してから発行し、パッケージのVisibilityがPrivateであること、採用者のRead権限を確認します。新規パッケージは既定でPrivateですが、既存の可視性も確認し、Publicへの変更はしません。発行済みの同じ版を上書きせず、内容変更時はpatch版を上げます。
 
 固定コミットは由来の記録です。distを含まないGit依存は、ignore-scriptsでの取得経路の代わりにはしません。`npm run smoke` は相対vendor依存のlockfileを別ディレクトリへコピーし、空キャッシュのci（include=dev・ignore-scripts）から公開入口・型・ビルド・CLIを検証します。
+
+### 承認済みアーカイブをそのまま発行する
+
+1.1.1を移す場合はチェックアウトから再packせず、承認済み `ymasaki-ignite-1.1.1.tgz` のSHA256をadopting.mdと照合します。人が認証設定後、そのファイルを指定して実行します。
+
+```sh
+npm publish ./ymasaki-ignite-1.1.1.tgz --ignore-scripts --registry=https://npm.pkg.github.com
+```
+
+この場合はビルド・検証済みのtgzをそのまま発行するためスクリプトを無効にします。発行後は別フォルダ・空キャッシュから `npm pack @ymasaki/ignite@1.1.1 --ignore-scripts --registry=https://npm.pkg.github.com --cache ./empty-cache` で取得し、SHA256の一致を確認します。既存1.1.1が異なる内容なら切替を止め、上書きしません。今回の文書変更を含めて配布する場合はpatch版を上げ、新版のアーカイブ・ハッシュ・変更履歴を更新として確認します。
