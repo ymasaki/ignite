@@ -2,7 +2,7 @@
 
 ## 版の付け方
 
-採用アプリは `^1.0.0` の範囲で更新を受け取ります。次の基準で版を決めます。
+採用アプリは固定版とlockfileで再現し、更新版を明示的に選びます。次の基準で版を決めます。
 
 | 版 | 変更 | 例 |
 |---|---|---|
@@ -41,4 +41,12 @@
 
 ## 最初の公開の前に要ること
 
-Private リポジトリ `ymasaki/ignite` を作り、`package.json` の `repository` と一致させます。パッケージの名前の範囲 `@ymasaki` は GitHub のアカウント名と一致する必要があります。
+Private リポジトリ `ymasaki/ignite` が存在することを確認し、`package.json` の `repository` と一致させます。パッケージの名前の範囲 `@ymasaki` は GitHub のアカウント名と一致する必要があります。
+
+## 配布経路の現状（2026-11-01）
+
+リポジトリはPrivateを再確認済み。既存gh認証はPackages権限がなく一覧取得が403のため、レジストリ配布は未成立です。現在採用する1.1.1アーカイブとハッシュ、同梱・更新方法は [adopting.md](adopting.md#相対アーカイブで継続利用する) に固定しています。この文書変更後に作る同じ版のtgzは、その承認済みアーカイブの代用品にはしません。
+
+発行は人が行います。classic PATのwrite:packagesとパッケージへのWrite権限を用意し、秘密管理から環境変数へ渡したうえでユーザー設定（Git管理外）でnpm.pkg.github.comへの認証を設定します。上の確認とpackを通してから発行し、パッケージのVisibilityがPrivateであること、採用者のRead権限を確認します。新規パッケージは既定でPrivateですが、既存の可視性も確認し、Publicへの変更はしません。発行済みの同じ版を上書きせず、内容変更時はpatch版を上げます。
+
+固定コミットは由来の記録です。distを含まないGit依存は、ignore-scriptsでの取得経路の代わりにはしません。`npm run smoke` は相対vendor依存のlockfileを別ディレクトリへコピーし、空キャッシュのci（include=dev・ignore-scripts）から公開入口・型・ビルド・CLIを検証します。

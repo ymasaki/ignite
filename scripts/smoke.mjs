@@ -9,7 +9,7 @@ import path from 'node:path'
 const repo = path.resolve(import.meta.dirname, '..')
 const skipAudit = process.argv.includes('--skip-audit')
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ignite-smoke-'))
-const app = path.join(tmp, 'app')
+let app = path.join(tmp, 'app')
 const name = '@ymasaki/ignite'
 const MARK = 'ignite-smoke-marker'
 
@@ -29,13 +29,20 @@ try {
   const v1 = path.join(tmp, pack.filename)
   const files = pack.files.map((f) => f.path)
   for (const f of ['dist/index.js', 'dist/styles.css', 'dist/cli.js', 'dist/audit.js', 'dist/src/index.d.ts', 'DESIGN.md', 'CHANGELOG.md', 'templates/agent/rules.md', 'templates/app/src/app/App.tsx']) assert(files.includes(f), `${f} が入っている`)
+  const manifest = JSON.parse(run('tar', ['xOf', v1, 'package/package.json'], tmp))
+  const entries = (value) => typeof value === 'string' ? [value] : Object.values(value).flatMap(entries)
+  for (const entry of entries({ exports: manifest.exports, main: manifest.main, types: manifest.types, bin: manifest.bin })) {
+    assert(files.includes(entry.replace(/^\.\//, '')), `公開入口 ${entry} の実体が入っている`)
+  }
   assert(!files.some((f) => f.startsWith('catalog/') || f.startsWith('src/') || f.startsWith('tests/')), 'カタログとテストが入っていない')
 
   console.log('2. 新しいアプリに入れる')
   fs.mkdirSync(app)
+  fs.mkdirSync(path.join(app, 'vendor'))
+  fs.copyFileSync(v1, path.join(app, 'vendor', pack.filename))
   fs.writeFileSync(path.join(app, 'package.json'), JSON.stringify({ name: 'smoke-app', private: true, type: 'module' }))
   fs.writeFileSync(path.join(app, 'AGENTS.md'), '# アプリの決まり\n\nアプリ固有の決まり\n')
-  run('npm', ['install', '--no-audit', '--no-fund', v1, 'react', 'react-dom', '@tabler/icons-react', 'vite', '@vitejs/plugin-react', 'typescript', '@types/react', '@types/react-dom', '@playwright/test', '@axe-core/playwright'])
+  run('npm', ['install', '--no-audit', '--no-fund', `./vendor/${pack.filename}`, 'react', 'react-dom', '@tabler/icons-react', 'vite', '@vitejs/plugin-react', 'typescript', '@types/react', '@types/react-dom', '@playwright/test', '@axe-core/playwright'])
   const init = ignite('init', '--app')
   assert(init.status === 0, 'ignite init --app が通る', init.stdout + init.stderr)
   assert(read('AGENTS.md').includes('アプリ固有の決まり') && read('AGENTS.md').includes(`ignite:begin ${pack.version}`), 'AGENTS.md に Ignite の節が足され、元の文は残る')
@@ -48,6 +55,22 @@ try {
   fs.writeFileSync(path.join(app, 'package.json'), JSON.stringify(custom))
   assert(ignite('init', '--app').status === 0, 'init を再実行できる')
   assert(JSON.parse(read('package.json')).scripts['ignite:upgrade'] === 'echo custom-upgrade', '既存の更新スクリプトを保持する')
+
+  // 別端末を模し、生成物・node_modules・npm キャッシュを引き継がず lockfile だけで復元する。
+  const clean = path.join(tmp, 'clean-app')
+  fs.cpSync(app, clean, { recursive: true, filter: (source) => !['node_modules', 'dist'].includes(path.basename(source)) })
+  app = clean
+  run('npm', ['ci', '--include=dev', '--ignore-scripts', '--no-audit', '--no-fund', '--cache', path.join(tmp, 'empty-cache')])
+  ok('別ディレクトリ・空キャッシュからスクリプト無効で復元できる')
+  run('node', ['--input-type=module', '-e', `
+    import fs from 'node:fs';
+    for (const entry of ['@ymasaki/ignite', '@ymasaki/ignite/audit', '@ymasaki/ignite/styles.css', '@ymasaki/ignite/tokens.css']) {
+      if (!fs.existsSync(new URL(import.meta.resolve(entry)))) throw new Error(entry);
+    }
+    await import('@ymasaki/ignite');
+    await import('@ymasaki/ignite/audit');
+  `])
+  ok('JS・監査・CSS の公開入口を解決し JS を読み込める')
 
   run('npx', ['tsc', '--noEmit'])
   ok('型が通る')
