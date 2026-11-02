@@ -41,6 +41,9 @@
 .collapse.moving{overflow:hidden}
 .collapse > div{transition:opacity .2s ease-out}
 .collapse:not(.open) > div{opacity:0}
+/* 横の出し入れ（CollapseInline）。幅の上限は中身の実際の幅（--collapse-w）。入りは ease-in-out、出は ease-in で短く */
+.collapse-x{display:flex;align-items:center;gap:var(--collapse-gap,var(--bar-gap));max-width:0;margin-left:calc(-1 * var(--collapse-gap,var(--bar-gap)));overflow:hidden;opacity:0;white-space:nowrap;transition:max-width .18s ease-in,margin .18s ease-in,opacity .12s ease-in}
+.collapse-x.open{max-width:var(--collapse-w,640px);margin-left:0;overflow:visible;opacity:1;transition:max-width .24s var(--ease-in-out),margin .24s var(--ease-in-out),opacity .2s ease-out .04s}
 
 /* 数字のスロット（RollingNumber）: 桁ごとに 0〜9 の帯を縦に回す。高さは 1 行分、はみ出しは隠す */
 /* ベースラインは桁の中の数字から取られるので、そのままベースラインでそろえる（bottom だと数字が周りより下がる） */
@@ -57,7 +60,7 @@
 
 @media (prefers-reduced-motion: reduce){
   .roll-strip,.roll-col{transition:none}
-  .collapse,.collapse > div{transition:none}
+  .collapse,.collapse > div,.collapse-x,.collapse-x.open{transition:none}
   .skel-h,.skel-l,.appear > *{animation:none}
   .expand-body,.expand-t svg{transition:none}
 }

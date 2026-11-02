@@ -2,7 +2,7 @@
 // 動きの長さと緩急は DESIGN.md 6 章。prefers-reduced-motion では CSS 側で動きを切る。
 
 import { IconChevronDown } from '@tabler/icons-react'
-import { useEffect, useLayoutEffect, useReducer, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useReducer, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 
 /** 動きを減らす設定か（JS で動かすものはこれを見て止める） */
 // 端末の設定のほか、設定の「動きを減らす」（assist.ts が <html data-motion="reduce"> を付ける）でも止める
@@ -144,6 +144,29 @@ export function Collapse({ open, children }: { open: boolean; children: ReactNod
     // 閉じる途中の中身は読み上げとフォーカスから外す（見えなくなっていく帯の中のボタンに Tab で入らないように）
     <div className={`collapse ${open ? 'open' : ''}`} ref={outer} aria-hidden={!open || undefined} inert={!open}>
       {mounted && <div ref={inner}>{kept.current}</div>}
+    </div>
+  )
+}
+
+/**
+ * 横の並びの中で、中身の実際の幅でなめらかに出し入れする（Collapse の横向き）。帯の中の、表示方法によって要る操作など。
+ * 閉じると幅 0 に縮み、並びの間（gap。既定は帯の --bar-gap）も打ち消す。閉じているあいだは読み上げとフォーカスから外す
+ */
+export function CollapseInline({ open, gap, children }: { open: boolean; gap?: string; children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const measure = () => el.style.setProperty('--collapse-w', `${el.scrollWidth}px`)
+    measure()
+    // 並びの幅で中身が出入りする（FitBar など）ので、置き場所の幅が変わったら測り直す
+    const ro = new ResizeObserver(measure)
+    if (el.parentElement) ro.observe(el.parentElement)
+    return () => ro.disconnect()
+  }, [])
+  return (
+    <div ref={ref} className={`collapse-x${open ? ' open' : ''}`} style={gap ? ({ '--collapse-gap': gap } as CSSProperties) : undefined} aria-hidden={!open || undefined} inert={!open}>
+      {children}
     </div>
   )
 }

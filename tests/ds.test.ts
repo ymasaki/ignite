@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { DEFAULT_ASSIST, applyAssist, assistChanged, currentAssist, parseAssist, sameAssist, setAssist, shortcutsOn, startAssist, type AssistEnv } from '../src/index'
 import { CONTRAST_TEXT_MORE, contrastRulesFor, releaseDays } from '../src/index'
 import { lineRows, lineSummary, seriesSummary, stackRows, tileName } from '../src/ui/Chart'
-import { CONTRAST_RULES, CONTRAST_TEXT, CONTRAST_UI, contrastRatio, currentTheme, isMode, isSkin, kpiVariants, pickFitStep, pickTheme, pickWidestFit, setTheme, shellBreakpoints, shellLayout, squarify, startTheme, type ThemeEnv } from '../src/index'
+import { CONTRAST_RULES, CONTRAST_TEXT, CONTRAST_UI, contrastRatio, currentTheme, isMode, isSkin, fitAvatars, fitSlots, keepVisible, kpiVariants, pressOverlap, pickFitStep, pickTheme, pickWidestFit, setTheme, shellBreakpoints, shellLayout, squarify, startTheme, type ThemeEnv } from '../src/index'
 
 const at = (width: number, o: { collapsed?: boolean; panelOpen?: boolean; keepSide?: boolean } = {}) =>
   shellLayout({ width, collapsed: o.collapsed ?? false, panelOpen: o.panelOpen ?? true, keepSide: o.keepSide })
@@ -88,6 +88,34 @@ describe('アプリの枠の骨組み（shellLayout）', () => {
 
   it('つまみで広げたら、自動で畳む幅のあいだは畳まない（主役が狭くても横に並べたまま）', () => {
     expect(at(900, { keepSide: true })).toEqual({ side: 'full', panel: 'compact', panelW: 320, autoRail: false })
+  })
+})
+
+describe('入る数の決め方（fitSlots）', () => {
+  it('全部入るならそのまま、入らなければ最後の枠を「+N」に譲る', () => {
+    expect(fitSlots(3, 3)).toBe(3)
+    expect(fitSlots(4, 3)).toBe(2)
+    expect(fitSlots(4, 0)).toBe(0)
+  })
+})
+
+describe('顔の並びの決め方（fitAvatars・keepVisible）', () => {
+  const more = () => 22
+  it('入るなら間を空け、狭いと詰めて重ね、それでも超えるなら「+N」にする', () => {
+    expect(fitAvatars(3, 200, 26, more)).toEqual({ shown: 3, gap: 4 })
+    expect(fitAvatars(4, 90, 26, more)).toEqual({ shown: 4, gap: -5 })
+    expect(fitAvatars(8, 60, 26, more)).toEqual({ shown: 1, gap: -6 })
+  })
+  it('押せる顔は押せる範囲 24px を残す分だけ重ねる', () => {
+    expect(pressOverlap(26)).toBe(2)
+    expect(pressOverlap(44)).toBe(6)
+    expect(pressOverlap(20)).toBe(-4)
+    expect(fitAvatars(8, 60, 26, more, pressOverlap(26))).toEqual({ shown: 1, gap: -2 })
+  })
+  it('選んでいるものは「+N」に隠さない', () => {
+    const items = ['a', 'b', 'c', 'd'].map((id) => ({ id }))
+    expect(keepVisible(items, 2, 'd').map((x) => x.id)).toEqual(['a', 'd', 'b', 'c'])
+    expect(keepVisible(items, 2, 'b')).toBe(items)
   })
 })
 

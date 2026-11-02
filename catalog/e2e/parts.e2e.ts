@@ -616,3 +616,25 @@ test('PanelHeader: 任意のボタンを置け、タブは見出しの 16px 下�
   await stick.getByRole('button', { name: '編集する' }).click()
   await expect(page.getByText('編集を開きました')).toBeVisible()
 })
+
+test('CollapseInline: 閉じると幅が 0 になり、中の操作へ Tab で入らない', async ({ page }) => {
+  await open(page, 'motion')
+  const box = page.locator('.collapse-x')
+  const toggle = page.locator('[data-spec="inline"]').getByRole('switch')
+  await expect(box.getByRole('button', { name: '拡大' })).toBeVisible()
+  await toggle.click()
+  await expect.poll(() => box.evaluate((el) => el.getBoundingClientRect().width)).toBe(0)
+  await expect(box).toHaveAttribute('inert', '')
+  await toggle.focus()
+  await page.keyboard.press('Tab')
+  expect(await page.evaluate(() => !!document.activeElement?.closest('.collapse-x'))).toBe(false)
+})
+
+test('useFitCount: 枠が低くなると数え直し、入らない分を「+N」にまとめる', async ({ page }) => {
+  await open(page, 'data')
+  const rail = page.locator('.cat-rail')
+  await expect(rail.getByRole('button')).toHaveCount(5)
+  await page.locator('[data-spec="sideparts"] .seg').getByText('低い').click()
+  await expect(rail.getByRole('button')).toHaveCount(3)
+  await expect(rail.getByRole('button', { name: /^ほか 4 件$/ })).toBeVisible()
+})

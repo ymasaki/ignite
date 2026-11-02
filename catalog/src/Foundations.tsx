@@ -1,5 +1,5 @@
 import { IconBell, IconChartBar, IconCheck, IconPencil, IconSearch, IconSettings, IconTrash, IconUsers } from '@tabler/icons-react'
-import { AnimatedList, Appear, Avatar, Button, Code, Collapse, CopyText, EntityRow, Expandable, KeyValues, MonthStepper, Prose, RollingNumber, Skeleton, Stat, Switch } from '@ymasaki/ignite'
+import { AnimatedList, Appear, Avatar, ScreenBar, Button, Code, Collapse, CollapseInline, CopyText, EntityRow, Expandable, KeyValues, MonthStepper, Prose, RollingNumber, Skeleton, Stat, Switch } from '@ymasaki/ignite'
 import { useState } from 'react'
 import { MONTHS, PROJECTS } from './data'
 import { Case, Cases, Page, Spec } from './kit'
@@ -99,6 +99,14 @@ export function MotionPage({ target }: { target?: string | null }) {
         <div className="cat-sheet">
           <Switch label="補足を見せる" checked={more} onChange={setMore} />
           <Collapse open={more}><Prose>押し下げて出す本文。下の段がなめらかに動く</Prose></Collapse>
+        </div>
+      </Spec>
+      <Spec page={p} id="inline">
+        <div className="cat-sheet">
+          <ScreenBar>
+            <Switch label="拡大の操作を見せる" checked={more} onChange={setMore} />
+            <CollapseInline open={more}><Button>拡大</Button><Button>縮小</Button></CollapseInline>
+          </ScreenBar>
         </div>
       </Spec>
       <Spec page={p} id="list">

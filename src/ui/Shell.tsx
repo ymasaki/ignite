@@ -2,8 +2,8 @@
 // 大きさへの対応はこの部品が持つ（DESIGN.md 5 章）。骨組み（左メニューを畳む・詳細パネルを詰める・重ねる）は shellLayout.ts が
 // 窓の幅と寸法から決める。スマホ幅（600px 以下）では左メニューを引き出しにし、開くボタンは画面名と 1 つにまとめる（幅を空けるため）。
 
-import { IconChevronLeft, IconMenu2 } from '@tabler/icons-react'
-import { createContext, Fragment, useContext, useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react'
+import { IconChevronLeft, IconClock, IconMenu2, IconRefresh } from '@tabler/icons-react'
+import { createContext, Fragment, useContext, useEffect, useRef, useState, useSyncExternalStore, type ButtonHTMLAttributes, type CSSProperties, type ReactNode } from 'react'
 
 import { shortcutsOn } from '../assist'
 import { FOCUSABLE } from './A11y'
@@ -83,6 +83,43 @@ export function SideNav<K extends string>({ items, current, onSelect, collapsed 
       ))}
     </nav>
   )
+}
+
+/** 畳んだ左メニューのアイコンのボタン 1 つ（.side-ic。高さ 34px。useFitCount の slot に渡す値は SIDE_ICON_SIZE）。label は吹き出しと読み上げの名前 */
+export const SIDE_ICON_SIZE = 34
+export function SideIconButton({ label, children, ...rest }: { label: string; children: ReactNode } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children' | 'className' | 'type'>) {
+  return <button type="button" className="side-ic" data-tip={label} aria-label={label} {...rest}>{children}</button>
+}
+
+/**
+ * 左メニューの下の状態の 1 行（最終同期・集計の鮮度など）。見出し label を左、値 value を右に置く。知らせは見出しと入れ替えるので、
+ * 出し入れで行の高さも値の位置も変わらない。state は idle / updating（回るアイコン）/ updated（値を強調し、しばらくで戻す）。
+ * collapsed では文字の代わりに icon（既定は時計。更新中は回る）を出し、内容は吹き出しと読み上げで渡す。joined は上の SettingsButton と同じまとまりにする
+ */
+export function SideStatus({ label, value, state = 'idle', collapsed = false, joined = false, icon, updatingLabel = '更新中', updatedLabel = '更新しました' }: {
+  label: string; value: ReactNode; state?: 'idle' | 'updating' | 'updated'; collapsed?: boolean; joined?: boolean; icon?: ReactNode; updatingLabel?: string; updatedLabel?: string
+}) {
+  const text = typeof value === 'string' ? `${label} ${value}` : label
+  return (
+    <div className={`side-status${joined ? ' joined' : ''}${state === 'idle' ? '' : ` ${state}`}`} {...(collapsed ? { 'data-tip': text } : {})}>
+      {collapsed && <span className="sr-only">{text}</span>}
+      <span className="side-status-ic" aria-hidden="true">{state === 'updating' ? <IconRefresh size={16} stroke={1.7} /> : icon ?? <IconClock size={16} stroke={1.7} />}</span>
+      <span className="side-t side-status-l" key={state}>
+        {state === 'idle' ? label : (
+          <span className="side-status-note">
+            {state === 'updating' && <IconRefresh size={12} stroke={2} aria-hidden="true" />}
+            {state === 'updating' ? updatingLabel : updatedLabel}
+          </span>
+        )}
+      </span>
+      <b className="side-t num">{value}</b>
+    </div>
+  )
+}
+
+/** 左メニューの一番下のアカウントの欄。children に EntityRow（畳むと顔だけになる）を置く。読み込み中は Skeleton、人が分からないときは text（メールなど）を出す */
+export function SideAccount({ text, children }: { text?: string; children?: ReactNode }) {
+  return <div className="side-account">{children ?? <span className="side-account-t">{text}</span>}</div>
 }
 
 /** 左メニューの中身に渡す状態。collapsed はアイコンの列に畳んでいる（名前の吹き出しを付ける）、settled は畳み終わった（はみ出してよい）、

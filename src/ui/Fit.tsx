@@ -1,6 +1,6 @@
 // 大きさに合わせて詰める段階を選ぶ（DESIGN.md 5 章「大きさが変わったときの調整」）。見た目は styles/components/layout.css の .fit-measure。
 
-import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import { useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
 
 /** 置き場所の幅 avail に入る最初の段階（widths は段階ごとの幅、詰めていない順）。どれも入らなければ最後の段階 */
 export function pickFitStep(avail: number, widths: number[]): number {
@@ -59,4 +59,26 @@ export function FitBar<S>({ steps, children }: { steps: S[]; children: (step: S,
       {measure}
     </>
   )
+}
+
+/** 枠に slots 個入るとき、count 個のうち何個出すか。全部入らなければ、最後の 1 枠は「+N」に譲る */
+export const fitSlots = (count: number, slots: number) => (count <= slots ? count : Math.max(0, slots - 1))
+
+/**
+ * 枠に大きさ slot の項目がいくつ入るかを実際の大きさで数える（既定は高さ。入らない分を「+N」にまとめる並びに使う。数の決め方は fitSlots）。
+ * 窓やまわりの枠の大きさが変わると数え直す
+ */
+export function useFitCount<T extends HTMLElement = HTMLDivElement>(slot: number, axis: 'height' | 'width' = 'height'): { ref: RefObject<T | null>; slots: number } {
+  const ref = useRef<T>(null)
+  const [slots, setSlots] = useState(0)
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const measure = () => setSlots(Math.floor((axis === 'height' ? el.clientHeight : el.clientWidth) / slot))
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [slot, axis])
+  return { ref, slots }
 }

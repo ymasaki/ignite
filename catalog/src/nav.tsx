@@ -40,6 +40,7 @@ export const PAGES: PageDef[] = [
   ] },
   { key: 'motion', label: '動き', group: '基礎', icon: icon(IconWaveSine), specs: [
     { id: 'collapse', title: '押し下げて出す', parts: ['Collapse'] },
+    { id: 'inline', title: '横の出し入れ', parts: ['CollapseInline'] },
     { id: 'list', title: '一覧の出し入れ', parts: ['AnimatedList'] },
     { id: 'rolling', title: '数の変化', parts: ['RollingNumber'] },
     { id: 'appear', title: '読み込みから中身へ', parts: ['Skeleton', 'Appear'] },
@@ -80,7 +81,7 @@ export const PAGES: PageDef[] = [
   ] },
   { key: 'marks', label: '人と印', group: '部品', icon: icon(IconUsers), specs: [
     { id: 'avatar', title: '顔アイコン', parts: ['Avatar'] },
-    { id: 'avatars', title: '顔の並び', parts: ['AvatarGroup', 'IconBox'] },
+    { id: 'avatars', title: '顔の並び', parts: ['AvatarGroup', 'AvatarStack', 'IconBox'] },
     { id: 'tag', title: 'タグ', parts: ['Tag'] },
     { id: 'chip', title: '取り消せるタグ', parts: ['Chip', 'Badge'] },
     { id: 'markpicker', title: 'マーカー', parts: ['MarkPicker'] },
@@ -91,6 +92,7 @@ export const PAGES: PageDef[] = [
     { id: 'tablestate', title: '表の状態', parts: ['DataTable'] },
     { id: 'kv', title: '項目と本文', parts: ['Section', 'SubHeading', 'KeyValues', 'Prose'] },
     { id: 'bar', title: '内容の上の帯', parts: ['ScreenBar'] },
+    { id: 'sideparts', title: '左メニューの部品', parts: ['SideStatus', 'SideAccount', 'SideIconButton'] },
   ] },
   { key: 'code', label: 'コード', group: '部品', icon: icon(IconCode), specs: [
     { id: 'lines', title: '行番号つき', parts: ['CodeBlock'] },

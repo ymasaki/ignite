@@ -96,6 +96,11 @@
   --shell-head-bottom:min(clamp(4px, calc(4px + (100vw - 860px) * 2 / 320), 6px), clamp(0px, calc((100vh - 500px) * 6 / 300), 6px));       /* 下: 幅 860 → 1180px で 4 → 6、低い画面は 0 まで */
   --shell-head-gap:clamp(8px, calc(8px + (100vw - 375px) * 8 / 805), 16px);   /* 画面名の組と右の操作の間: 8 → 16 */
   --shell-head-row:clamp(8px, calc(8px + (100vw - 375px) * 2 / 485), 10px);   /* 2 段に組んだときの段の間: 375 → 860px で 8 → 10 */
+  /* 内容の上の帯（ScreenBar）の余白: 幅 375 → 860px でなめらかに詰め、低い画面（高さ 500 → 800px）は上下をさらに詰めて内容の枠に高さを回す */
+  --bar-y:min(clamp(8px, calc(8px + (100vw - 375px) * 2 / 485), 10px), clamp(6px, calc(6px + (100vh - 500px) * 4 / 300), 10px)); /* 上下: 8 → 10 / 6 → 10 */
+  --bar-x:clamp(10px, calc(10px + (100vw - 375px) * 4 / 485), 14px);  /* 左右: 10 → 14 */
+  --bar-gap:clamp(8px, calc(8px + (100vw - 375px) * 6 / 485), 14px);  /* 操作の間: 8 → 14 */
+  --bar-row:clamp(8px, calc(8px + (100vw - 375px) * 2 / 485), 10px);  /* 折り返した段の間: 8 → 10 */
   --shell-title-gap:clamp(8px, calc(8px + (100vw - 375px) * 6 / 805), 14px);  /* 画面名と範囲の選択（表示する範囲の切り替え）の間: 8 → 14 */
 
   /* 動き（DESIGN.md 6 章の長さの目盛り） */
@@ -130,5 +135,9 @@
 @property --shell-head-gap{syntax:'<length>';inherits:true;initial-value:16px}
 @property --shell-head-row{syntax:'<length>';inherits:true;initial-value:10px}
 @property --shell-title-gap{syntax:'<length>';inherits:true;initial-value:14px}
+@property --bar-y{syntax:'<length>';inherits:true;initial-value:10px}
+@property --bar-x{syntax:'<length>';inherits:true;initial-value:14px}
+@property --bar-gap{syntax:'<length>';inherits:true;initial-value:14px}
+@property --bar-row{syntax:'<length>';inherits:true;initial-value:10px}
 :root[data-text="large"]{--text-scale:1.125}
 :root[data-text="larger"]{--text-scale:1.25}

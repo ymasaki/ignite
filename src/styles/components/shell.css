@@ -83,6 +83,28 @@
   .ttl-t{display:none}
 }
 
+/* 左メニューの下の状態の 1 行（SideStatus）。一番下の欄（.side-foot）と同じ位置・余白・文字 */
+.side-status{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding:14px 20px;border-top:1px solid var(--line);font-size:var(--fs-12);color:var(--ink-3);white-space:nowrap}
+.side-status.joined{margin-top:0;padding-top:8px;border-top:0} /* 上の「設定」と同じまとまり。線を引かず、間を詰める */
+.side-status-l{display:flex;animation:fadeIn .2s ease-out}
+.side-status b{font-weight:600;color:var(--ink-2);border-radius:6px;transition:color .3s,background .3s}
+.side-status-note{display:inline-flex;align-items:center;gap:3px;color:var(--pri-ink);font-weight:600}
+.side-status.updating svg{animation:spin 1s linear infinite}
+.side-status.updated b{color:var(--pri-ink);background:var(--pri-soft);box-shadow:0 0 0 3px var(--pri-soft)}
+.side-status.updated .side-status-note{animation:statusNote 8s ease-out forwards}
+@keyframes statusNote{0%{opacity:0}4%{opacity:1}88%{opacity:1}100%{opacity:0}}
+.side-status-ic{display:none}
+/* 左メニューの一番下のアカウントの欄（SideAccount）。読み込み中の Skeleton は EntityRow と同じ大きさ */
+.side-account{padding:8px;border-top:1px solid var(--line)}
+.side-account-t{display:block;overflow:hidden;padding:8px;font-size:var(--fs-12);color:var(--ink-3);text-overflow:ellipsis;white-space:nowrap}
+/* 畳んだ左メニューのアイコンのボタン（SideIconButton） */
+.side-ic{position:relative;display:grid;place-items:center;width:40px;height:34px;border-radius:8px;color:var(--ink-2);transition:var(--press-back)}
+.side-ic:hover{background:var(--hover)}
+.side-ic:active{background:var(--press);scale:var(--press-scale)}
+.side-ic[aria-pressed="true"],.side-ic[aria-expanded="true"],.side-ic[aria-current="true"]{background:var(--pri-soft);color:var(--pri-ink)}
+/* 畳んだ形だけの中身（data-side="rail"）。広げた形と引き出しでは出さない */
+[data-side="rail"]{display:none}
+
 /* ---------- 左メニューを畳む（AppShell の collapse） ---------- */
 /* 窓の幅で左メニューの形（引き出し ⇔ 横に並ぶ）が切り替わった直後（AppShell の .side-switch）。動かさずに最後の姿で出す */
 .side-switch,.side-switch .side,.side-switch .side *,.side-switch .side-handle,.side-switch .side-handle *{transition:none!important;animation:none!important}
@@ -103,6 +125,20 @@
   .side-min .nav button{max-width:40px}
   .side-set button{overflow:hidden;max-width:100%;transition:max-width .28s var(--ease-in-out)}
   .side-min .side-set button{max-width:40px}
+  /* 形で中身を入れ替える（DESIGN.md 5 章）: data-side="wide" は畳むあいだに文字と一緒にフェードで消し、畳み終わってから data-side="rail" をフェードで出す。
+     広げるときは、幅が開きはじめてから wide をフェードで出す */
+  .side [data-side="wide"]{transition:opacity .16s ease-out}
+  .app:not(.side-min) .side [data-side="wide"]{animation:fadeIn .2s ease-out .08s both}
+  .side-min .side [data-side="wide"]{opacity:0}
+  .side-min-done .side [data-side="wide"]{display:none}
+  .side-min-done .side [data-side="rail"]{display:flex;animation:fadeIn .2s ease-out}
+  /* 状態の行とアカウントの行も、ほかの文字と一緒に詰める */
+  .side-account .erow{overflow:hidden;max-width:100%;min-height:52px;transition:max-width .28s var(--ease-in-out)}
+  .side-min .side-account .erow{max-width:48px}
+  .side-min .side-status{padding:8px 12px}
+  .side-min .side-status.joined{padding-top:0}
+  .side-min .side-status > .side-t{display:none}
+  .side-min .side-status-ic{display:grid;place-items:center;width:40px;height:24px}
   /* 畳み終わったら文字を置かない（残すとボタンが文字の幅のまま左メニューの外へ伸びる） */
   .side-min-done .side-t{display:none}
   /* 左メニューの中の行（EntityRow）は、畳むと顔だけにする（名前・補足は文字と一緒に消す） */
@@ -188,3 +224,4 @@
   .shell-aux + .collapse{margin-top:var(--shell-top)}
   .shell-aux + .content{padding-top:var(--shell-top)}
 }
+@media (prefers-reduced-motion: reduce){.side [data-side],.side-account .erow,.side-status-l,.side-status b{transition:none;animation:none!important}}

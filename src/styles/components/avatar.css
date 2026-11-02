@@ -25,7 +25,7 @@
 /* 押せる顔は、押せる範囲だけを周りに 2px 広げて 24px にする（WCAG 2.5.8。顔の大きさ・並び・行の高さは外側の -2px で打ち消して変えない）。
    縁はボタンでなく中の顔に付ける。顔の間は、ボタンの左の余白から広げた分の 2px を引いた値 */
 .avstack > button{position:relative;margin:-2px;padding:2px;border-radius:50%}
-.avstack > * + button{margin-left:-8px}
+.avstack > * + button{margin-left:calc(var(--av-gap,-6px) - 2px)} /* --av-gap は AvatarStack が押せる範囲 24px を残す値で渡す */
 .avstack > button > .av{transition:box-shadow .12s}
 /* 押せる顔はホバーで縁を主要色にし、重なりの上に出す */
 .avstack > button:hover{z-index:1}
@@ -36,7 +36,6 @@
 /* 置き場所の幅に合わせる並び（AvatarStack の fit）: 幅いっぱいに取って測り、顔の間（--av-gap。負の値は重なり）を幅に合わせて決める */
 .avstack.fit{display:flex;width:100%;min-width:0}
 .avstack.fit > * + .av{margin-left:var(--av-gap,-6px)}
-.avstack.fit > * + button{margin-left:calc(var(--av-gap,-6px) - 2px)}
 /* 詳細を開いている人の顔（aria-current）は、押せる顔のホバーと同じ縁で示し、重なりの上に出す */
 .avstack > button[aria-current]{z-index:1}
 .avstack > button[aria-current] > .av{box-shadow:var(--av-ring-on)}

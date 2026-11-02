@@ -184,6 +184,10 @@
   | `--shell-head-gap` | 8 → 16px | ヘッダーの画面名の組と右の操作の間。幅 375 → 1180px |
   | `--shell-head-row` | 8 → 10px | ヘッダーを 2 段に組んだときの段の間。幅 375 → 860px |
   | `--shell-title-gap` | 8 → 14px | 画面名と範囲の選択（表示する範囲の切り替え）の間。幅 375 → 1180px |
+  | `--bar-y` | 8 → 10px / 6 → 10px | 内容の上の帯（`ScreenBar`）の上下。幅 375 → 860px と、高さ 500 → 800px の小さいほう |
+  | `--bar-x` | 10 → 14px | 帯の左右。幅 375 → 860px |
+  | `--bar-gap` | 8 → 14px | 帯の操作の間。幅 375 → 860px |
+  | `--bar-row` | 8 → 10px | 帯を折り返した段の間。幅 375 → 860px |
 
   区切り（860px・600px など）で変えてよいのは組み方（2 段に組む・引き出しにする・ボタンにまとめる）だけで、余白の値は区切りで変えない。帯や道具の段など、画面の枠の中の段の余白を窓で変えるときも、区切りでなく `clamp()` でなめらかに変える（`@media` の `max-width` / `max-height` の中で余白を px の値で書くと `ignite check` が止める。組み方が変わって現れる部品は、区切りの外に書くか `design-ok` で理由を書く）。
 
@@ -245,6 +249,8 @@
 | 画面の骨組み（左メニュー・パネル・ヘッダーの段組み） | `AppShell` と `shellLayout`。★ の区切りは寸法から計算し、ほかは ① の `shell.css` のメディアクエリ（下の表の値だけ。`ignite check` が `@media`・`matchMedia` の値を検査する） |
 | 部品の置き場所の幅 | コンテナクエリ（`container-type: inline-size` と `@container`）。区切りは「全部出したときに要る幅」にし、理由をコメントに書く |
 | 中身の長さ | 実際に測る（`ResizeObserver` で幅を見て、補足から順に隠し直す。`Select` の `fit`、`LineChart` の目盛り） |
+| 並べられる数 | 実際に測る。`useFitCount`（高さ・幅に入る数）と `fitSlots`（入らない分を「+N」に）、`AvatarStack` の `fit` |
+| 左メニューの形 | 広げた形だけの中身に `data-side="wide"`、畳んだ形だけの中身に `data-side="rail"`。入れ替えのフェードは枠が持つ |
 
 画面の骨組みの区切り（上の「詰める順番」の当てはめ。既定の寸法 `SHELL_SIZES`: 左メニュー 236 / 64px、詳細パネル 380〜320px（主役とパネルに使える幅の 1/3）、余白の下限 8px、主役の最小幅 400px。★ は `shellLayout` の計算で出る幅で、メディアクエリには書かない）。
 
@@ -335,6 +341,7 @@
 | `Popover` / `Drawer` | 同上 | 小さなパネル（外側のクリック・Esc で閉じる。下・右で切れるなら反対側へ開く）/ 狭い画面のパネル（右から、スマホ幅は下から）。`peek` と `minimized` で下の 1 行に畳む（5 章「操作の結果を見える場所に出す」。ふつうは `AppShell` の `useShell().revealMain()` が畳む） |
 | `Tag` / `Chip` / `Badge` | `Chip.tsx` / `chip.css` | 状態の印（`variant`: `accent` / `dashed` / `ok` / `warn` / `danger`。良し悪しのある状態だけ意味の色）/ × で取り消せるタグ（絞り込みの差分）/ ボタンの中の数字（通知・未処理にだけ使う。消えない数に付けない）。`count` を渡し、0 なら幅を畳んで隠す（出し入れ・数の変化でボタンの幅がなめらかに動く） |
 | `Avatar` | `Avatar.tsx` / `avatar.css` | 顔アイコン（`xs` 20 / `sm` 26 / `md` 32 / `lg` 44 / `xl` 72px）。頭文字・画像・色の番号を受け取る。写真を読み込むあいだは淡い丸、読めたら 0.35s でフェードイン。重ねて並べるときは `.avstack`（縁・薄さは置き場所で `--av-ring` / `--av-opacity`、最後の 1 つは `-last`）。選んでいる・ホバーした顔の輪は、どこでも `--av-ring-on`（地の色のすき間 1px ＋ 主要色 1px） |
+| `AvatarStack` / `fitAvatars` / `keepVisible` | 同上（決め方は `avatarFit.ts`） | 重ねた顔の列。顔は `render` で描き、`onPick` で押せる、`activeId` の顔は印を付けて「+N」に隠さない。`fit` は置き場所の幅に合わせ、間を空ける → 重ねる → 「+N」の順に詰める。押せる顔は押せる範囲 24px を残す分だけ重ねる（`pressOverlap`） |
 | `AvatarGroup` | 同上 | 顔アイコンの並び（折り返して並べる。`stack` は少し重ねて 1 行）。ホバーで `tip`、`max` を超えた分は「+N」、`muted` は薄く出す |
 | `IconBox` | 同上 | 人以外のアイコンの箱（`md` 28 / `lg` 40 / `xl` 72px） |
 | `EntityRow` / `Highlight` | `List.tsx` / `list.css` | 一覧の 1 行（`lead`・`title`・`sub`・`trailing`。`size="lg"` は格子に並べる大きい行）/ 検索語の強調。上下のつながり（レポートライン）は `.chain`、枝分かれの行は `branch` |
@@ -344,13 +351,16 @@
 | `Sparkline` / `Funnel` | `Chart.tsx` / `chart.css` | 数字に添える小さな推移の線（目盛りなし。値のない点は飛ばし、点が 1 つなら点）/ 段ごとに減っていく数（段ごとに名前・数・棒と、前の段・最初の段に対する割合。枠が狭ければ 2 列）。`Stat` は `value: null` を「—」にする |
 | `StackColumns` / `TileMap` | `Chart.tsx` / `chart.css`（`TileMap` の配置は `squarify.ts`） | 積み上げの縦の棒（期間ごとの内訳を `--chart-1` からの濃淡で下から積み、減った数を 0 の線から下に灰色で。上に合計、`current` の期間を太字）/ 面積と濃さのタイル（面積は `size`、濃さは `ratio`（0〜1、null は値なし）。枠の実際の幅で正方形に近く敷き詰め、押すと選ぶ。小さいタイルは補足 → 名前の順に隠す。`scale` で濃さの凡例） |
 | `Stepper` / `MonthStepper` | `Month.tsx` / `month.css` | 前後の送り（‹ 値 ⌄ ›。対象の週など。選択肢は新しい順、`meta` は補足）/ 対象月の送り（`Stepper` に年月の数字が回る表示を載せたもの）。高さは入力欄と同じ 36px。`hideMeta` で補足（「今月」）をなめらかに隠す |
+| `useFitCount` / `fitSlots` | `Fit.tsx` | 枠に入る項目の数を実際の高さ・幅で数え（窓が変わると数え直す）、入らない分を「+N」に譲る数を決める |
 | `FitBar` / `useFitStep` / `pickFitStep` | `Fit.tsx` / `layout.css`（`.fit-measure`） | 詰める順番を宣言する帯。`steps`（詰めていない順の設定）と、設定から中身を描く関数を渡すと、置き場所に入る最初の設定で描く（写しを置いて測るのは部品）。`useFitStep` はその下の仕組み（段階ごとの写しを測り、入る最初の段階を返す） |
 | `Board` / `DashboardScreen` | `Layout.tsx` / `layout.css` | 内容の 1 枚の面 / ダッシュボードの型（中をスクロールする）。`AppShell` の `children` に置く。`panel` の有無によらず余白は同じ |
-| `ListScreen` / `ScreenBar` | `Layout.tsx` / `layout.css` | 一覧の画面の型（`Board` の中に置く） / 内容の枠の上の絞り込みの帯 |
+| `ListScreen` / `ScreenBar` | `Layout.tsx` / `layout.css` | 一覧の画面の型（`Board` の中に置く） / 内容の枠の上の絞り込みの帯（余白と間は `--bar-*` で窓に合わせて詰める。詰める順番は中に `FitBar` を置く。画面ごとに帯を作らない） |
 | `Section` / `SubHeading` / `KeyValues` / `Prose` / `Crumbs` | 同上 | まとまりの見出し（下に薄い青の線、`count` で件数。既定は `h3`、画面の直下に置くときは `level={2}`）/ まとまりの中の小見出し（線なし）/ 「ラベル：値」の 2 列 / 人が書いた本文 / パンくず（`name` は読み上げ名。`.crumbs.inline` は文中に 1 行で置く。`current` で今いる場所を最後に押せない形で添える。設定の画面から開いた画面（管理設定など）の上に置き、元の画面へ戻れるようにする）。まとまりを横に並べるときは `.section-cols`（間の線は `--section-divider`）、小見出しの左の余白は置き場所で `--subhead-pl`。見出しの使い分けは下の「見出しの段」 |
 | `Notice` / `EmptyState` | 同上 | 普段と違う状態の知らせ（既定は `--warn` の帯、`tone` で `danger`・`ok`・`info`。`warn` 以外はアイコンが付く。`info` は主要色にせず灰色（赤のスキンで危険の知らせと見分けられなくなるため）。1 文 32 字まで）/ 該当なし（`title` ありは画面いっぱいの案内） |
+| `CollapseInline` | `Motion.tsx` / `motion.css` | 帯の中の操作を、中身の実際の幅でなめらかに出し入れする（`Collapse` の横向き） |
 | `Skeleton` / `Appear` / `Collapse` / `AnimatedList` / `RollingNumber` / `Expandable` | `Motion.tsx` / `motion.css` | 6 章の動き。`Skeleton` の `variant`: `compact`（一覧の中の短い読み込み）/ `row`（顔と 1 行の読み込み） |
-| `AppShell` / `Brand` / `SideNav` | `Shell.tsx` / `shell.css` | アプリの枠。領域で組む（5 章の手順 1）: `side`（左メニューの中身。`close` と畳み方の状態を受け取る）・`foot`（一番下の欄。畳むと出さない）・`collapse`（渡すとアイコンの列に畳める。つまみ・`[` キー・動きは枠が持つ）・`title` / `titleAfter`・`search` / `tools`（ヘッダーの右。860px 以下で検索を 2 段目に、狭いと道具の `data-fit="extra"` を落とす）・`actions`（詰めない右の要素）・`aux`（補助の帯。低い横長で出さない）・`band`・`children`（主役）・`panel`（詳細パネル。`id` は中身の別、`peek` は畳んだときの 1 行。中から `useShell().revealMain()` で畳む）・`sizes`（寸法）。860px 以下で左メニューを引き出しに（影は開いているときだけ）、600px 以下でメニューのボタンと画面名を 1 つのボタンにまとめる、詳細パネルを詰める・左メニューを畳む・重ねるは `shellLayout`（窓の幅と寸法から決める純粋な関数）。ヘッダーの高さは右に操作がなくても `--control-h` の段にそろえる / 左メニューの一番上（`onClick` で押せる。名前は畳むと消える）/ 左メニューの項目（選んでいる項目は `aria-current="page"`、`collapsed` で名前を吹き出しに。選択中の地は `Segmented` と同じばねで選んだ項目へスライドする。項目の `group` でまとまりの見出しを出す。畳むと文字だけ消し、項目の位置は動かさない） |
+| `SideStatus` / `SideAccount` / `SideIconButton` | `Shell.tsx` / `shell.css` | 左メニューの下の状態の 1 行（最終同期など。`state` で更新中・更新済みを見出しと入れ替え、畳むとアイコンと吹き出し）/ 一番下のアカウントの欄（`EntityRow` を置く）/ 畳んだ列のアイコンのボタン（高さは `SIDE_ICON_SIZE`。`useFitCount` と `fitSlots` で入る数だけ並べ、残りは「+N」） |
+| `AppShell` / `Brand` / `SideNav` | `Shell.tsx` / `shell.css` | アプリの枠。領域で組む（5 章の手順 1）: `side`（左メニューの中身。`close` と畳み方の状態を受け取る）・`foot`（一番下の欄。畳むと出さない）・`collapse`（渡すとアイコンの列に畳める。つまみ・`[` キー・動きは枠が持つ）・`title` / `titleAfter`・`search` / `tools`（ヘッダーの右。860px 以下で検索を 2 段目に、狭いと道具の `data-fit="extra"` を落とす）・`actions`（詰めない右の要素）・`aux`（補助の帯。低い横長で出さない）・`band`・`children`（主役）・`panel`（詳細パネル。`id` は中身の別、`peek` は畳んだときの 1 行。中から `useShell().revealMain()` で畳む）・`sizes`（寸法）。600px 以下で左メニューを引き出しに（影は開いているときだけ）し、メニューのボタンと画面名を 1 つのボタンにまとめる、詳細パネルを詰める・左メニューを畳む・重ねるは `shellLayout`（窓の幅と寸法から決める純粋な関数）。ヘッダーの高さは右に操作がなくても `--control-h` の段にそろえる / 左メニューの一番上（`onClick` で押せる。名前は畳むと消える）/ 左メニューの項目（選んでいる項目は `aria-current="page"`、`collapsed` で名前を吹き出しに。選択中の地は `Segmented` と同じばねで選んだ項目へスライドする。項目の `group` でまとまりの見出しを出す。畳むと文字だけ消し、項目の位置は動かさない） |
 
 ### 見出しの段
 

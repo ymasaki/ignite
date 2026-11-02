@@ -1,5 +1,5 @@
-import { IconBuilding, IconFolder, IconSearch } from '@tabler/icons-react'
-import { Avatar, AvatarGroup, Badge, Button, Chip, DataTable, EntityRow, Highlight, IconBox, KeyValues, MarkPicker, Prose, ScreenBar, Section, Segmented, SubHeading, Tag, type TableSort } from '@ymasaki/ignite'
+import { IconBuilding, IconFolder, IconSearch, IconStar } from '@tabler/icons-react'
+import { Avatar, AvatarGroup, AvatarStack, Badge, Button, Chip, DataTable, EntityRow, fitSlots, Highlight, IconBox, KeyValues, MarkPicker, Prose, ScreenBar, Section, Segmented, SIDE_ICON_SIZE, SideAccount, SideIconButton, SideStatus, SubHeading, Tag, useFitCount, type TableSort } from '@ymasaki/ignite'
 import { useState } from 'react'
 import { PROJECTS } from './data'
 import { Case, Cases, Page, Spec } from './kit'
@@ -16,6 +16,8 @@ export function MarksPage({ target }: { target?: string | null }) {
       <Spec page={p} id="avatars">
         <Cases>
           <Case label="メンバー"><AvatarGroup label="メンバー" items={PROJECTS.map((x) => ({ key: x.id, initial: x.initial, tone: x.tone, tip: x.owner }))} max={4} /></Case>
+          <Case label="重ねて押せる"><AvatarStack items={PROJECTS} tip={(x) => x.owner} render={(x, size) => <Avatar initial={x.initial} tone={x.tone} size={size} />} onPick={() => {}} activeId="p3" max={3} /></Case>
+          <Case label="幅に合わせる"><div className="cat-fit-w"><AvatarStack items={PROJECTS} tip={(x) => x.owner} render={(x, size) => <Avatar initial={x.initial} tone={x.tone} size={size} />} fit /></div></Case>
           <Case label="人以外"><div className="cat-row"><IconBox><IconFolder size={16} stroke={1.8} /></IconBox><IconBox size="lg"><IconBuilding size={18} stroke={1.8} /></IconBox></div></Case>
         </Cases>
       </Spec>
@@ -77,6 +79,31 @@ export function DataPage({ target }: { target?: string | null }) {
       <Spec page={p} id="bar">
         <ScreenBar count="6件"><Segmented label="対象で絞り込む" value={scope} onChange={setScope} options={[{ value: 'all', label: 'すべて' }, { value: 'mine', label: '自分の担当' }]} /></ScreenBar>
       </Spec>
+      <Spec page={p} id="sideparts">
+        <Cases>
+          <Case label="状態の行"><div className="cat-side"><SideStatus label="最終同期" value="11/02 09:30" /></div></Case>
+          <Case label="更新中"><div className="cat-side"><SideStatus label="最終同期" value="11/02 09:30" state="updating" /></div></Case>
+          <Case label="アカウント"><div className="cat-side"><SideAccount><EntityRow lead={<Avatar initial="佐" tone="c1" />} title="佐藤 葵" sub="aoi@example.com" /></SideAccount></div></Case>
+          <Case label="入る数だけ並べる"><SideRailSample /></Case>
+        </Cases>
+      </Spec>
     </Page>
+  )
+}
+
+/** 畳んだ左メニューの列の見本。枠の高さを変えると、入る数だけ並べ、残りを「+N」にまとめる */
+function SideRailSample() {
+  const [tall, setTall] = useState('md')
+  const { ref, slots } = useFitCount(SIDE_ICON_SIZE)
+  const shown = PROJECTS.slice(0, fitSlots(PROJECTS.length, slots))
+  const rest = PROJECTS.length - shown.length
+  return (
+    <div className="cat-row">
+      <div className={`cat-rail ${tall}`} ref={ref}>
+        {shown.map((x) => <SideIconButton key={x.id} label={x.name}><IconStar size={16} stroke={1.7} /></SideIconButton>)}
+        {rest > 0 && <SideIconButton label={`ほか ${rest} 件`}>+{rest}</SideIconButton>}
+      </div>
+      <Segmented label="枠の高さ" value={tall} onChange={setTall} options={[{ value: 'sm', label: '低い' }, { value: 'md', label: '高い' }]} />
+    </div>
   )
 }

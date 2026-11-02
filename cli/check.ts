@@ -71,7 +71,7 @@ const MEDIA_SIZE = /\((min|max)-(width|height)\s*:\s*(\d+)px\)/g
 // Ignite の部品。アプリの CSS でこれらの見た目を上書きしない
 const DS_PARTS = /\.(seg|tabs|stepper|select-btn|sel-[\w-]+|btn|icon-btn|chip|tag|badge|kpi(?:-[\w]+)?|erow|er-[\w]+|section-h|subhead|notice|drawer|popover-body|field|sfield|check|linkbtn|crumbs|kv|empty-state|av|section|section-[\w]+|skel|skel-[\w]+|side-foot)(?![\w-])/
 // 1.1 以降に足した部品。アプリに同じ名前の独自のクラスがあるかもしれないので、次の major までは注意にとどめる
-const NEW_PARTS = /\.(check-[\w]+|switch|sw-[\w]+|numfield|nf-[\w]+|form-field|ff-[\w]+|cal|cal-[\w]+|dialog|dlg-[\w]+|toast|toasts|pagination|pg-[\w]+|accordion|ac-[\w]+|steps|st-[\w]+|spinner|progress|cb|cb-[\w]+|code-inline)(?![\w-])/
+const NEW_PARTS = /\.(side-status(?:-[\w]+)?|side-account(?:-[\w]+)?|side-ic|collapse-x|check-[\w]+|switch|sw-[\w]+|numfield|nf-[\w]+|form-field|ff-[\w]+|cal|cal-[\w]+|dialog|dlg-[\w]+|toast|toasts|pagination|pg-[\w]+|accordion|ac-[\w]+|steps|st-[\w]+|spinner|progress|cb|cb-[\w]+|code-inline)(?![\w-])/
 const LOOK_PROPS = /(?<![\w-])(padding(?:-\w+)?|font-size|font-weight|color|background(?:-color)?|border(?:-(?:top|right|bottom|left|color|width))?|width|height|border-radius|box-shadow|opacity)\s*:/g
 // AppShell が持つ枠の部品。アプリの CSS はこれらを対象（セレクタの最後の要素）にしない（中身の状態に合わせた規則はよい）
 const SHELL_PARTS = /\.(app|mainwrap|side|side-handle|side-scrim|pslot|panel)(?![\w-])[^\s>+~]*$/

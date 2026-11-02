@@ -87,3 +87,10 @@
 .cat-face-l{flex:0 0 120px;font-size:var(--fs-12);color:var(--ink-3)}
 .cat-face-v{font-size:var(--fs-24);font-weight:700}
 .cat-face-v small{margin-left:2px;font-size:var(--fs-12);font-weight:600;color:var(--ink-2)}
+
+/* 左メニューの部品の見本（幅は左メニューと同じ。線と地は部品が持つ） */
+.cat-side{display:flex;flex-direction:column;width:236px;background:var(--panel)}
+.cat-fit-w{width:120px}
+.cat-rail{display:flex;flex-direction:column;width:40px;overflow:hidden}
+.cat-rail.sm{height:102px}
+.cat-rail.md{height:170px}
