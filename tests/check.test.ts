@@ -91,7 +91,7 @@ describe('書体の注意', () => {
   })
   it('index.html が書体を読まないと注意する。自前で配るときは design-ok で外せる', () => {
     expect(checkFontLink('index.html', '<head></head>')).toHaveLength(1)
-    expect(checkFontLink('index.html', '<link href="https://fonts.googleapis.com/css2?family=Inter&family=LINE+Seed+JP:wght@400">')).toEqual([])
+    expect(checkFontLink('index.html', '<link href="https://fonts.googleapis.com/css2?family=Inter&family=M+PLUS+1p:wght@400">')).toEqual([])
     expect(checkFontLink('index.html', '<!-- design-ok: 自前で配る -->')).toEqual([])
   })
   it('見本の index.html は書体を読む', () => {

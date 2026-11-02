@@ -125,7 +125,7 @@ export function checkFontFamily(file: string, text: string): Problem[] {
 
 /** 書体を読む <link> が index.html にあるか（なくても端末の書体で動くので注意にとどめる。自前で配るときは design-ok: 理由 を書く） */
 export function checkFontLink(file: string, text: string): Problem[] {
-  return /family=[^"']*LINE\+Seed\+JP/.test(text) || OK.test(text) ? [] : [{ path: file, line: 1, message: 'Google Fonts の書体を読んでいない。templates/app/index.html の <link> を <head> に置く（DESIGN.md 3 章）' }]
+  return /family=[^"']*M\+PLUS\+1p/.test(text) || OK.test(text) ? [] : [{ path: file, line: 1, message: 'Google Fonts の書体を読んでいない。templates/app/index.html の <link> を <head> に置く（DESIGN.md 3 章）' }]
 }
 
 /** @media・matchMedia・useMedia の幅と高さは、区切りの表の値だけ */

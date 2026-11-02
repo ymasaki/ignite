@@ -39,7 +39,7 @@ export function TypePage({ target }: { target?: string | null }) {
       </Spec>
       <Spec page={p} id="faces">
         <div className="cat-stack">
-            <span className="cat-face"><span className="cat-face-l">LINE Seed JP</span><span>本文と見出し。English words mix naturally.</span></span>
+            <span className="cat-face"><span className="cat-face-l">M PLUS 1p</span><span>本文と見出し。English words mix naturally.</span></span>
             <span className="cat-face"><span className="cat-face-l">Inter</span><span className="cat-face-v num">¥1,234,567<small>円</small></span><span className="cat-face-v num">98.6%</span><span className="cat-face-v num">12,480<small>件</small></span></span>
             <span className="cat-face"><span className="cat-face-l">JetBrains Mono</span><span>設定の <Code>retryCount</Code> と <Code>npx ignite check</Code> を文中に置く</span></span>
           </div>

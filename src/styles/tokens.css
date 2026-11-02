@@ -120,7 +120,7 @@
   --fs-16:calc(16px * var(--text-scale)); --fs-20:calc(20px * var(--text-scale)); --fs-24:calc(24px * var(--text-scale)); --fs-32:calc(32px * var(--text-scale));
 
   /* 書体は役割で 3 つ（DESIGN.md 3 章）。読み込めないときは後ろの端末の書体で描く。--font-num・--font-code に無い字（かな・漢字）は --font の字になる */
-  --font:"LINE Seed JP","Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI","Meiryo",system-ui,sans-serif;
+  --font:"M PLUS 1p","Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI","Meiryo",system-ui,sans-serif;
   --font-num:"Inter",var(--font);
   --font-code:"JetBrains Mono","SFMono-Regular","Menlo","Consolas",var(--font);
 }
