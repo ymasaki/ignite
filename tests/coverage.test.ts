@@ -16,7 +16,8 @@ const parts = [...read('src/index.ts').matchAll(/export \{([^}]*)\}/g)].flatMap(
 
 describe('部品の一覧（AGENTS.md「部品を足す・変えるときは一緒に直す」）', () => {
   const design = read('DESIGN.md')
-  const catalog = ['catalog/src/App.tsx', 'catalog/src/Parts.tsx', 'catalog/src/Screens.tsx'].map(read).join('\n')
+  // 目録（nav.tsx）は名前を並べるだけなので数えない。実際に描いているファイルだけを見る
+  const catalog = fs.readdirSync(path.join(root, 'catalog/src')).filter((f) => f.endsWith('.tsx') && f !== 'nav.tsx').map((f) => read(`catalog/src/${f}`)).join('\n')
   // カタログでは単独で見せられないもの（理由つき）
   const NOT_IN_CATALOG: Record<string, string> = {
     Drawer: 'AppShell が重ねた詳細パネルとして描く（一覧の型を狭い幅で開くと見える）',

@@ -20,9 +20,16 @@
 - 左メニューの設定の上に線が二重に出るのを直した
 - 端に近いグラフの吹き出しが窓の外へ見切れるのを直した
 - `Delta` を太字にしない
+- `NumberField` の − ＋ にも `data-tip` を付けた
+- 監査の `reveals` が、`PanelHeader` の `actions` の押せない写し（固定ヘッダーの `inert`）を押そうとして止まるのを直した
+
+### 追加
+
+- `SideNav` の項目に `group`（まとまりの見出し）を足した
 
 ### 変更
 
+- `SideNav` の選択中の地が、押した項目へ `Segmented` と同じばねでスライドする
 - `Pagination` の選択中の地が、押したページへスライドする
 - `LineChart` はホバーした点に印と縦線を出す。`BarList`・`StackColumns` はホバーした要素以外を薄くする
 - `DataTable` はホバーした行の地を変える。`Highlight`（`mark`）は濃い黄色・太字・下線にした

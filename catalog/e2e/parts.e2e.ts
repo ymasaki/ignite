@@ -30,7 +30,7 @@ test('Dialog: 開くと中へ移り、Tab は外へ出ず、Esc で閉じて元�
 
 test('CodeBlock: 全角は半角 2 桁にそろい、コピーは元のコードで、はみ出す欄はキーボードで送れる', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write'])
-  await open(page, 'display')
+  await open(page, 'code')
   const grid = page.locator('figure.cb', { hasText: '桁の確認' })
   const rights = await grid.locator('.cb-ln').evaluateAll((ls) => ls.map((l) => {
     const r = document.createRange()
@@ -96,7 +96,7 @@ test('Toast: 失敗の知らせは自動で消えず、× で閉じる。完了�
 })
 
 test('Menu: ↑↓ で移り、押せない項目を飛ばし、Enter で実行して元のボタンへ戻る', async ({ page }) => {
-  await open(page, 'controls')
+  await open(page, 'actions')
   const btn = page.getByRole('button', { name: '操作', exact: true })
   await btn.focus()
   await page.keyboard.press('Enter')
@@ -200,7 +200,7 @@ test('Popover: 下で切れる位置では上に開き、見える範囲に収�
 })
 
 test('DataTable: 見出しを押すと並び順が読み上げに出て、すべて選ぶが効く', async ({ page }) => {
-  await open(page, 'display')
+  await open(page, 'data')
   const table = page.getByRole('table', { name: '並べ替えと選択' })
   const head = table.getByRole('columnheader', { name: '名前' })
   await expect(head).toHaveAttribute('aria-sort', 'none')
@@ -214,7 +214,7 @@ test('DataTable: 見出しを押すと並び順が読み上げに出て、すべ
 })
 
 test('Pagination: 番号を押すと移り、端では前後のボタンが押せない', async ({ page }) => {
-  await open(page, 'controls')
+  await open(page, 'navigate')
   const nav = page.getByRole('navigation', { name: 'ページ送り' })
   await nav.getByRole('button', { name: '1ページ目' }).click()
   await expect(nav.getByRole('button', { name: '1ページ目' })).toHaveAttribute('aria-current', 'page')
@@ -320,7 +320,7 @@ test('Dialog: 閉じた状態から開いた長い本文も、キーボードで
 
 test('Select: 開いているあいだに親が描き直しても、今の項目から動かない', async ({ page }) => {
   await page.clock.install()
-  await open(page, 'controls')
+  await open(page, 'forms')
   await page.getByRole('button', { name: /^並び順/ }).click()
   await page.keyboard.press('ArrowDown')
   const opt = page.getByRole('option', { name: /名前の順/ })
@@ -389,7 +389,7 @@ test('Combobox: 開いたまま候補が増えて下で切れるなら、上へ�
 
 test('Menu: 開いているあいだに親が描き直しても、今の項目から動かない', async ({ page }) => {
   await page.clock.install()
-  await open(page, 'controls')
+  await open(page, 'actions')
   await page.getByRole('button', { name: '操作', exact: true }).click()
   await page.keyboard.press('ArrowDown')
   await expect(page.getByRole('menuitem', { name: '複製する' })).toBeFocused()
@@ -398,8 +398,8 @@ test('Menu: 開いているあいだに親が描き直しても、今の項目�
 })
 
 test('Accordion: キーボードで開閉し、既定は 1 つだけ開く', async ({ page }) => {
-  await open(page, 'display')
-  const a = page.getByRole('button', { name: /^概要/ })
+  await open(page, 'navigate')
+  const a = page.getByRole('button', { name: /^概要 3件/ })
   const b = page.getByRole('button', { name: /^履歴/ })
   await expect(a).toHaveAttribute('aria-expanded', 'true')
   await b.focus()
@@ -493,4 +493,45 @@ test('LoginForm: 外部認証のボタンは主ボタンの下に並び、Enter 
   await page.getByRole('button', { name: 'Google でログインする' }).focus()
   await page.keyboard.press('Enter')
   await expect(page.getByText('メールアドレスを入れてください')).toHaveCount(0)
+})
+
+test('SideNav: 押すと選択中の地が次の項目へ動き、まとまりをまたいでも 1 枚のまま', async ({ page }) => {
+  await open(page, 'color')
+  const nav = page.getByRole('navigation', { name: 'メインメニュー' })
+  const thumb = nav.locator('.thumb')
+  await expect(nav.getByRole('button', { name: '色' })).toHaveAttribute('aria-current', 'page')
+  const top = () => thumb.evaluate((el) => el.getBoundingClientRect().top)
+  const before = await top()
+  await nav.getByRole('button', { name: 'ダッシュボード' }).click()
+  await expect(thumb).toHaveCSS('transition-property', /top/)
+  const target = await nav.getByRole('button', { name: 'ダッシュボード' }).evaluate((el) => el.getBoundingClientRect().top)
+  await expect.poll(top).toBeCloseTo(target, 0)
+  expect(target).toBeGreaterThan(before)
+})
+
+test('部品の検索: 選ぶとそのページの標本へ移り、目次で別の標本へ移れる', async ({ page }) => {
+  await open(page, 'overview')
+  await page.getByRole('combobox', { name: '部品を探す' }).fill('Pagination')
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('Enter')
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('切り替えと移動')
+  await expect(page.locator('[data-spec="pagination"]')).toBeInViewport()
+  await page.getByRole('navigation', { name: 'このページの目次' }).getByRole('button', { name: '開閉の並び' }).click()
+  await expect(page.locator('[data-spec="accordion"]')).toBeInViewport()
+})
+
+test('テーマ: ヘッダーから切り替えると、その場で色が変わる', async ({ page }) => {
+  await open(page, 'actions')
+  await page.getByRole('button', { name: 'テーマを変える' }).click()
+  await page.getByRole('group', { name: 'テーマカラー' }).getByRole('button', { name: '青' }).click()
+  await expect(page.locator('html')).toHaveAttribute('data-skin', 'blue')
+})
+
+test('KPI: 押すと絞り込みのタグが出て、× で外せる', async ({ page }) => {
+  await open(page, 'dashboard')
+  await page.getByRole('button', { name: /^進行中/ }).first().click()
+  const chip = page.getByRole('button', { name: '絞り込みを外す' })
+  await expect(chip).toBeVisible()
+  await chip.click()
+  await expect(chip).toHaveCount(0)
 })

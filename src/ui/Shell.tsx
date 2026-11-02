@@ -3,13 +3,13 @@
 // 窓の幅と寸法から決める。スマホ幅（600px 以下）では左メニューを引き出しにし、開くボタンは画面名と 1 つにまとめる（幅を空けるため）。
 
 import { IconChevronLeft, IconMenu2 } from '@tabler/icons-react'
-import { createContext, useContext, useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react'
+import { createContext, Fragment, useContext, useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react'
 
 import { shortcutsOn } from '../assist'
 import { FOCUSABLE } from './A11y'
 import { Button } from './Button'
 import { Toaster } from './Toast'
-import { Drawer, isTyping, type DrawerPeek } from './Controls'
+import { Drawer, isTyping, useThumb, type DrawerPeek } from './Controls'
 import { reducedMotion } from './Motion'
 import { SHELL_SIZES, shellLayout, type ShellSizes } from './shellLayout'
 
@@ -59,20 +59,27 @@ export interface NavItem<K extends string> {
   key: K
   label: string
   icon: ReactNode
+  /** まとまりの見出し。続く項目で同じ値なら 1 回だけ出す（畳むと文字を消し、項目の位置は動かさない） */
+  group?: string
 }
 
 /**
  * 左メニューの項目の並び。選んでいる項目は aria-current="page"（current が null なら、どれも選んでいない。設定の画面など）。collapsed（AppShell の side が受け取る状態）なら、名前（.side-t）は消え、
- * ホバーで右に吹き出し（data-tip）と読み上げ用の名前（aria-label）を付ける
+ * ホバーで右に吹き出し（data-tip）と読み上げ用の名前（aria-label）を付ける。選択中の地は、Segmented と同じ .thumb が選んだ項目へスライドする
  */
 export function SideNav<K extends string>({ items, current, onSelect, collapsed = false, label = 'メインメニュー' }: { items: NavItem<K>[]; current: K | null; onSelect: (key: K) => void; collapsed?: boolean; label?: string }) {
+  const { ref, thumb, ready } = useThumb<HTMLElement>(current ?? '')
   return (
-    <nav className="nav" aria-label={label}>
-      {items.map((it) => (
-        <button key={it.key} type="button" {...(collapsed ? { 'data-tip': it.label, 'aria-label': it.label } : {})} aria-current={current === it.key ? 'page' : undefined} onClick={() => onSelect(it.key)}>
-          {it.icon}
-          <span className="side-t">{it.label}</span>
-        </button>
+    <nav className={`nav${ready ? ' ready' : ''}`} aria-label={label} ref={ref}>
+      <span className="thumb" ref={thumb} aria-hidden="true" />
+      {items.map((it, i) => (
+        <Fragment key={it.key}>
+          {it.group != null && it.group !== items[i - 1]?.group && <span className="nav-h">{it.group}</span>}
+          <button type="button" {...(collapsed ? { 'data-tip': it.label, 'aria-label': it.label } : {})} aria-current={current === it.key ? 'page' : undefined} onClick={() => onSelect(it.key)}>
+            {it.icon}
+            <span className="side-t">{it.label}</span>
+          </button>
+        </Fragment>
       ))}
     </nav>
   )

@@ -1,11 +1,16 @@
-import { IconAdjustments, IconBell, IconChartBar, IconForms, IconLayoutGrid, IconList, IconLogin2, IconPalette } from '@tabler/icons-react'
-import { AppShell, Brand, SettingsButton, SideNav, useShell } from '@ymasaki/ignite'
-import { useEffect, useState, type ReactNode } from 'react'
-import { ControlsPage, DisplayPage, FeedbackPage, FormsPage, FoundationsPage } from './Parts'
+import { IconPalette } from '@tabler/icons-react'
+import { AppShell, Brand, Combobox, currentTheme, IconButton, Popover, Segmented, setTheme, SettingsButton, SideNav, useShell, type Mode, type Skin } from '@ymasaki/ignite'
+import { useEffect, useState } from 'react'
+import { ChartsPage } from './Charts'
+import { CodePage } from './Code'
+import { ActionsPage, NavigatePage } from './Controls'
+import { DataPage, MarksPage } from './Display'
+import { FeedbackPage } from './Feedback'
+import { FormsPage } from './Forms'
+import { ColorPage, MotionPage, ShapePage, TypePage } from './Foundations'
+import { pageOf, PAGES } from './nav'
+import { OverviewPage } from './Overview'
 import { DashboardPage, DetailPanel, ListPage, LoginPage, SettingsPage } from './Screens'
-
-type Nav = 'foundations' | 'controls' | 'forms' | 'feedback' | 'display' | 'list' | 'dashboard' | 'login'
-type Route = Nav | 'settings'
 
 // Ignite のロゴ（docs/logo/ignite-mark.svg と同じ形）。`.brand-mark` が `--pri` で塗るのでスキンに従う
 const LOGO = (
@@ -14,22 +19,15 @@ const LOGO = (
   </svg>
 )
 
-const NAV: { key: Nav; label: string; icon: ReactNode }[] = [
-  { key: 'foundations', label: '基礎', icon: <IconPalette size={18} stroke={1.8} /> },
-  { key: 'controls', label: '操作の部品', icon: <IconAdjustments size={18} stroke={1.8} /> },
-  { key: 'forms', label: 'フォームの部品', icon: <IconForms size={18} stroke={1.8} /> },
-  { key: 'feedback', label: '知らせと確認', icon: <IconBell size={18} stroke={1.8} /> },
-  { key: 'display', label: '表示の部品', icon: <IconLayoutGrid size={18} stroke={1.8} /> },
-  { key: 'list', label: '一覧の型', icon: <IconList size={18} stroke={1.8} /> },
-  { key: 'dashboard', label: 'ダッシュボードの型', icon: <IconChartBar size={18} stroke={1.8} /> },
-  { key: 'login', label: 'ログインの型', icon: <IconLogin2 size={18} stroke={1.8} /> },
-]
-const TITLES: Record<Route, string> = { foundations: '基礎', controls: '操作の部品', forms: 'フォームの部品', feedback: '知らせと確認', display: '表示の部品', list: '一覧の型', dashboard: 'ダッシュボードの型', login: 'ログインの型', settings: '設定' }
+const NAV = PAGES.map(({ key, label, icon, group }) => ({ key, label, icon, group }))
+// 検索の候補。部品の名前と標本の見出しのどちらでも絞れるよう、両方を名前に入れる
+const FIND = PAGES.flatMap((p) => p.specs.flatMap((s) => (s.parts?.length ? s.parts : [s.title]).map((name) => ({ value: `${p.key}/${s.id}/${name}`, label: name === s.title ? name : `${name} ${s.title}`, meta: p.label }))))
+const PAGE_VIEWS = { color: ColorPage, type: TypePage, shape: ShapePage, motion: MotionPage, actions: ActionsPage, navigate: NavigatePage, forms: FormsPage, feedback: FeedbackPage, marks: MarksPage, data: DataPage, code: CodePage, charts: ChartsPage }
 
 const read = () => {
   const p = new URLSearchParams(location.search)
-  const nav = p.get('nav') as Route | null
-  return { nav: nav && nav in TITLES ? nav : ('foundations' as Route), open: p.get('open') }
+  const nav = p.get('nav') ?? ''
+  return { nav: pageOf(nav) || nav === 'settings' ? nav : 'overview', open: p.get('open'), spec: p.get('spec') }
 }
 
 /** URL を状態の正本にする（監査が URL で画面を開く） */
@@ -40,11 +38,13 @@ function useRoute() {
     window.addEventListener('popstate', on)
     return () => window.removeEventListener('popstate', on)
   }, [])
-  const go = (next: { nav?: Route; open?: string | null }) => {
+  const go = (next: { nav?: string; open?: string | null; spec?: string | null }) => {
     const p = new URLSearchParams(location.search)
     if (next.nav) p.set('nav', next.nav)
     if (next.open) p.set('open', next.open)
     else p.delete('open')
+    if (next.spec) p.set('spec', next.spec)
+    else p.delete('spec')
     history.pushState(null, '', `?${p}`)
     setRoute(read())
   }
@@ -52,36 +52,50 @@ function useRoute() {
 }
 
 /** 詳細の中から主役を変える操作の例（狭い幅では詳細を畳んで結果を見せる） */
-function PanelContent({ id, onClose, go }: { id: string; onClose: () => void; go: (nav: Route) => void }) {
+function PanelContent({ id, onClose, go }: { id: string; onClose: () => void; go: (nav: string) => void }) {
   const { revealMain } = useShell()
   return <DetailPanel id={id} onClose={onClose} onShowDashboard={() => { go('dashboard'); revealMain() }} />
 }
 
+/** テーマをその場で試す。画面を移らずに、見ている部品の色が変わる */
+function ThemePicker() {
+  const [theme, set] = useState(currentTheme)
+  const change = (next: Partial<typeof theme>) => { const t = { ...theme, ...next }; setTheme(t); set(t) }
+  return (
+    <Popover trigger={(open, toggle) => <IconButton size="lg" label="テーマを変える" tip="テーマ" aria-expanded={open} onClick={toggle}><IconPalette size={18} stroke={1.8} /></IconButton>}>
+      <div className="cat-theme">
+        <Segmented fill label="テーマカラー" value={theme.skin} onChange={(skin: Skin) => change({ skin })} options={[{ value: 'red', label: '赤' }, { value: 'blue', label: '青' }, { value: 'green', label: '緑' }]} />
+        <Segmented fill label="表示モード" value={theme.mode} onChange={(mode: Mode) => change({ mode })} options={[{ value: 'light', label: 'ライト' }, { value: 'dark', label: 'ダーク' }, { value: 'auto', label: '自動' }]} />
+      </div>
+    </Popover>
+  )
+}
+
 export function App() {
-  const { nav, open, go } = useRoute()
+  const { nav, open, spec, go } = useRoute()
   const [collapsed, setCollapsed] = useState(false)
   const close = () => go({ open: null })
+  const View = PAGE_VIEWS[nav as keyof typeof PAGE_VIEWS]
   // ログインはアプリの枠の外に置く画面なので、カタログでも枠を出さない
-  if (nav === 'login') return <LoginPage mark={LOGO} onBack={() => go({ nav: 'foundations', open: null })} />
+  if (nav === 'login') return <LoginPage mark={LOGO} onBack={() => go({ nav: 'overview' })} />
   return (
     <AppShell
       side={(closeSide, state) => (
         <>
-          <Brand mark={LOGO} name="Ignite" small="デザインシステム" onClick={() => go({ nav: 'foundations', open: null })} />
-          <SideNav items={NAV} current={nav === 'settings' ? null : nav} collapsed={state.collapsed} onSelect={(key) => { go({ nav: key, open: null }); closeSide() }} />
+          <Brand mark={LOGO} name="Ignite" small="デザインシステム" onClick={() => go({ nav: 'overview' })} />
+          <SideNav items={NAV} current={nav === 'settings' ? null : nav} collapsed={state.collapsed} onSelect={(key) => { go({ nav: key }); closeSide() }} />
         </>
       )}
-      foot={<SettingsButton current={nav === 'settings'} onClick={() => go({ nav: 'settings', open: null })} />}
+      foot={<SettingsButton current={nav === 'settings'} onClick={() => go({ nav: 'settings' })} />}
       collapse={{ collapsed, onChange: setCollapsed }}
-      title={TITLES[nav]}
+      title={nav === 'settings' ? '設定' : pageOf(nav)?.label}
+      search={<div className="cat-search"><Combobox label="部品を探す" placeholder="部品を探す" value={null} onChange={(v) => { if (v) { const [n, s] = v.split('/'); go({ nav: n, spec: s }) } }} options={FIND} /></div>}
+      actions={<ThemePicker />}
       aux={nav === 'dashboard' ? <DashboardPage.Band /> : undefined}
       panel={{ open: !!open, onClose: close, id: open ?? undefined, peek: { title: 'プロジェクトの詳細' }, content: open ? <PanelContent id={open} onClose={close} go={(n) => go({ nav: n })} /> : null }}
     >
-      {nav === 'foundations' && <FoundationsPage />}
-      {nav === 'controls' && <ControlsPage />}
-      {nav === 'forms' && <FormsPage />}
-      {nav === 'feedback' && <FeedbackPage />}
-      {nav === 'display' && <DisplayPage />}
+      {nav === 'overview' && <OverviewPage onOpen={(key) => go({ nav: key })} />}
+      {View && <View key={nav} target={spec} />}
       {nav === 'list' && <ListPage selected={open} onOpen={(id) => go({ open: id })} />}
       {nav === 'dashboard' && <DashboardPage />}
       {nav === 'settings' && <SettingsPage />}

@@ -109,8 +109,8 @@ export function NumberField({ value, onChange, label, min, max, step = 1, unit, 
       <span className="nf-box">
         <input className="field" type="text" inputMode="decimal" role="spinbutton" autoComplete="off" aria-label={f.label} aria-valuenow={shown ?? undefined} aria-valuemin={min} aria-valuemax={max} aria-valuetext={shown != null && unit ? `${shown}${unit}` : undefined} placeholder={placeholder} disabled={disabled} value={draft ?? value ?? ''} onChange={(e) => setDraft(e.target.value)} onBlur={commit} onKeyDown={onKey} {...fieldProps(f)} />
         {/* ↑↓ で同じことができるので Tab では止まらない */}
-        <button type="button" className="nf-btn" tabIndex={-1} aria-label={`${f.label ?? ''}を減らす`} disabled={disabled || (value != null && min != null && value <= min)} onClick={() => set(stepNumber(value, -step, step, min, max))}><IconMinus size={14} stroke={1.8} /></button>
-        <button type="button" className="nf-btn" tabIndex={-1} aria-label={`${f.label ?? ''}を増やす`} disabled={disabled || (value != null && max != null && value >= max)} onClick={() => set(stepNumber(value, step, step, min, max))}><IconPlus size={14} stroke={1.8} /></button>
+        <button type="button" className="nf-btn" tabIndex={-1} aria-label={`${f.label ?? ''}を減らす`} data-tip={`${f.label ?? ''}を減らす`} disabled={disabled || (value != null && min != null && value <= min)} onClick={() => set(stepNumber(value, -step, step, min, max))}><IconMinus size={14} stroke={1.8} /></button>
+        <button type="button" className="nf-btn" tabIndex={-1} aria-label={`${f.label ?? ''}を増やす`} data-tip={`${f.label ?? ''}を増やす`} disabled={disabled || (value != null && max != null && value >= max)} onClick={() => set(stepNumber(value, step, step, min, max))}><IconPlus size={14} stroke={1.8} /></button>
       </span>
       {unit && <span className="nf-unit">{unit}</span>}
     </span>

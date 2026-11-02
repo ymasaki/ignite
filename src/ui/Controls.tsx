@@ -13,8 +13,8 @@ import { RollingNumber, reducedMotion } from './Motion'
  * 幅の変化で置き直すのはスライドしていないときだけ。動かしはじめてよいか（ready）は状態で持ち、枠のクラスに描く
  * （DOM のクラスを直接足すと、修飾でクラス名が変わって描き直したときに消えるため）
  */
-export function useThumb(value: string) {
-  const ref = useRef<HTMLDivElement>(null)
+export function useThumb<E extends HTMLElement = HTMLDivElement>(value: string) {
+  const ref = useRef<E>(null)
   const thumb = useRef<HTMLSpanElement>(null)
   const [ready, setReady] = useState(false)
   useLayoutEffect(() => {

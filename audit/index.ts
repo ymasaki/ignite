@@ -238,7 +238,7 @@ export function defineIgniteAudit(config: IgniteAuditConfig): void {
     p.sort()
     return p.toString()
   }
-  const inDrawer = 'button:visible:not([aria-label*="閉じる"]):not([role="tab"])'
+  const inDrawer = 'button:visible:not([aria-label*="閉じる"]):not([role="tab"]):not([inert] *)'
   for (const w of widths.filter((w) => w.width <= 600 && !w.screens)) {
     for (const r of reveals) {
       test(`${r.name}: 裏の画面を変える操作の結果が見える（${w.name}）`, async ({ page }) => {

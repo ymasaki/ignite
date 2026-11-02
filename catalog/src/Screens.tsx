@@ -1,7 +1,7 @@
-import { IconChartLine, IconChecks, IconClock, IconListCheck } from '@tabler/icons-react'
-import { IconBrandAppleFilled, IconBrandGoogle, IconShieldLock } from '@tabler/icons-react'
-import { AuthScreen, Avatar, AssistSettings, BarList, Board, Button, ChartCard, ChartGrid, DashboardScreen, Delta, EmptyState, EntityRow, Funnel, IconBox, KeyValues, Kpi, KpiBand, LineChart, LinkButton, ListScreen, LoginForm, PanelBody, PanelFrame, PanelHeader, SearchField, Section, Segmented, SettingBody, SettingGroup, SettingKey, SettingRow, SettingsScreen, Sparkline, StackColumns, Stat, Tag, ThemeSettings, TileMap } from '@ymasaki/ignite'
+import { IconBrandAppleFilled, IconBrandGoogle, IconChartLine, IconChecks, IconClock, IconListCheck, IconShieldLock, IconStar } from '@tabler/icons-react'
+import { AssistSettings, AuthScreen, Avatar, BarList, Board, Button, ChartCard, ChartGrid, Chip, DashboardScreen, Delta, EmptyState, EntityRow, Funnel, IconBox, IconButton, KeyValues, Kpi, KpiBand, LineChart, LinkButton, ListScreen, LoginForm, PanelBody, PanelFrame, PanelHeader, SearchField, Section, Segmented, SettingBody, SettingGroup, SettingKey, SettingRow, SettingsScreen, Sparkline, StackColumns, Stat, tabPanelProps, Tabs, Tag, ThemeSettings, TileMap, toast } from '@ymasaki/ignite'
 import { useRef, useState, type ReactNode } from 'react'
+import { VALUES } from './Charts'
 import { MONTHS, PROJECTS } from './data'
 
 export function ListPage({ selected, onOpen }: { selected: string | null; onOpen: (id: string) => void }) {
@@ -27,40 +27,45 @@ export function ListPage({ selected, onOpen }: { selected: string | null; onOpen
 
 export function DetailPanel({ id, onClose, onShowDashboard }: { id: string; onClose: () => void; onShowDashboard: () => void }) {
   const p = PROJECTS.find((x) => x.id === id) ?? PROJECTS[0]
+  const [tab, setTab] = useState('about')
+  const rest = PROJECTS.filter((x) => x.id !== p.id).slice(0, 3)
   return (
     <PanelFrame>
-      <PanelHeader visual={<Avatar initial={p.initial} tone={p.tone} size="xl" />} smallVisual={<Avatar initial={p.initial} tone={p.tone} size="sm" />} kicker={p.status} title={p.name} onClose={onClose} />
+      <PanelHeader visual={<Avatar initial={p.initial} tone={p.tone} size="xl" />} smallVisual={<Avatar initial={p.initial} tone={p.tone} size="sm" />} kicker={p.status} title={p.name} actions={<IconButton label="お気に入りに入れる" onClick={() => toast('お気に入りに入れました', { tone: 'ok' })}><IconStar size={16} stroke={1.8} /></IconButton>} onClose={onClose} />
       <PanelBody>
         <div className="cat-detail">
-          <Section title="概要"><KeyValues rows={[['担当', p.owner], ['タスク', `${p.tasks}件`, { num: true }], ['メモ', p.note, { block: true }]]} /></Section>
-          <LinkButton onClick={onShowDashboard}>ダッシュボードで見る</LinkButton>
+          <Tabs id="detail" label="詳細の表示" fit value={tab} onChange={setTab} tabs={[{ value: 'about', label: '概要' }, { value: 'team', label: '関連', count: rest.length }]} />
+          <div {...tabPanelProps('detail', tab)}>
+            {tab === 'about' && <Section title="基本情報"><KeyValues rows={[['担当', p.owner], ['タスク', `${p.tasks}件`, { num: true }], ['メモ', p.note, { block: true }]]} /></Section>}
+            {tab === 'team' && <Section title="関連する案件">{rest.map((x) => <EntityRow key={x.id} lead={<IconBox><IconListCheck size={16} stroke={1.8} /></IconBox>} title={x.name} sub={x.owner} trailing={<Tag variant={x.status === '完了' ? 'ok' : undefined}>{x.status}</Tag>} />)}</Section>}
+          </div>
+          <div className="cat-row"><LinkButton onClick={onShowDashboard}>ダッシュボードで見る</LinkButton></div>
         </div>
       </PanelBody>
     </PanelFrame>
   )
 }
 
-const VALUES = [32, 38, 41, 37, 45, 52]
-
 function Band() {
   const [active, setActive] = useState<string | null>(null)
   const kpi = (key: string, label: string, value: number, icon: React.ReactNode, unit?: string) => <Kpi key={key} icon={icon} label={label} value={value} unit={unit} active={active === key} onClick={() => setActive(active === key ? null : key)} sub={<Delta value={value % 7} unit={unit} />} />
-  return <KpiBand resetKey="dashboard" groups={[
+  const LABELS: Record<string, string> = { open: '進行中', done: '完了', tasks: 'タスク', rate: '完了の割合' }
+  return <><KpiBand resetKey="dashboard" groups={[
     { key: 'main', items: [kpi('open', '進行中', 3, <IconClock size={18} stroke={1.8} />, '件'), kpi('done', '完了', 2, <IconChecks size={18} stroke={1.8} />, '件')] },
     { key: 'tasks', summary: <Kpi key="summary" icon={<IconListCheck size={18} stroke={1.8} />} label="タスク" value={127} unit="件" />, items: [kpi('tasks', 'タスク', 127, <IconListCheck size={18} stroke={1.8} />, '件'), kpi('rate', '完了の割合', 64, <IconChartLine size={18} stroke={1.8} />, '%')] },
-  ]} />
+  ]} />{active && <div className="cat-filter">絞り込み<Chip removeLabel="絞り込みを外す" removeTip="絞り込みから外す" onRemove={() => setActive(null)}>{LABELS[active]} のみ</Chip></div>}</>
 }
 
 export function DashboardPage() {
   const [tile, setTile] = useState<string | undefined>()
   return (
     <DashboardScreen>
-      <ChartGrid>
-        <ChartCard title="完了したタスクの推移" meta="月ごと"><LineChart unit="件" xLabels={MONTHS.map((m) => m.slice(5))} series={[{ label: '完了', values: VALUES }, { label: '前の年', values: VALUES.map((v) => v - 8), soft: true }]} /></ChartCard>
-        <ChartCard title="担当者ごとのタスク"><BarList items={PROJECTS.map((p) => ({ label: p.owner, value: p.tasks }))} /></ChartCard>
-        <ChartCard title="状態の内訳"><StackColumns labels={MONTHS.map((m) => m.slice(5))} stacks={[{ label: '完了', values: VALUES }, { label: '進行中', values: VALUES.map((v) => v / 2 | 0) }]} current={5} /></ChartCard>
-        <ChartCard title="進み方"><Funnel unit="件" ofPrev="前の段から" ofFirst="最初から" steps={[{ label: '受付', value: 120 }, { label: '着手', value: 84 }, { label: '完了', value: 52 }]} /></ChartCard>
+      <ChartGrid tiles>
         <ChartCard title="今月の完了"><Stat value={52} unit="件" size="lg" after={<Sparkline label="完了の推移" unit="件" values={VALUES} />} /></ChartCard>
+        <ChartCard title="完了したタスクの推移" meta="月ごと" span={2}><LineChart unit="件" xLabels={MONTHS.map((m) => m.slice(5))} series={[{ label: '完了', values: VALUES }, { label: '前の年', values: VALUES.map((v) => v - 8), soft: true }]} /></ChartCard>
+        <ChartCard title="担当者ごとのタスク"><BarList items={PROJECTS.map((p) => ({ label: p.owner, value: p.tasks }))} /></ChartCard>
+        <ChartCard title="状態の内訳" span={2}><StackColumns labels={MONTHS.map((m) => m.slice(5))} stacks={[{ label: '完了', values: VALUES }, { label: '進行中', values: VALUES.map((v) => v / 2 | 0) }]} current={5} /></ChartCard>
+        <ChartCard title="進み方" span={2}><Funnel unit="件" ofPrev="前の段から" ofFirst="最初から" steps={[{ label: '受付', value: 120 }, { label: '着手', value: 84 }, { label: '完了', value: 52 }]} /></ChartCard>
         <ChartCard title="規模と進み具合" wide><TileMap label="プロジェクトの規模と進み具合" height={240} selected={tile} onSelect={setTile} scale={['低い', '高い']} items={PROJECTS.map((p, i) => ({ key: p.id, label: p.name, size: p.tasks, ratio: 0.15 * i + 0.1, value: `${p.tasks}件` }))} /></ChartCard>
       </ChartGrid>
     </DashboardScreen>

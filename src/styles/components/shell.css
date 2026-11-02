@@ -15,11 +15,17 @@
 .brand-txt{display:flex;flex-direction:column;line-height:1.15}
 .brand-txt small{font-size:var(--fs-11);font-weight:600;letter-spacing:.04em;color:var(--ink-3)}
 /* 項目の間に隙間を作らない（隙間でカーソルが矢印に戻り、なぞるとちらつくため） */
-.nav{display:grid;padding:4px 12px 14px;border-bottom:1px solid var(--line)}
-.nav button{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;text-align:left;color:var(--ink-2)}
+.nav{position:relative;display:grid;padding:4px 12px 14px;border-bottom:1px solid var(--line)}
+/* 選択中の地（Segmented と同じ .thumb）。縦の移動だけをばねで動かし、幅は左メニューの開閉にそのまま付いていく */
+.nav .thumb{position:absolute;top:0;left:0;border-radius:8px;background:var(--pri-soft);pointer-events:none}
+.nav.ready .thumb{transition:top .34s var(--ease-spring),height .34s var(--ease-spring),opacity var(--dur-fast) ease-out}
+@media (prefers-reduced-motion: reduce){.nav.ready .thumb{transition:none}}
+.nav-h{height:28px;padding:10px 12px 0;font-size:var(--fs-11);font-weight:600;line-height:18px;white-space:nowrap;color:var(--ink-3)}
+.side-min .nav-h{opacity:0}
+.nav button{position:relative;display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;text-align:left;color:var(--ink-2)}
 .nav button:hover{background:var(--hover)}
 .nav button:active{background:var(--press)}
-.nav button[aria-current="page"]{background:var(--pri-soft);color:var(--pri-ink);font-weight:700}
+.nav button[aria-current="page"]{background:transparent;color:var(--pri-ink);font-weight:700}
 /* 設定（ui/Settings.tsx の SettingsButton）。メニューの項目と同じ形のボタンで、左メニューの下のほうに置く（上に何もなければ下へ寄せる） */
 .nav:has(+ .side-set){border-bottom:0}
 .side-set{display:grid;margin-top:auto;padding:8px 12px;border-top:1px solid var(--line)}
