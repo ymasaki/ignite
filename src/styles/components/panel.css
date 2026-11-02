@@ -6,6 +6,9 @@
 /* ---------- 見出し（ui/Panel.tsx の PanelHeader）: 右上に操作・× を重ね → 大きな顔／アイコン＋名前 ---------- */
 .ph{position:absolute;top:0;right:0;z-index:2;display:flex;align-items:flex-start;gap:12px;padding:12px 12px 8px 18px}
 .ph + .prof{padding-top:20px}
+/* 文字のあるボタンは幅が読めず補足・名前に重なるので、上段を見出しの上の行にする（アイコンだけなら重ねたまま） */
+.ph:has(.btn,.linkbtn){position:static;justify-content:flex-end;padding-bottom:0}
+.ph:has(.btn,.linkbtn) + .prof{padding-top:8px}
 .prof{display:flex;align-items:center;gap:16px;padding:6px 18px 0}
 .prof-t{min-width:0}
 .prof-k{font-size:var(--fs-12);color:var(--ink-3)}

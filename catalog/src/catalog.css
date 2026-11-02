@@ -41,6 +41,7 @@
 .cat-form.two{grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr));align-items:start;max-width:none}
 .cat-form .span{grid-column:1 / -1}
 .cat-sheet{min-width:0}
+.pb > .cat-row{margin-top:16px}
 .cat-detail{display:flex;flex-direction:column;gap:16px;padding:0 18px 18px}
 .cat-pop{display:grid;gap:12px;min-width:220px;padding:14px}
 .cat-end{display:flex;justify-content:flex-end;gap:8px}

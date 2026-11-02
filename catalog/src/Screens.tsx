@@ -1,8 +1,8 @@
-import { IconBrandAppleFilled, IconBrandGoogle, IconChartLine, IconChecks, IconClock, IconListCheck, IconShieldLock, IconStar } from '@tabler/icons-react'
+import { IconBrandAppleFilled, IconBrandGoogle, IconChartLine, IconChecks, IconClock, IconListCheck, IconPencil, IconShare, IconShieldLock } from '@tabler/icons-react'
 import { AssistSettings, AuthScreen, Avatar, BarList, Board, Button, ChartCard, ChartGrid, Chip, DashboardScreen, Delta, EmptyState, EntityRow, Funnel, IconBox, IconButton, KeyValues, Kpi, KpiBand, LineChart, LinkButton, ListScreen, LoginForm, PanelBody, PanelFrame, PanelHeader, SearchField, Section, Segmented, SettingBody, SettingGroup, SettingKey, SettingRow, SettingsScreen, Sparkline, StackColumns, Stat, tabPanelProps, Tabs, Tag, ThemeSettings, TileMap, toast } from '@ymasaki/ignite'
 import { useRef, useState, type ReactNode } from 'react'
 import { VALUES } from './Charts'
-import { MONTHS, PROJECTS } from './data'
+import { MONTHS, PROJECTS, UPDATES } from './data'
 
 export function ListPage({ selected, onOpen }: { selected: string | null; onOpen: (id: string) => void }) {
   const [q, setQ] = useState('')
@@ -31,16 +31,28 @@ export function DetailPanel({ id, onClose, onShowDashboard }: { id: string; onCl
   const rest = PROJECTS.filter((x) => x.id !== p.id).slice(0, 3)
   return (
     <PanelFrame>
-      <PanelHeader visual={<Avatar initial={p.initial} tone={p.tone} size="xl" />} smallVisual={<Avatar initial={p.initial} tone={p.tone} size="sm" />} kicker={p.status} title={p.name} actions={<IconButton label="お気に入りに入れる" onClick={() => toast('お気に入りに入れました', { tone: 'ok' })}><IconStar size={16} stroke={1.8} /></IconButton>} onClose={onClose} />
+      <PanelHeader
+        visual={<Avatar initial={p.initial} tone={p.tone} size="xl" />}
+        smallVisual={<Avatar initial={p.initial} tone={p.tone} size="sm" />}
+        kicker={p.status}
+        title={p.name}
+        stickySub={p.owner}
+        actions={<>
+          <Button icon={<IconPencil size={16} stroke={1.8} aria-hidden="true" />} onClick={() => toast('編集を開きました')}>編集する</Button>
+          <IconButton label="共有する" onClick={() => toast('共有の窓を開きました')}><IconShare size={16} stroke={1.8} /></IconButton>
+        </>}
+        onClose={onClose}
+      />
+      <Tabs id="detail" label="詳細の表示" fit value={tab} onChange={setTab} tabs={[{ value: 'about', label: '概要' }, { value: 'team', label: '関連', count: rest.length }]} />
       <PanelBody>
-        <div className="cat-detail">
-          <Tabs id="detail" label="詳細の表示" fit value={tab} onChange={setTab} tabs={[{ value: 'about', label: '概要' }, { value: 'team', label: '関連', count: rest.length }]} />
-          <div {...tabPanelProps('detail', tab)}>
-            {tab === 'about' && <Section title="基本情報"><KeyValues rows={[['担当', p.owner], ['タスク', `${p.tasks}件`, { num: true }], ['メモ', p.note, { block: true }]]} /></Section>}
-            {tab === 'team' && <Section title="関連する案件">{rest.map((x) => <EntityRow key={x.id} lead={<IconBox><IconListCheck size={16} stroke={1.8} /></IconBox>} title={x.name} sub={x.owner} trailing={<Tag variant={x.status === '完了' ? 'ok' : undefined}>{x.status}</Tag>} />)}</Section>}
-          </div>
-          <div className="cat-row"><LinkButton onClick={onShowDashboard}>ダッシュボードで見る</LinkButton></div>
+        <div {...tabPanelProps('detail', tab)}>
+          {tab === 'about' && <>
+            <Section title="基本情報"><KeyValues rows={[['担当', p.owner], ['タスク', `${p.tasks}件`, { num: true }], ['メモ', p.note, { block: true }]]} /></Section>
+            <Section title="更新の記録" count={`${UPDATES.length}件`}>{UPDATES.map(([date, text]) => <EntityRow key={date} lead={<IconBox><IconClock size={16} stroke={1.8} /></IconBox>} title={text} sub={date} />)}</Section>
+          </>}
+          {tab === 'team' && <Section title="関連する案件">{rest.map((x) => <EntityRow key={x.id} lead={<IconBox><IconListCheck size={16} stroke={1.8} /></IconBox>} title={x.name} sub={x.owner} trailing={<Tag variant={x.status === '完了' ? 'ok' : undefined}>{x.status}</Tag>} />)}</Section>}
         </div>
+        <div className="cat-row"><LinkButton onClick={onShowDashboard}>ダッシュボードで見る</LinkButton></div>
       </PanelBody>
     </PanelFrame>
   )

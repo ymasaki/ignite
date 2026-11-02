@@ -1,6 +1,6 @@
 // 詳細パネルの中身の枠（DESIGN.md「詳細パネル」）。見た目は styles/components/panel.css。
 //
-//  ┌ 上段: 操作（actions）……………………… × ┐
+//  ┌ 上段: 任意の操作（actions）………………… × ┐
 //  │ 大きな顔／アイコン  補足（kicker）      │
 //  │                    名前（20px）        │
 //  └                    下の行（lines）      ┘
@@ -63,7 +63,7 @@ export function PanelHeader({
   lines?: ReactNode
   /** 固定ヘッダーの補足 */
   stickySub?: string
-  /** × の左に置く操作（上段と固定ヘッダーの両方に出す） */
+  /** × の左に置く任意のボタン。省略できる（上段と固定ヘッダーの両方に出す） */
   actions?: ReactNode
   onClose?: () => void
 }) {
