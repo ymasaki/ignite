@@ -85,9 +85,9 @@ export function App() {
         <>
           <Brand mark={LOGO} name="Ignite" small="デザインシステム" onClick={() => go({ nav: 'overview' })} />
           <SideNav items={NAV} current={nav === 'settings' ? null : nav} collapsed={state.collapsed} onSelect={(key) => { go({ nav: key }); closeSide() }} />
+          <SettingsButton current={nav === 'settings'} onClick={() => { go({ nav: 'settings' }); closeSide() }} />
         </>
       )}
-      foot={<SettingsButton current={nav === 'settings'} onClick={() => go({ nav: 'settings' })} />}
       collapse={{ collapsed, onChange: setCollapsed }}
       title={nav === 'settings' ? '設定' : pageOf(nav)?.label}
       search={<div className="cat-search"><SearchSuggest label="部品を探す" placeholder="部品を探す" shortcut priority={1} value={find} onChange={setFind} groups={FIND} onSelect={(it) => { const [n, s] = it.key.split('/'); setFind(''); go({ nav: n, spec: s }) }} /></div>}
