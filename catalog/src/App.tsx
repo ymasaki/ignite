@@ -1,5 +1,5 @@
 import { IconPalette } from '@tabler/icons-react'
-import { AppShell, Brand, Combobox, currentTheme, IconButton, Popover, Segmented, setTheme, SettingsButton, SideNav, useShell, type Mode, type Skin } from '@ymasaki/ignite'
+import { AppShell, Brand, currentTheme, IconBox, IconButton, Popover, SearchSuggest, Segmented, setTheme, SettingsButton, SideNav, useShell, type Mode, type Skin, type SuggestGroup } from '@ymasaki/ignite'
 import { useEffect, useState } from 'react'
 import { ChartsPage } from './Charts'
 import { CodePage } from './Code'
@@ -20,8 +20,8 @@ const LOGO = (
 )
 
 const NAV = PAGES.map(({ key, label, icon, group }) => ({ key, label, icon, group }))
-// 検索の候補。部品の名前と標本の見出しのどちらでも絞れるよう、両方を名前に入れる
-const FIND = PAGES.flatMap((p) => p.specs.flatMap((s) => (s.parts?.length ? s.parts : [s.title]).map((name) => ({ value: `${p.key}/${s.id}/${name}`, label: name === s.title ? name : `${name} ${s.title}`, meta: p.label }))))
+// 部品の検索の候補。部品の名前のほかに、標本の見出しとページの名前でも探せる（かな・カタカナの違いは部品が吸収する）
+const FIND: SuggestGroup[] = ['基礎', '部品'].map((group) => ({ key: group, label: group, items: PAGES.filter((p) => p.group === group).flatMap((p) => p.specs.flatMap((s) => (s.parts?.length ? s.parts : [s.title]).map((name) => ({ key: `${p.key}/${s.id}/${name}`, title: name, text: `${s.title} ${p.label}`, sub: name === s.title || s.title === p.label ? p.label : `${p.label} · ${s.title}`, lead: <IconBox>{p.icon}</IconBox> })))) }))
 const PAGE_VIEWS = { color: ColorPage, type: TypePage, shape: ShapePage, motion: MotionPage, actions: ActionsPage, navigate: NavigatePage, forms: FormsPage, feedback: FeedbackPage, marks: MarksPage, data: DataPage, code: CodePage, charts: ChartsPage }
 
 const read = () => {
@@ -74,6 +74,7 @@ function ThemePicker() {
 export function App() {
   const { nav, open, spec, go } = useRoute()
   const [collapsed, setCollapsed] = useState(false)
+  const [find, setFind] = useState('')
   const close = () => go({ open: null })
   const View = PAGE_VIEWS[nav as keyof typeof PAGE_VIEWS]
   // ログインはアプリの枠の外に置く画面なので、カタログでも枠を出さない
@@ -89,7 +90,7 @@ export function App() {
       foot={<SettingsButton current={nav === 'settings'} onClick={() => go({ nav: 'settings' })} />}
       collapse={{ collapsed, onChange: setCollapsed }}
       title={nav === 'settings' ? '設定' : pageOf(nav)?.label}
-      search={<div className="cat-search"><Combobox label="部品を探す" placeholder="部品を探す" value={null} onChange={(v) => { if (v) { const [n, s] = v.split('/'); go({ nav: n, spec: s }) } }} options={FIND} /></div>}
+      search={<div className="cat-search"><SearchSuggest label="部品を探す" placeholder="部品を探す" shortcut priority={1} value={find} onChange={setFind} groups={FIND} onSelect={(it) => { const [n, s] = it.key.split('/'); setFind(''); go({ nav: n, spec: s }) }} /></div>}
       actions={<ThemePicker />}
       aux={nav === 'dashboard' ? <DashboardPage.Band /> : undefined}
       panel={{ open: !!open, onClose: close, id: open ?? undefined, peek: { title: 'プロジェクトの詳細' }, content: open ? <PanelContent id={open} onClose={close} go={(n) => go({ nav: n })} /> : null }}

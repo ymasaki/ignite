@@ -26,6 +26,7 @@
 ### 追加
 
 - `SideNav` の項目に `group`（まとまりの見出し）を足した
+- `SearchSuggest`（検索欄の下に候補を出す部品）と、かな・ローマ字の照合の関数（`searchKey`・`queryTerms`・`matchTerms` など）を足した
 
 ### 変更
 

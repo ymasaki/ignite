@@ -22,6 +22,8 @@ export { AppShell, Brand, SideNav, useShell, useShownMode, type NavItem, type Sh
 export { BarList, ChartCard, ChartGrid, Funnel, LineChart, Sparkline, StackColumns, Stat, TileMap, type BarItem, type LineSeries, type TileItem } from './ui/Chart'
 export { squarify, type Tile } from './ui/squarify'
 export * from './format/date'
+export * from './format/search'
+export { SearchSuggest, pickSuggestions, type SuggestGroup, type SuggestItem } from './ui/Search'
 export { DataTable, type TableCell, type TableColumn, type TableSort } from './ui/Table'
 export { DEFAULT_THEME, MODES, MODE_PARAM, SKINS, SKIN_PARAM, applyTheme, browserEnv, currentTheme, isMode, isSkin, pickTheme, setTheme, startTheme, type Mode, type Skin, type Theme, type ThemeEnv } from './skin'
 export { CONTRAST_RULES, CONTRAST_TEXT, CONTRAST_TEXT_MORE, CONTRAST_UI, contrastRatio, contrastRulesFor, type ContrastRule, type Rgb } from './contrast'

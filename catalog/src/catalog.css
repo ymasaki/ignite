@@ -12,7 +12,7 @@
   .cat-toc{position:sticky;top:0;display:grid;gap:2px;padding-top:4px}
 }
 .cat-toc-i{--link:var(--ink-3);--link-hover:var(--ink);--link-press:var(--pri-ink);padding:4px 0 4px 12px;border-left:2px solid var(--line)}
-.cat-toc-i[data-on]{--link:var(--pri-ink);--link-hover:var(--pri-ink-2);--link-press:var(--ink);border-left-color:var(--pri)}
+.cat-toc-i[data-on]{--link:var(--pri-ink);--link-hover:var(--ink);--link-press:var(--pri-ink-2);border-left-color:var(--pri)}
 
 /* 見せる面。部品が地の上に載って見えるよう一段沈める */
 .cat-stage{display:flex;flex:1;flex-direction:column;justify-content:center;gap:16px;min-width:0;min-height:112px;padding:20px;background-color:var(--panel);background-image:radial-gradient(var(--line) 1px,transparent 1px);background-size:16px 16px;border:1px solid var(--line);border-radius:8px}
@@ -78,6 +78,7 @@
 /* 画面の型 */
 .cat-filter{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:var(--shell-gap);padding-inline:var(--shell-x);font-size:var(--fs-12);color:var(--ink-2)}
 .cat-theme{display:grid;gap:12px;padding:14px}
+.cat-reading{margin-left:8px;font-size:var(--fs-12);font-weight:400;color:var(--ink-3)}
 .cat-search{width:280px;max-width:100%}
 @media (max-width:860px){.cat-search{width:100%}}
 @container (max-width:480px){.cat-hero-t{font-size:var(--fs-24)}}

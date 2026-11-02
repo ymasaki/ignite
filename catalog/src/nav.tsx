@@ -62,6 +62,7 @@ export const PAGES: PageDef[] = [
     { id: 'accordion', title: '開閉の並び', parts: ['Accordion'] },
   ] },
   { key: 'forms', label: 'フォーム', group: '部品', icon: icon(IconForms), specs: [
+    { id: 'suggest', title: '候補を出す検索', parts: ['SearchSuggest'] },
     { id: 'field', title: '入力欄の枠', parts: ['FormField', 'TextField', 'TextArea'] },
     { id: 'search', title: '検索と並び順', parts: ['SearchField', 'Select'] },
     { id: 'number', title: '数', parts: ['NumberField'] },

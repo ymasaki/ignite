@@ -1,9 +1,25 @@
-import { Button, Checkbox, Combobox, DatePicker, focusFirstInvalid, FormField, LinkButton, NumberField, RadioGroup, SearchField, Select, Switch, TextArea, TextField, toast } from '@ymasaki/ignite'
-import { useRef, useState, type ReactNode } from 'react'
+import { Avatar, Button, Checkbox, Combobox, DatePicker, focusFirstInvalid, FormField, LinkButton, NumberField, RadioGroup, SearchField, SearchSuggest, Select, Switch, Tag, TextArea, type SuggestGroup, TextField, toast } from '@ymasaki/ignite'
+import { useMemo, useRef, useState, type ReactNode } from 'react'
 import { useTick } from './Controls'
+import { PROJECTS } from './data'
 import { Case, Cases, Page, Spec } from './kit'
 
 const CITIES = ['札幌', '仙台', '東京', '横浜', '名古屋', '京都', '大阪', '神戸', '広島', '福岡', '那覇'].map((c) => ({ value: c, label: c }))
+
+const person = (p: (typeof PROJECTS)[number]) => ({ key: p.id, title: p.owner, reading: p.ownerReading, titleExtra: <span className="cat-reading">{p.ownerReading}</span>, sub: p.name, lead: <Avatar initial={p.initial} tone={p.tone} /> })
+const work = (p: (typeof PROJECTS)[number]) => ({ key: `w-${p.id}`, title: p.name, reading: p.reading, sub: p.owner, trailing: <Tag>{p.status}</Tag>, lead: <Avatar initial={p.initial} tone={p.tone} /> })
+
+/** 打つたびに候補を絞る例。「完了も含めて探す」で範囲を広げ、打ち直すと戻す */
+function SuggestDemo() {
+  const [q, setQ] = useState('')
+  const [wide, setWide] = useState(false)
+  const rest = PROJECTS.filter((p) => p.status === '完了').length
+  const groups = useMemo<SuggestGroup[]>(() => {
+    const on = PROJECTS.filter((p) => wide || p.status !== '完了')
+    return [{ key: 'people', label: 'メンバー', items: on.map(person) }, { key: 'work', label: 'プロジェクト', items: on.map(work) }]
+  }, [wide])
+  return <SearchSuggest label="人やプロジェクトを探す" placeholder="名前・読み・ローマ字" value={q} onChange={(v) => { setQ(v); setWide(false) }} groups={groups} onSelect={(it) => { setQ(''); toast(`${it.title} を開きました`) }} more={wide ? undefined : { label: `完了も含めて探す（${rest}件）`, onSelect: () => setWide(true) }} />
+}
 
 /** 枠の中の最初のエラーへ移す例 */
 function ErrorCase({ label, children }: { label: string; children: ReactNode }) {
@@ -35,6 +51,7 @@ export function FormsPage({ target }: { target?: string | null }) {
   const [sel, setSel] = useState('recent')
   return (
     <Page page={p} target={target}>
+      <Spec page={p} id="suggest" wide><SuggestDemo /></Spec>
       <Spec page={p} id="field" wide>
         <div className="cat-sheet">
           <div className="cat-form two">
