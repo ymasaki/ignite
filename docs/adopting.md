@@ -47,7 +47,8 @@ npm install -D vite @vitejs/plugin-react typescript @types/react @types/react-do
 1. 入口で `import '@ymasaki/ignite/styles.css'` を読み、その後にアプリのテーマと CSS を読みます。
 2. 起動時に `startTheme(URL のパラメータ)` と `startAssist()` を呼びます。
 3. `index.html` の `<body>` の先頭に、最初の描画からテーマを当てるスクリプトを置きます（`node_modules/@ymasaki/ignite/templates/app/index.html` からコピー）。
-4. 画面を `AppShell` で組み、内容は `Board`（一覧は中に `ListScreen`）、`DashboardScreen`、`SettingsScreen` に置きます。設定の画面には `ThemeSettings` と `AssistSettings` を置きます。
+4. `index.html` の `<head>` に、書体を読む `<link>` を置きます（同じファイルからコピー）。Content Security Policy を設定しているアプリは `style-src` に `https://fonts.googleapis.com`、`font-src` に `https://fonts.gstatic.com` を足します。読めないときは端末の書体で描くので、オフラインでも動きます。
+5. 画面を `AppShell` で組み、内容は `Board`（一覧は中に `ListScreen`）、`DashboardScreen`、`SettingsScreen` に置きます。設定の画面には `ThemeSettings` と `AssistSettings` を置きます。
 
 組み方の見本は `node_modules/@ymasaki/ignite/templates/app/src/app/App.tsx` です。
 

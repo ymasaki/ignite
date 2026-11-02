@@ -70,8 +70,8 @@ const BREAK_HEIGHTS = new Set([500])
 const MEDIA_SIZE = /\((min|max)-(width|height)\s*:\s*(\d+)px\)/g
 // Ignite の部品。アプリの CSS でこれらの見た目を上書きしない
 const DS_PARTS = /\.(seg|tabs|stepper|select-btn|sel-[\w-]+|btn|icon-btn|chip|tag|badge|kpi(?:-[\w]+)?|erow|er-[\w]+|section-h|subhead|notice|drawer|popover-body|field|sfield|check|linkbtn|crumbs|kv|empty-state|av|section|section-[\w]+|skel|skel-[\w]+|side-foot)(?![\w-])/
-// 1.1 で足した部品。アプリに同じ名前の独自のクラスがあるかもしれないので、次の major までは注意にとどめる
-const NEW_PARTS = /\.(check-[\w]+|switch|sw-[\w]+|numfield|nf-[\w]+|form-field|ff-[\w]+|cal|cal-[\w]+|dialog|dlg-[\w]+|toast|toasts|pagination|pg-[\w]+|accordion|ac-[\w]+|steps|st-[\w]+|spinner|progress)(?![\w-])/
+// 1.1 以降に足した部品。アプリに同じ名前の独自のクラスがあるかもしれないので、次の major までは注意にとどめる
+const NEW_PARTS = /\.(check-[\w]+|switch|sw-[\w]+|numfield|nf-[\w]+|form-field|ff-[\w]+|cal|cal-[\w]+|dialog|dlg-[\w]+|toast|toasts|pagination|pg-[\w]+|accordion|ac-[\w]+|steps|st-[\w]+|spinner|progress|cb|cb-[\w]+|code-inline)(?![\w-])/
 const LOOK_PROPS = /(?<![\w-])(padding(?:-\w+)?|font-size|font-weight|color|background(?:-color)?|border(?:-(?:top|right|bottom|left|color|width))?|width|height|border-radius|box-shadow|opacity)\s*:/g
 // AppShell が持つ枠の部品。アプリの CSS はこれらを対象（セレクタの最後の要素）にしない（中身の状態に合わせた規則はよい）
 const SHELL_PARTS = /\.(app|mainwrap|side|side-handle|side-scrim|pslot|panel)(?![\w-])[^\s>+~]*$/
@@ -108,6 +108,24 @@ export function checkCss(file: string, text: string): Problem[] {
     }
   })
   return out
+}
+
+/** 書体はトークンで選ぶ（DESIGN.md 3 章）。既存の書き方を止めないよう注意にとどめる */
+export function checkFontFamily(file: string, text: string): Problem[] {
+  const out: Problem[] = []
+  const raw = text.split('\n')
+  stripCssComments(text).split('\n').forEach((line, idx) => {
+    if (okAt(raw, idx + 1)) return
+    for (const m of line.matchAll(/(?<![\w-])font-family:\s*([^;}]+)/g)) {
+      if (!/^(?:var\(--font(?:-num|-code)?\)|inherit)\s*(?:!important)?\s*$/.test(m[1].trim())) out.push({ path: file, line: idx + 1, message: '書体を直接書かない。var(--font)・var(--font-num)・var(--font-code) を使う' })
+    }
+  })
+  return out
+}
+
+/** 書体を読む <link> が index.html にあるか（なくても端末の書体で動くので注意にとどめる。自前で配るときは design-ok: 理由 を書く） */
+export function checkFontLink(file: string, text: string): Problem[] {
+  return /family=[^"']*LINE\+Seed\+JP/.test(text) || OK.test(text) ? [] : [{ path: file, line: 1, message: 'Google Fonts の書体を読んでいない。templates/app/index.html の <link> を <head> に置く（DESIGN.md 3 章）' }]
 }
 
 /** @media・matchMedia・useMedia の幅と高さは、区切りの表の値だけ */
@@ -273,6 +291,7 @@ export function run(files: Map<string, string>, config: CheckConfig, added?: (fi
     problems.push(...checkMedia(file, text))
     if (css) problems.push(...checkMediaSpacing(file, text))
     if (css && !theme) problems.push(...checkCss(file, text))
+    if (css && !theme) warnings.push(...checkFontFamily(file, text))
     if (css && !config.self) {
       problems.push(...checkShellCss(file, text))
       const found = checkOverride(file, text)
@@ -340,6 +359,8 @@ export function main(root: string, argv: string[]): number {
   if (staged) stagedFiles(root, config).forEach((v, k) => files.set(k, v))
   else config.source.forEach((s) => walk(root, s, files))
   const { problems, warnings } = run(files, config, staged ? (f) => addedLines(root, f) : undefined)
+  const html = path.join(root, 'index.html')
+  if (!config.self && !staged && fs.existsSync(html)) warnings.push(...checkFontLink('index.html', fs.readFileSync(html, 'utf8')))
   if (warnings.length) {
     console.log(`[ignite] 注意 ${warnings.length} 件（止めないが直す）`)
     for (const w of warnings) console.log(`  ${w.path}:${w.line}: ${w.message}`)

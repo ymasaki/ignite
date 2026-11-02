@@ -49,7 +49,7 @@ Ignite に何があり、何が足りないかの記録。2026-10-30 に比べ�
 | ファイルの添付 | File uploader / — / — | 1 | **なし** | **未対応** |
 | 複数選択 | Multiselect / SelectPanel / Combobox | 3 | **なし** | **未対応**（`Checkbox` の並びで代用） |
 | カード | Tile / Card / Card | 3 | 一部（`EntityRow`・`ChartCard`） | 意図して足さない（役割ごとの部品に分ける） |
-| コード表示 | Code snippet / — / — | 1 | **なし** | 対象外（使う場面がまだない） |
+| コード表示 | Code snippet / — / — | 1 | あり（`Code`・`CodeBlock`） | 1.3.0 で追加 |
 | カルーセル・評価 | — / — / Carousel・Rating | 1 | **なし** | 対象外（業務の画面で使わない） |
 
 ## 部品の外側

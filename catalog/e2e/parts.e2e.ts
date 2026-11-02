@@ -28,6 +28,31 @@ test('Dialog: 開くと中へ移り、Tab は外へ出ず、Esc で閉じて元�
   await expect(opener).toBeFocused()
 })
 
+test('CodeBlock: 全角は半角 2 桁にそろい、コピーは元のコードで、はみ出す欄はキーボードで送れる', async ({ page, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+  await open(page, 'display')
+  const grid = page.locator('figure.cb', { hasText: '桁の確認' })
+  const rights = await grid.locator('.cb-ln').evaluateAll((ls) => ls.map((l) => {
+    const r = document.createRange()
+    r.selectNodeContents(l.querySelector('span:last-child')!)
+    return r.getBoundingClientRect().right
+  }))
+  for (const r of rights) expect(Math.abs(r - rights[0])).toBeLessThan(0.5)
+
+  const numbered = page.locator('figure.cb', { hasText: 'retry.ts' })
+  await numbered.getByRole('button', { name: 'retry.tsをコピー' }).click()
+  await expect(numbered.getByRole('button', { name: 'コピーしました' })).toBeVisible()
+  const copied = await page.evaluate(() => navigator.clipboard.readText())
+  expect(copied.startsWith('// 失敗したら')).toBe(true)
+  expect(copied).toContain('\n  throw new Error')
+
+  const log = page.getByRole('region', { name: 'sync.log' })
+  await log.focus()
+  await expect(log).toBeFocused()
+  await page.keyboard.press('ArrowDown')
+  await expect.poll(() => log.evaluate((el) => el.scrollTop)).toBeGreaterThan(0)
+})
+
 test('Dialog: 中のプルダウンを Esc で閉じても、窓は閉じない', async ({ page }) => {
   await open(page, 'feedback')
   await page.getByRole('button', { name: '窓を開く' }).click()

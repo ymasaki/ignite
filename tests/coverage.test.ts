@@ -5,6 +5,7 @@ import { validateLogin } from '../src/ui/Auth'
 import { filterOptions, parseNumber, stepNumber } from '../src/ui/Form'
 import { addDays, addMonths, clampDate, monthGrid } from '../src/ui/calendar'
 import { pageItems } from '../src/ui/Navigation'
+import { codeLines } from '../src/ui/codeTokens'
 import { toastDuration } from '../src/ui/Toast'
 
 const root = path.resolve(import.meta.dirname, '..')
@@ -26,6 +27,32 @@ describe('部品の一覧（AGENTS.md「部品を足す・変えるときは一�
   it('部品は 1 つ以上ある', () => expect(parts.length).toBeGreaterThan(50))
   it.each(parts)('%s は DESIGN.md に書いてある', (p) => expect(design).toContain(p))
   it.each(parts.filter((p) => !(p in NOT_IN_CATALOG)))('%s はカタログにある', (p) => expect(catalog).toMatch(new RegExp(`\\b${p}\\b`)))
+})
+
+describe('コードの字句分け', () => {
+  const kinds = (code: string, lang: Parameters<typeof codeLines>[1]) => codeLines(code, lang).flat().filter((t) => t.kind).map((t) => [t.kind, t.text])
+  it('字句をつなげると元のコードに戻る（改行は行で表す）', () => {
+    const code = 'const a = "売上" // メモ\n\n/* 複数\n行 */ a'
+    expect(codeLines(code, 'ts').map((l) => l.map((t) => t.text).join('')).join('\n')).toBe(code)
+  })
+  it('末尾の改行は行に数えず、CRLF は 1 つの改行にする', () => {
+    expect(codeLines('a\r\nb\n\n')).toHaveLength(2)
+  })
+  it('複数行のコメントは行をまたいで同じ種類にする', () => {
+    expect(codeLines('/* a\nb */', 'ts').map((l) => l[0].kind)).toEqual(['comment', 'comment'])
+  })
+  it('文字列やコメントの中の語はキーワードにしない', () => {
+    expect(kinds('"return" // if', 'ts')).toEqual([['string', '"return"'], ['comment', '// if']])
+  })
+  it('言語ごとの字句', () => {
+    expect(kinds('{"a": "b", "c": 1, "d": null}', 'json')).toEqual([['keyword', '"a"'], ['string', '"b"'], ['keyword', '"c"'], ['number', '1'], ['keyword', '"d"'], ['keyword', 'null']])
+    expect(kinds("select 'it''s' -- x", 'sql')).toEqual([['keyword', 'select'], ['string', "'it''s'"], ['comment', '-- x']])
+    expect(kinds('$ npm run a#b --yes # note', 'shell')).toEqual([['comment', '$'], ['keyword', '--yes'], ['comment', '# note']])
+    expect(kinds('2026-11-02 09:14:03 ERROR x', 'log')).toEqual([['comment', '2026-11-02 09:14:03'], ['danger', 'ERROR']])
+  })
+  it('全角の字だけを wide にする（半角カナは含めない）', () => {
+    expect(codeLines('ab売上（ｶﾅ').flat().map((t) => [t.text, !!t.wide])).toEqual([['ab', false], ['売上（', true], ['ｶﾅ', false]])
+  })
 })
 
 describe('数の入力', () => {

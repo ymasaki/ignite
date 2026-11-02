@@ -34,7 +34,7 @@
 .line-hits > span:active{background:var(--pri-soft-2)}
 .line svg{display:block}
 .line-grid{stroke:var(--line);stroke-width:1}
-.line-ax{fill:var(--ink-3);font-size:var(--fs-11)}
+.line-ax{font-family:var(--font-num);fill:var(--ink-3);font-size:var(--fs-11)}
 .line-p{fill:none;stroke:var(--chart-1);stroke-width:2;stroke-linejoin:round}
 .line-p.soft{stroke:var(--chart-4);stroke-width:1.5}
 .line-legend{display:flex;gap:14px;margin-top:6px;font-size:var(--fs-12);color:var(--ink-3)}

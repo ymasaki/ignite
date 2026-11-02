@@ -14,7 +14,10 @@ input[type="search"]::-webkit-search-cancel-button{cursor:pointer}
 :focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:6px}
 /* マウス・タッチ後の focus() が入力欄の :focus-visible を引き継いでも、枠は出さない。入力中の欄と「いつも」は保つ */
 :root[data-input="pointer"]:not([data-focus="always"]) :focus-visible:not(.field){outline:none}
-.num{font-variant-numeric:tabular-nums}
+/* 数字の役割（KPI・金額・統計値・表）。単位などの和文は --font の字のまま混ざる */
+.num{font-family:var(--font-num);font-variant-numeric:tabular-nums}
+/* コードの役割。リガチャは切る（=> や != を、書いたとおりの字で見せる） */
+code,kbd,pre,samp{font-family:var(--font-code);font-variant-ligatures:none}
 /* 見えないが読み上げる文字（件数の知らせ・表の代わりの説明など） */
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 mark{background:var(--hl);color:inherit;font-weight:700;border-radius:3px;padding:0 2px;box-shadow:inset 0 -2px 0 var(--hl-line)}

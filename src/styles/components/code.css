@@ -1,0 +1,29 @@
+/* コードの表示（ui/Code.tsx）。書体は --font-code（DESIGN.md 3 章） */
+.code-inline{padding:1px 4px;border-radius:3px;background:var(--panel-2);box-shadow:inset 0 0 0 1px var(--line);overflow-wrap:anywhere}
+
+.cb{display:flex;flex-direction:column;min-width:0;margin:0;overflow:hidden;border:1px solid var(--line);border-radius:10px;background:var(--panel-2)}
+.cb-h{display:flex;align-items:center;gap:8px;min-width:0;padding:4px 4px 4px 12px;border-bottom:1px solid var(--line);font-size:var(--fs-12);color:var(--ink-2)}
+.cb-t{min-width:0;overflow:hidden;font-weight:600;text-overflow:ellipsis;white-space:nowrap}
+.cb-l{flex:none;color:var(--ink-3)}
+.cb-h .icon-btn{flex:none;margin-left:auto}
+
+.cb-b{--cb-lh:1.6;min-width:0;overflow:auto;font-size:var(--fs-13);line-height:var(--cb-lh)}
+.cb.limited .cb-b{max-height:calc(var(--cb-lines) * var(--cb-lh) * 1em + 24px)}
+.cb-b pre{display:inline-block;min-width:100%;margin:0;padding:12px;font-size:inherit;line-height:inherit;tab-size:2}
+.cb-b code{font-size:inherit}
+.cb-ln{display:block;min-height:calc(var(--cb-lh) * 1em)}
+.cb.wrap pre{display:block;white-space:pre-wrap;overflow-wrap:anywhere}
+
+/* 全角の字を半角 2 桁の幅にそろえる。字は大きくせず、足りない分だけ字間を足す（JetBrains Mono の半角は 0.6em、全角は 1em） */
+.cb-w{letter-spacing:calc(2ch - 1em)}
+
+/* 行番号は字ではなく CSS で描く（選んでコピーしても入らない） */
+.cb.numbered pre{counter-reset:cb-line;padding-left:0}
+.cb.numbered .cb-ln{position:relative;padding-left:calc(4ch + 16px);counter-increment:cb-line}
+.cb.numbered .cb-ln::before{content:counter(cb-line);position:absolute;left:0;width:calc(4ch + 4px);text-align:right;color:var(--ink-3);-webkit-user-select:none;user-select:none}
+
+.t-comment{color:var(--ink-3)}
+.t-string{color:var(--ok-ink)}
+.t-number,.t-warn{color:var(--warn)}
+.t-keyword{color:var(--pri-ink)}
+.t-danger{color:var(--danger)}

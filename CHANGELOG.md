@@ -8,6 +8,9 @@
 
 - ログインの画面の型 `AuthScreen` と入力 `LoginForm`、パスワードの欄 `PasswordField` を追加
 - `TextField` に `type`・`autoComplete`・`name`・`autoCapitalize`、`Button` に `type="submit"` を追加。既存の使い方は変わらない
+- 書体を役割で分けた。本文・見出し・UI は LINE Seed JP、数字（`.num`）は Inter、コードは JetBrains Mono（`--font`・`--font-num`・`--font-code`）。Google Fonts から読むには `index.html` の `<head>` に `templates/app/index.html` の `<link>` を足す。足さなくても端末の書体で動き、`ignite check` が注意を出す
+- 文中のコードの `Code` と、複数行のコードの `CodeBlock`（色分け・コピー・行番号・折り返し・行数の上限。和文は半角 2 桁にそろえる）
+- `ignite check` が CSS の `font-family` の直書きを注意する
 
 ### 修正
 

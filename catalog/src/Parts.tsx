@@ -1,5 +1,5 @@
 import { IconCopy, IconDownload, IconPencil, IconPlus, IconSearch, IconSettings, IconTrash } from '@tabler/icons-react'
-import { Accordion, AnimatedList, Appear, Avatar, AvatarGroup, Badge, Board, Button, Checkbox, Chip, Collapse, Combobox, ConfirmDialog, CopyText, Crumbs, DataTable, DatePicker, Dialog, EmptyState, EntityRow, ExternalLink, Expandable, focusFirstInvalid, FormField, Highlight, IconBox, IconButton, KeyValues, LinkButton, MarkPicker, Menu, MonthStepper, Notice, NumberField, Pagination, PasswordField, Popover, ProgressBar, Prose, RadioGroup, RollingNumber, ScreenBar, SearchField, Section, Segmented, Select, Skeleton, Spinner, Stepper, Steps, SubHeading, Switch, Tabs, Tag, TextArea, TextField, toast, useScrollFocus, type TableSort } from '@ymasaki/ignite'
+import { Accordion, AnimatedList, Appear, Avatar, AvatarGroup, Badge, Board, Button, Checkbox, Chip, Code, CodeBlock, Collapse, Combobox, ConfirmDialog, CopyText, Crumbs, DataTable, DatePicker, Dialog, EmptyState, EntityRow, ExternalLink, Expandable, focusFirstInvalid, FormField, Highlight, IconBox, IconButton, KeyValues, LinkButton, MarkPicker, Menu, MonthStepper, Notice, NumberField, Pagination, PasswordField, Popover, ProgressBar, Prose, RadioGroup, RollingNumber, ScreenBar, SearchField, Section, Segmented, Select, Skeleton, Spinner, Stepper, Steps, SubHeading, Switch, Tabs, Tag, TextArea, TextField, toast, useScrollFocus, type TableSort } from '@ymasaki/ignite'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { MONTHS, PROJECTS } from './data'
 
@@ -13,11 +13,57 @@ function Page({ label, children }: { label: string; children: ReactNode }) {
 const COLORS = ['--pri', '--pri-soft', '--pri-ink', '--solid', '--link', '--bg', '--panel', '--line', '--ink', '--ink-2', '--ink-3', '--ok-ink', '--warn', '--chart-1', '--chart-3', '--chart-5']
 const SIZES = [11, 12, 13, 14, 16, 20, 24, 32]
 
+const CODE_TS = `// 失敗したら間隔をのばして再試行する
+export async function retry<T>(run: () => Promise<T>, times = 3): Promise<T> {
+  for (let i = 0; i < times; i++) {
+    try {
+      return await run() // 成功したら返す
+    } catch (e) {
+      if (i === times - 1) throw e
+      await sleep(200 * 2 ** i)
+    }
+  }
+  throw new Error("再試行の回数を超えました")
+}`
+const CODE_JSON = `{
+  "name": "売上レポート",
+  "retry": 3,
+  "enabled": true,
+  "owner": null
+}`
+const CODE_SQL = `-- 月ごとの売上（10 万円以上）
+SELECT month, SUM(amount) AS total
+FROM sales
+WHERE status = '確定' AND amount >= 100000
+GROUP BY month
+ORDER BY month DESC;`
+const CODE_SHELL = `# 検査してから更新する
+$ npx ignite check --staged
+$ npm run ignite:upgrade -- --yes`
+const CODE_LOG = `2026-11-02 09:14:03 INFO  同期を始めました
+2026-11-02 09:14:05 WARN  応答が遅れています（2,140ms）
+2026-11-02 09:14:09 ERROR 接続できませんでした code=ETIMEDOUT
+2026-11-02 09:14:12 INFO  再試行します
+2026-11-02 09:14:14 INFO  同期が終わりました`
+const CODE_LONG = 'これは折り返しの見本です。一行が長いログや説明文を、横にスクロールせずに読めるようにします。The quick brown fox jumps over the lazy dog, and keeps on running to the end of the line.' // design-ok: 折り返しを見せる長い行
+const CODE_GRID = `| 項目 | code | 状態       |
+|------|------|------------|
+| 売上 | A-01 | 確定       |
+| 原価 | B-22 | 仮         |
+| abcd | C-03 | ok         |`
+
 export function FoundationsPage() {
   return (
     <Page label="基礎">
         <Section level={2} title="色">
           <div className="cat-grid">{COLORS.map((c) => <span className="cat-swatch" key={c}><i className="cat-chip" data-token={c} ref={(el) => el?.style.setProperty('background', `var(${c})`)} />{c}</span>)}</div>
+        </Section>
+        <Section level={2} title="書体の役割">
+          <div className="cat-stack">
+            <span className="cat-face"><span className="cat-face-l">LINE Seed JP</span><span>本文と見出し。English words mix naturally.</span></span>
+            <span className="cat-face"><span className="cat-face-l">Inter</span><span className="cat-face-v num">¥1,234,567<small>円</small></span><span className="cat-face-v num">98.6%</span><span className="cat-face-v num">12,480<small>件</small></span></span>
+            <span className="cat-face"><span className="cat-face-l">JetBrains Mono</span><span>設定の <Code>retryCount</Code> と <Code>npx ignite check</Code> を文中に置く</span></span>
+          </div>
         </Section>
         <Section level={2} title="文字の目盛り">
           <div className="cat-stack">{SIZES.map((s) => <span className="cat-scale" key={s} ref={(el) => el?.style.setProperty('font-size', `var(--fs-${s})`)}>{s}px 読みやすい文字</span>)}</div>
@@ -140,6 +186,17 @@ export function DisplayPage() {
             <DataTable label="並べ替えと選択" sort={sort} onSort={(c) => setSort({ column: c, dir: sort.column === c && sort.dir === 'asc' ? 'desc' : 'asc' })} rowKeys={sorted.map((p) => p.id)} selected={picked} onSelect={setPicked} columns={[{ label: '名前', sortable: true }, { label: 'タスク', sortable: true }]} rows={sorted.map((p) => [{ content: p.name }, { content: p.tasks }])} />
             <DataTable label="読み込み中の表" columns={['名前', 'タスク']} rows={[]} loading />
             <DataTable label="空の表" columns={['名前', 'タスク']} rows={[]} empty="該当するものがありません" />
+          </div>
+        </Section>
+        <Section level={2} title="コード">
+          <div className="cat-stack">
+            <CodeBlock title="retry.ts" language="ts" lineNumbers code={CODE_TS} />
+            <CodeBlock title="settings.json" language="json" code={CODE_JSON} />
+            <CodeBlock language="sql" code={CODE_SQL} />
+            <CodeBlock language="shell" code={CODE_SHELL} />
+            <CodeBlock title="sync.log" language="log" maxLines={3} code={CODE_LOG} />
+            <CodeBlock title="長い行の折り返し" wrap code={CODE_LONG} />
+            <CodeBlock title="桁の確認" code={CODE_GRID} />
           </div>
         </Section>
         <Section level={2} title="項目">

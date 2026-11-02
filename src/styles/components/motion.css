@@ -48,7 +48,7 @@
   /* 1 桁の高さは整数 px に丸める。1.15em のままだと 11px で 12.65px になり、数字ごとに端数の位置へ回って上下がばらつく */
   --roll-h:round(1.15em,1px)}
 .roll-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-.roll-col{display:inline-block;width:.72em;height:var(--roll-h);overflow:hidden;transition:width .4s var(--ease-in-out),opacity .3s ease-out}
+.roll-col{display:inline-block;width:1ch;height:var(--roll-h);overflow:hidden;transition:width .4s var(--ease-in-out),opacity .3s ease-out}
 /* 消える桁・増えた直後の桁は幅 0（幅の変化をなめらかに） */
 .roll-col.gone{width:0;opacity:0}
 .roll-dot{display:inline-block;height:var(--roll-h);line-height:var(--roll-h)}

@@ -3,6 +3,8 @@
 export { announce, focusFirstInvalid, keepFocus, useReturnFocus, useScrollFocus } from './ui/A11y'
 export { Button, ExternalLink, IconButton, LinkButton } from './ui/Button'
 export { Badge, Chip, Tag } from './ui/Chip'
+export { Code, CodeBlock } from './ui/Code'
+export { CODE_LANGUAGES, codeLines, type CodeKind, type CodeLanguage, type CodeToken } from './ui/codeTokens'
 export { CopyText } from './ui/CopyText'
 export { Delta, Kpi, KpiBand, kpiVariants, pickWidestFit, type KpiGroup, type KpiProps } from './ui/Kpi'
 export { Drawer, type DrawerPeek, isTyping, Popover, SearchField, Segmented, Select, type SelectOption, tabPanelProps, Tabs, useFocusShortcut } from './ui/Controls'

@@ -8,3 +8,7 @@
 .cat-stack{display:flex;flex-direction:column;gap:8px;min-width:0}
 .cat-detail{display:flex;flex-direction:column;gap:16px;padding:0 18px 18px}
 .cat-form{display:grid;gap:16px;max-width:420px}
+.cat-face{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 24px;min-width:0}
+.cat-face-l{flex:0 0 120px;font-size:var(--fs-12);color:var(--ink-3)}
+.cat-face-v{font-size:var(--fs-24);font-weight:700}
+.cat-face-v small{margin-left:2px;font-size:var(--fs-12);font-weight:600;color:var(--ink-2)}

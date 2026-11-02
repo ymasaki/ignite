@@ -128,7 +128,18 @@
 
 ## 3. 文字
 
-- 書体：`--font`（ヒラギノ角ゴ → Noto Sans JP → Yu Gothic UI → Meiryo）。数字の並ぶところは `.num`（等幅数字）。
+- 書体は役割で 3 つに分ける。どれも Google Fonts から読み（`templates/app/index.html` の `<link>`）、読めないときは端末の書体で描く（`--font` はヒラギノ角ゴ → Noto Sans JP → Yu Gothic UI → Meiryo）。
+
+| トークン | 書体 | 用途 | 書き方 |
+|---|---|---|---|
+| `--font` | LINE Seed JP | 日本語・英語の本文、見出し、ボタン、フォーム | 既定。何も書かない |
+| `--font-num` | Inter | KPI、金額、統計値、ダッシュボードの数字 | `.num`（桁のそろう数字も付く） |
+| `--font-code` | JetBrains Mono | ソースコード、JSON、SQL、ログ、CLI の表示 | `Code`・`CodeBlock` |
+
+- 混ざるときは字ごとに決まる。`--font-num`・`--font-code` に無い字（かな・漢字）は `--font` の字になるので、`.num` の中に「1,234円」と書いてよく、書体を分けるために要素を分けない。文章の中の数字は本文の一部なので `.num` にしない。
+- LINE Seed JP の太さは 100 / 400 / 700 / 800 だけで、Ignite が使う 600 は 700 の字で描かれる（Inter には 600 がある）。太さの決まりは変えない。
+- コードの中の全角の字は `CodeBlock` が半角 2 桁の幅にそろえる（字は大きくせず字間を足すので、和文は少し広く見える）。半角カナと絵文字はそろわない。リガチャは使わない（`=>` を書いたとおりに見せる）。
+- 書体をアプリのテーマで変えるときも `--font` だけを上書きする。`font-family` を部品の CSS に直接書かない（`ignite check` の注意）。
 - 大きさは次の目盛りだけを使う。
 
 | px | 用途 |
@@ -296,6 +307,7 @@
 | `IconButton` | 同上 | アイコンだけのボタン。`label` は必須（`aria-label` と `data-tip` になる）。`size="lg"` はヘッダー。置き場所で大きさ・枠・角丸を変えるときは `--icon-btn-size` / `--icon-btn-border` / `--icon-btn-radius` |
 | `LinkButton` / `ExternalLink` | 同上 | 文字だけのボタン / 外部のページへのリンク（新しいタブ、末尾に外部リンクのアイコン） |
 | `CopyText` | `CopyText.tsx` / `button.css` | 値そのものがコピーのボタン。コピー後は「コピーしました」 |
+| `Code` / `CodeBlock` | `Code.tsx`・`codeTokens.ts` / `code.css` | 文中の短いコード / 複数行のコード・JSON・SQL・ログ・CLI の表示。`language`（`ts`・`json`・`sql`・`shell`・`log`。既定は色分けなしの `plain`）で色を分ける（構文は解釈しない軽い色分け。色はトークンなのでスキンに従う）。見出しの帯に `title` と言語、コピーのボタンを出す。`lineNumbers` で行番号（コピーに入らない）、`wrap` で折り返し（既定は横スクロール）、`maxLines` で見せる行数の上限。はみ出す欄は Tab で入り矢印キーで送れる |
 | `Segmented` | `Controls.tsx` / `controls.css` | 排他の切り替え。`count` で件数。選択中の地がスライドする（`--ease-spring`）。選択中は「淡い選択」（`--thumb` の地・`--pri-ink-2` の文字。枠は付けない。`Tabs` も同じ）で、ベタ塗りにしない。文字の太さは選択で変えない。狭いときの修飾: `hideCounts`（件数をなめらかに隠す）/ `fill`（置き場所の幅いっぱいに伸ばす）/ `dense`（ボタンの左右の余白 10 → 6px）/ `short`（選択肢の `short` を出す）。件数の最小幅は置き場所で `--seg-n-min` |
 | `SearchField` | 同上 | 一覧の絞り込みの入力欄。先頭に虫眼鏡。placeholder は対象 3 つまで。画面の主な検索欄は `shortcut`（F / ⌘K）。F の行き先は画面に 1 つだけで、`useFocusShortcut` の `priority` の大きい欄（アプリのヘッダーの検索など）が優先。行き先になっている欄にだけ右端に「F」の印を出す（キーボードのない端末では出さない）。入力欄の地は `.field`（`lg` は幅いっぱいの大きい欄、左右の余白は置き場所で `--field-pl` / `--field-pr`） |
 | `MarkPicker` | `Mark.tsx` / `controls.css` | マーカー色を選ぶ丸い見本の並び（なし・黄・緑・青・紫・桃。選んだものは `aria-pressed` とチェック）。名前は `MARK_NAMES` |
@@ -489,6 +501,7 @@
 - Ignite の部品の上書き（アプリの CSS）：部品のクラスを含むセレクタに見た目（余白・文字・色・枠）を書く。既存のものは警告だけで、コミットで新しく足した行を止める（幅・位置の配置はよい）。1.1 で足した部品のクラスは、アプリの独自のクラスと名前が重なることがあるので、次の major までは注意だけ
 - アプリの語：`forbiddenWords` に書いた語（`ignite.config.json`）
 - ブラウザ標準の UI（画面の `.tsx`）：`alert`・`confirm`・`prompt`、`<dialog>`・`<progress>`、チェック・ラジオ・日付・数の `<input>`。今は注意として出すだけで止めない（次の major で止める。`docs/releasing.md`）
+- 書体（注意にとどめる）：CSS の `font-family` の直書き。`index.html` が Google Fonts の書体を読んでいない（自前で配るときは、その HTML に `design-ok: 理由` を書く）
 - 骨組み（アプリの CSS とコード）：アプリの枠の部品（`.app`・`.mainwrap`・`.side`・`.side-handle`・`.side-scrim`・`.pslot`・`.panel`）を対象にした CSS の規則（枠の中身の状態に合わせた規則はよい）と、窓の幅・高さを見る `matchMedia`。枠の大きさへの対応は `AppShell`、部品の中はコンテナクエリか `useFitStep`
 
 やむを得ない行には、その行に `design-ok: 理由` を書くと外れる。新しい画面で使う前に、部品を足せないかを先に考える。

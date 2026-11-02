@@ -1,5 +1,7 @@
+import fs from 'node:fs'
+import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_CONFIG, checkNativeUi, checkCopy, checkCss, checkDate, checkMedia, checkMediaSpacing, checkOverride, checkScreen, checkShellCss, checkShellJs, checkWords, run } from '../cli/check'
+import { DEFAULT_CONFIG, checkNativeUi, checkCopy, checkCss, checkDate, checkFontFamily, checkFontLink, checkMedia, checkMediaSpacing, checkOverride, checkScreen, checkShellCss, checkShellJs, checkWords, run } from '../cli/check'
 
 const lines = (ps: { line: number }[]) => ps.map((p) => p.line)
 
@@ -74,6 +76,26 @@ describe('ignite check の振り分け', () => {
   it('Ignite 自身の検査では上書きと枠の検査を外す', () => {
     const css = new Map([['src/styles/a.css', '.btn{padding:0}\n.side{width:1px}']])
     expect(run(css, { ...DEFAULT_CONFIG, self: true }).problems).toEqual([])
+  })
+})
+
+describe('書体の注意', () => {
+  it('書体の直書きを見つけ、トークン・inherit・design-ok は通す', () => {
+    expect(checkFontFamily('a.css', '.a{font-family:var(--font-code)}\n.b{font-family:inherit}\n.c{font-family:serif} /* design-ok: 印刷用 */')).toEqual([])
+    expect(lines(checkFontFamily('a.css', '.z{}\n.a{font-family:"Noto Sans JP",sans-serif}'))).toEqual([2])
+  })
+  it('書体の直書きは注意だけで止めない（既存のアプリの書き方を止めない。docs/releasing.md）', () => {
+    const r = run(new Map([['src/styles/a.css', '.a{font-family:serif}']]), DEFAULT_CONFIG)
+    expect(r.problems).toEqual([])
+    expect(r.warnings).toHaveLength(1)
+  })
+  it('index.html が書体を読まないと注意する。自前で配るときは design-ok で外せる', () => {
+    expect(checkFontLink('index.html', '<head></head>')).toHaveLength(1)
+    expect(checkFontLink('index.html', '<link href="https://fonts.googleapis.com/css2?family=Inter&family=LINE+Seed+JP:wght@400">')).toEqual([])
+    expect(checkFontLink('index.html', '<!-- design-ok: 自前で配る -->')).toEqual([])
+  })
+  it('見本の index.html は書体を読む', () => {
+    expect(checkFontLink('index.html', fs.readFileSync(path.resolve(import.meta.dirname, '../templates/app/index.html'), 'utf8'))).toEqual([])
   })
 })
 

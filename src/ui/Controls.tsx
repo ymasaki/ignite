@@ -42,9 +42,14 @@ export function useThumb(value: string) {
     th.addEventListener('transitioncancel', end)
     const ro = new ResizeObserver(() => !sliding && place())
     ro.observe(box)
+    // 書体が遅れて届くと、外枠の幅が同じでも項目の幅が変わる
+    const fonts = document.fonts
+    const onFonts = () => !sliding && place()
+    fonts?.addEventListener('loadingdone', onFonts)
     const frame = requestAnimationFrame(() => setReady(true))
     return () => {
       ro.disconnect()
+      fonts?.removeEventListener('loadingdone', onFonts)
       cancelAnimationFrame(frame)
       th.removeEventListener('transitionrun', start)
       th.removeEventListener('transitionend', end)

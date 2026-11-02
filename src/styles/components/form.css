@@ -44,7 +44,7 @@
 /* 数の欄。右端に − ＋ を重ねる */
 .numfield{display:inline-flex;align-items:center;gap:var(--space-2);min-width:0}
 .nf-box{position:relative;display:inline-flex;align-items:center;min-width:0;--field-pr:64px}
-.nf-box > .field{width:136px;max-width:100%;font-variant-numeric:tabular-nums}
+.nf-box > .field{width:136px;max-width:100%;font-family:var(--font-num);font-variant-numeric:tabular-nums}
 .nf-btn{position:absolute;right:32px;display:grid;place-items:center;width:28px;height:28px;border-radius:8px;color:var(--ink-2);transition:var(--press-back)}
 .nf-btn:last-child{right:4px}
 .nf-btn:hover{background:var(--hover);color:var(--ink)}
