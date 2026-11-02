@@ -54,6 +54,8 @@
 /* 下・右に入らないときは反対側へ開く（ui/Controls.tsx の usePlaced が付ける） */
 .popover-body.up,.select .popover-body.up{top:auto;bottom:calc(100% + 6px)}
 .popover-body.flip{right:auto;left:0}
+/* 上下どちらにも入らないとき（低い画面。usePlaced）は、切り抜きの外の窓の中央に重ね、入らない分は中でスクロールする */
+.popover .popover-body.float{position:fixed;inset:50% auto auto 50%;translate:-50% -50%;min-width:0;max-width:calc(100vw - 16px);max-height:calc(100dvh - 16px);overflow:auto;overscroll-behavior:contain}
 .select .popover-body.flip{left:auto;right:0}
 
 /* 1 つを選ぶプルダウン（Select）。ボタンは .btn、一覧はポップオーバー。.lg はヘッダーに置く大きさ */
@@ -71,7 +73,7 @@
 /* 幅が足りないとき（Select の fit）。名前を省略する前に、補足 → 先頭の印の順に隠す */
 .select-btn.fit-1 .sel-meta,.select-btn.fit-2 .sel-lead{display:none}
 .select.lg .select-btn{height:var(--control-h);padding:0 12px;font-size:var(--fs-14);font-weight:600}
-.select .popover-body{top:calc(100% + 6px);left:0;right:auto;gap:0;width:max-content;min-width:100%;max-width:400px;max-height:360px;overflow:auto;padding:6px}
+.select .popover-body{top:calc(100% + 6px);left:0;right:auto;gap:0;width:max-content;min-width:100%;max-width:400px;max-height:min(360px,var(--pop-room,360px));overflow:auto;padding:6px}
 .select .popover-body>[role="listbox"]{min-width:0}
 .select-opt{display:flex;box-sizing:border-box;align-items:center;gap:8px;width:100%;padding:8px 16px 8px 12px;border-radius:8px;text-align:left;font-size:var(--fs-13);color:var(--ink);white-space:nowrap}
 .select-opt:hover{background:var(--hover)}

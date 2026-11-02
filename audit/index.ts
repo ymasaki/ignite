@@ -46,6 +46,8 @@ export interface IgniteAuditConfig {
   screens: AuditScreen[]
   /** 既定は DEFAULT_WIDTHS */
   widths?: AuditWidth[]
+  /** 窓を連続で変えて測る監査から外す画面（name）。既定は操作なしの全画面 */
+  sweepSkip?: string[]
   states?: AuditState[]
   /** 重ねた詳細パネルを開いた画面（5 章「操作の結果を見える場所に出す」）。中のボタンを 1 つずつ押す */
   reveals?: { name: string; path: string }[]
@@ -77,7 +79,18 @@ export const DEFAULT_WIDTHS: AuditWidth[] = [
   { name: 'PC', width: 1440, height: 900 },
   { name: '小さな窓', width: 600, height: 800 },
   { name: 'スマホ', width: 375, height: 812 },
+  { name: '狭いスマホ', width: 320, height: 568 },
+  { name: 'スマホの横向き', width: 844, height: 390 },
 ]
+
+/** 窓を連続で変えて測る大きさ（5 章「どの大きさでも崩さない」）。下限はスマホの縦と横。600・720・860px と、shellLayout の区切りの前後を通す */
+export function sweepSizes(): { width: number; height: number }[] {
+  const bp = shellBreakpoints()
+  const windows = [1440, bp.compactBelow - 1, 1280, 1180, 1100, 1024, bp.railBelow, bp.railBelow - 1, 900, 861, 860, bp.overlayBelow, bp.overlayBelow - 1, 768, 721, 720, 680, 601, 600, 540, 480, 430]
+  const phones = [[414, 896], [390, 844], [375, 667], [360, 640], [320, 568]]
+  const landscapes = [[568, 320], [667, 375], [740, 360], [844, 390], [932, 430]]
+  return [...new Set(windows)].map((width) => ({ width, height: 800 })).concat([...phones, ...landscapes].map(([width, height]) => ({ width, height })))
+}
 
 const FONT_SIZES = [11, 12, 13, 14, 16, 20, 24, 32]
 const FONT_WEIGHTS = ['400', '600', '700']
@@ -211,6 +224,24 @@ export function defineIgniteAudit(config: IgniteAuditConfig): void {
         shots.push(`${file}（${s.name}・${w.name}）`)
       })
     }
+  }
+
+  // 窓を連続で変えて測る。開き直さないので、大きさが変わったときに追従できるかも確かめる。操作して開く画面は上の固定の幅で測る
+  for (const s of screens.filter((s) => !s.act && !s.assist && !config.sweepSkip?.includes(s.name))) {
+    test(`${s.name}（連続で大きさを変える）`, async ({ page }) => {
+      test.setTimeout(120000)
+      await page.setViewportSize({ width: 1440, height: 800 })
+      await open(page, s.path)
+      for (const size of sweepSizes()) {
+        await page.setViewportSize(size)
+        await page.waitForTimeout(450)
+        const measured = await measure(page, { ...args, skipLayout: s.layout?.replace })
+        for (const f of measured) {
+          if (exceptions.some((e) => e.match.test(`${f.rule.replace(/（.*）/, '')} ${f.where} ${f.expected} ${f.actual}`))) continue
+          record(`${f.rule} ${f.where} ${f.expected} ${f.actual}`, f, `${s.name}（${size.width}×${size.height}）`)
+        }
+      }
+    })
   }
 
   for (const w of widths.filter((w) => !w.screens)) {

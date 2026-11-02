@@ -313,20 +313,33 @@ function clipRect(el: HTMLElement) {
   return r
 }
 
-/** 開いた面が下・右で切れるなら、反対側に開く（反対側のほうが広いときだけ）。Popover・Combobox で共通 */
-export function usePlaced(ref: { current: HTMLElement | null }, open: boolean) {
+/**
+ * 開いた面が下・右で切れるなら、反対側に開く（反対側のほうが広いときだけ）。Popover・Combobox で共通。
+ * float なら、上下どちらにも入らないとき窓の中央に重ねる（高さが足りない分は中でスクロール。低い画面のカレンダーなど）。
+ * 入力欄に続く候補の一覧は、入力欄を隠さないよう float にしない
+ */
+export function usePlaced(ref: { current: HTMLElement | null }, open: boolean, float = false) {
   useLayoutEffect(() => {
     const el = ref.current
     const host = el?.parentElement
     if (!open || !el || !host) return
     const place = () => {
-      el.classList.remove('up', 'flip')
+      el.classList.remove('up', 'flip', 'float')
       const clip = clipRect(el)
-      const r = el.getBoundingClientRect()
       const h = host.getBoundingClientRect()
+      // 一覧の高さの上限。開く側の空きに収める（低い画面で一覧が切れないように。30px は入力欄との間 6・端との間 8・面の余白と枠 16）
+      el.style.setProperty('--pop-room', `${Math.max(120, Math.max(h.top - clip.top, clip.bottom - h.bottom) - 30)}px`)
+      const r = el.getBoundingClientRect()
       if (r.bottom > clip.bottom && h.top - clip.top > clip.bottom - h.bottom) el.classList.add('up')
       if (r.left < clip.left || r.right > clip.right) el.classList.add('flip')
+      const placed = el.getBoundingClientRect()
+      if (float && (placed.top < clip.top - 1 || placed.bottom > clip.bottom + 1)) {
+        el.classList.remove('up', 'flip')
+        el.classList.add('float')
+      }
     }
+    // 開いたボタン・入力欄が見えていなければ、見える位置へ運んでから測る
+    host.scrollIntoView({ block: 'nearest' })
     place()
     // 開いたまま中身が変わる（候補が絞られる）ときは測り直す。通知の中で動かすと通知が重なるので次の描画で
     let frame = 0
@@ -336,7 +349,7 @@ export function usePlaced(ref: { current: HTMLElement | null }, open: boolean) {
     })
     ro.observe(el)
     return () => (ro.disconnect(), cancelAnimationFrame(frame))
-  }, [ref, open])
+  }, [ref, open, float])
 }
 
 /** ボタンで開閉し、外側のクリック・Esc・Tab で外へ出たときに閉じる小さなパネル。place="right" はボタンの右に、ボタンの下端から上へ開く（折りたたんだ左メニューの「+N」） */
@@ -344,7 +357,7 @@ export function Popover({ trigger, children, className = '', place = 'below' }: 
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const body = useRef<HTMLDivElement>(null)
-  usePlaced(body, open && place === 'below')
+  usePlaced(body, open && place === 'below', true)
   useEffect(() => {
     if (!open) return
     const onDown = (e: PointerEvent) => {

@@ -73,6 +73,37 @@ export function measure(page: Page, args: MeasureArgs): Promise<Measured[]> {
 
     // 5 章: 横にはみ出さない（ページ全体と、帯・切り替えの中）
     if (document.documentElement.scrollWidth > innerWidth + 1) out.push({ rule: '横のはみ出し（5 章）', where: 'ページ全体', expected: `幅 ${innerWidth}px 以内`, actual: `${document.documentElement.scrollWidth}px` })
+    // 枠に切られた中身（5 章「どの大きさでも崩さない」）。枠は overflow:hidden なので、ページ全体のはみ出しには出ない。スクロールできる枠の中はよい
+    for (const el of document.querySelectorAll<HTMLElement>('button, a[href], input, textarea, [role="tab"], h1, h2, h3, th, td, label')) {
+      if (el.closest('[inert], [aria-hidden="true"], .fit-measure, .sr-only') || !visible(el)) continue
+      const r = el.getBoundingClientRect()
+      if (r.width < 1 || r.height < 1) continue
+      let clip: string | null = null
+      let scrolls = false
+      for (let a = el.parentElement; a && !clip && !scrolls; a = a.parentElement) {
+        const ox = getComputedStyle(a).overflowX
+        scrolls = ox === 'auto' || ox === 'scroll'
+        if (ox !== 'hidden' && ox !== 'clip') continue
+        const ar = a.getBoundingClientRect()
+        if (r.right > ar.right + 1 || r.left < ar.left - 1) clip = a.className ? `.${String(a.className).split(' ')[0]}` : a.tagName
+      }
+      if (!clip && !scrolls && (r.right > innerWidth + 1 || r.left < -1)) clip = '窓'
+      if (clip) out.push({ rule: '横のはみ出し（5 章）', where: parentWho(el), expected: '中身が枠に切られない', actual: `${clip} の外へ ${Math.round(r.left)}〜${Math.round(r.right)}px` })
+    }
+    // 開いたパネルは窓と枠に切られない（縦も）。スクロールして見える場所でも、開いた直後に操作の一部が隠れるので測る
+    for (const el of document.querySelectorAll('.popover-body')) {
+      if (!visible(el)) continue
+      const r = el.getBoundingClientRect()
+      let cut = r.top < -1 || r.bottom > innerHeight + 1 || r.left < -1 || r.right > innerWidth + 1 ? '窓' : ''
+      for (let a = getComputedStyle(el).position === 'fixed' ? null : el.parentElement; a && !cut; a = a.parentElement) {
+        const cs = getComputedStyle(a)
+        if (cs.position === 'fixed') break
+        if (cs.overflowY === 'visible') continue
+        const ar = a.getBoundingClientRect()
+        if (r.top < ar.top - 1 || r.bottom > ar.bottom + 1) cut = a.className ? `.${String(a.className).split(' ')[0]}` : a.tagName
+      }
+      if (cut) out.push({ rule: '開いたパネルが切れない（5 章）', where: parentWho(el), expected: '全体が見える', actual: `${cut} に切られる ${Math.round(r.top)}〜${Math.round(r.bottom)}px` })
+    }
     for (const el of document.querySelectorAll(overflow)) {
       if (!visible(el) || el.closest('.kpis-measure')) continue
       const e = el as HTMLElement
@@ -166,6 +197,7 @@ export function measure(page: Page, args: MeasureArgs): Promise<Measured[]> {
         const [x, y] = c.at(rect)
         const hit = document.elementFromPoint(x, y)
         if (!hit || hit === frame || !frame.contains(hit)) continue
+        if (hit.closest('.popover-body') && !frame.matches('.popover-body')) continue // 枠の上に浮いたパネルは枠の中身の地ではない
         let clipped = fcs.overflow !== 'visible'
         let bad: Element | null = null
         for (let el: Element | null = hit; el && el !== frame && !clipped; el = el.parentElement) {

@@ -1,7 +1,7 @@
 /* 検索欄の下の候補（SearchSuggest）。枠は Popover と同じで、狭い置き場所でも候補の 2 行が読める幅まで広げる */
 .suggest{display:block;width:100%}
 .suggest .sfield{display:flex;width:100%}
-.suggest .popover-body{display:block;width:100%;min-width:min(360px,calc(100vw - 32px));max-height:min(70vh,480px);overflow:auto;padding:6px}
+.suggest .popover-body{display:block;width:100%;min-width:min(360px,calc(100vw - 32px));max-height:min(70vh,480px,var(--pop-room,480px));overflow:auto;padding:6px}
 .suggest .subhead{margin-top:4px}
 .suggest .erow{width:100%}
 .suggest .erow.on:active{background:var(--pri-soft-2)} /* マウスを載せた行は .on になるので、押している間はもう一段進める */

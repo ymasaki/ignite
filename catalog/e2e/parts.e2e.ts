@@ -638,3 +638,23 @@ test('useFitCount: 枠が低くなると数え直し、入らない分を「+N�
   await expect(rail.getByRole('button')).toHaveCount(3)
   await expect(rail.getByRole('button', { name: /^ほか 4 件$/ })).toBeVisible()
 })
+
+for (const [width, height] of [[320, 568], [568, 320], [844, 390]]) {
+  test(`DatePicker: ${width}×${height} でも月の見出しと下端の操作が窓の中に見える`, async ({ page }) => {
+    await open(page, 'forms')
+    await page.setViewportSize({ width, height })
+    await page.getByRole('button', { name: /^期限/ }).first().click()
+    const body = page.locator('.datepicker .popover-body')
+    await expect(body).toBeVisible()
+    await page.waitForTimeout(300)
+    const box = (await body.boundingBox())!
+    expect(box.y).toBeGreaterThanOrEqual(0)
+    expect(box.y + box.height).toBeLessThanOrEqual(height)
+    expect(box.x).toBeGreaterThanOrEqual(0)
+    expect(box.x + box.width).toBeLessThanOrEqual(width)
+    await expect(body.getByRole('button', { name: /2026年10月15日/ })).toBeVisible()
+    await expect(body.getByRole('button', { name: '前の月' })).toBeInViewport()
+    await body.getByRole('button', { name: '今日' }).scrollIntoViewIfNeeded()
+    await expect(body.getByRole('button', { name: '今日' })).toBeInViewport()
+  })
+}

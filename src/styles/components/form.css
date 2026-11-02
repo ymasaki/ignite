@@ -58,7 +58,7 @@
 .combo-chev{position:absolute;right:10px;top:10px;color:var(--ink-3);pointer-events:none}
 .combo .popover-body{overflow:visible;max-height:none}
 /* スクロールするのは候補の一覧そのもの（フォーカスは入力欄に残り、↑↓ で一覧が送られる） */
-.combo [role="listbox"]{max-height:348px;overflow-y:auto}
+.combo [role="listbox"]{max-height:min(348px,var(--pop-room,348px));overflow-y:auto}
 .combo .select-opt{cursor:pointer}
 .combo .select-opt.on{background:var(--hover);outline:2px solid var(--focus);outline-offset:-2px}
 .combo-empty{padding:8px 12px;font-size:var(--fs-13);color:var(--ink-3)}

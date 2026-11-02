@@ -7,6 +7,7 @@
 ### 追加
 
 - 大きさへの対応と左メニューの部品を追加。`CollapseInline`（横の出し入れ）、`useFitCount`・`fitSlots`（入る数だけ出して「+N」）、`AvatarStack`・`fitAvatars`・`keepVisible`（`.avstack` の部品本体）、`SideStatus`・`SideAccount`・`SideIconButton`・`SIDE_ICON_SIZE`、左メニューの形で中身を入れ替える `data-side="wide"` / `"rail"`
+- 監査の既定の幅に狭いスマホ（320×568）とスマホの横向き（844×390）を追加。操作なしの全画面を開いたまま窓を連続で変えて測る監査（`sweepSizes`。外すときは `sweepSkip`）と、枠に切られた中身の測定を追加。既存の画面に新しい指摘が出ることがある
 - 帯の余白のトークン `--bar-y`・`--bar-x`・`--bar-gap`・`--bar-row` を追加し、`ScreenBar` の余白と間を窓に合わせて詰めるようにした（広い窓の余白は 12×16 → 10×14px、間は 8 → 14px）
 - ログインの画面の型 `AuthScreen` と入力 `LoginForm`、パスワードの欄 `PasswordField` を追加
 - `TextField` に `type`・`autoComplete`・`name`・`autoCapitalize`、`Button` に `type="submit"` を追加。既存の使い方は変わらない
@@ -16,6 +17,8 @@
 
 ### 修正
 
+- 低い画面（スマホの横向き・狭いスマホ）で `Popover` が上下どちらにも入らず切れるのを直した（`DatePicker` の月の見出しや下端が見えなかった）。窓の中央に重ねて、中でスクロールする
+- 左メニューを畳むと押せる `Brand` の読み上げの名前がなくなるのを直した
 - `DESIGN.md` の `AppShell` の説明の、左メニューを引き出しにする幅を実装どおり 600px に直した
 - カタログ監査をMac共通ロックで直列化し、監査サーバーと子プロセスの終了後に解放する。通常表示の5199は維持する
 

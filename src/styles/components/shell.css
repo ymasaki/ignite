@@ -141,6 +141,8 @@
   .side-min .side-status-ic{display:grid;place-items:center;width:40px;height:24px}
   /* 畳み終わったら文字を置かない（残すとボタンが文字の幅のまま左メニューの外へ伸びる） */
   .side-min-done .side-t{display:none}
+  /* ブランドの名前は読み上げに残す（押せるブランドの名前がなくならないように）。見た目だけ隠す */
+  .side-min-done .brand-txt{display:block;position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
   /* 左メニューの中の行（EntityRow）は、畳むと顔だけにする（名前・補足は文字と一緒に消す） */
   :where(.app:has(> .side-handle)) .side .erow .er-b{white-space:nowrap;transition:opacity .16s ease-out}
   .side-min .side .erow .er-b{opacity:0}
