@@ -63,11 +63,18 @@ export function PanelHeader({
   lines?: ReactNode
   /** 固定ヘッダーの補足 */
   stickySub?: string
-  /** × の左に置く任意のボタン。省略できる（上段と固定ヘッダーの両方に出す） */
+  /** × の左に置く任意のボタン。省略できる（上段と固定ヘッダーの両方に出す。固定ヘッダーでは名前を優先し、文字ボタンはアイコンだけになる） */
   actions?: ReactNode
   onClose?: () => void
 }) {
   const [titleRef, stuck] = useStuck<HTMLHeadingElement>()
+  const barRef = useRef<HTMLDivElement>(null)
+  // 固定ヘッダーでアイコンだけになる文字ボタンにも、ボタンの文字を吹き出しで出す（actions の中身はアプリが渡すので描画後に付ける）
+  useEffect(() => {
+    barRef.current?.querySelectorAll<HTMLElement>('.btn:has(svg):has(.btn-l)').forEach((b) => {
+      b.dataset.tip = b.textContent ?? ''
+    })
+  })
   const close = (
     <IconButton label="詳細を閉じる" tip="閉じる" onClick={onClose}>
       <IconX size={16} stroke={1.8} />
@@ -76,7 +83,7 @@ export function PanelHeader({
   return (
     <>
       <div className={`pstick ${stuck ? 'on' : ''}`} inert={!stuck}>
-        <div className="pstick-bar">
+        <div className="pstick-bar" ref={barRef}>
           {smallVisual}
           <div className="pstick-t">
             <b>{title}</b>

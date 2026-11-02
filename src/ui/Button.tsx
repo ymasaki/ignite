@@ -12,7 +12,7 @@ export function Button({ type = 'button', variant = 'default', icon, active = fa
   return (
     <button type={type} className={`btn ${variant === 'primary' ? 'pri' : variant === 'danger' ? 'danger' : ''} ${active ? 'on' : ''} ${loading ? 'busy' : ''} ${className}`} aria-busy={loading || undefined} aria-disabled={loading || undefined} onClick={loading ? (e) => e.preventDefault() : onClick} {...rest}>
       {loading ? <Spinner label="" /> : icon}
-      {children}
+      {children != null && <span className="btn-l">{children}</span>}
     </button>
   )
 }

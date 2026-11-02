@@ -148,8 +148,8 @@
    （段の幅 = 検索欄 262 + 間 8 + 文字付きのボタン約 104 → 380px 未満でアイコンと件数だけ）。画面の幅ではなく段の幅で決める */
 .sbar.has-search{container-type:inline-size}
 @container (max-width:379px){
-  .sbar > .btn:has(> [data-fit="extra"]),.sbar > .popover > .btn:has(> [data-fit="extra"]){padding:0 12px}
-  .sbar > .btn > [data-fit="extra"],.sbar > .popover > .btn > [data-fit="extra"]{display:none}
+  .sbar > .btn:has([data-fit="extra"]),.sbar > .popover > .btn:has([data-fit="extra"]){padding:0 12px;gap:0}
+  .sbar > .btn [data-fit="extra"],.sbar > .popover > .btn [data-fit="extra"]{display:none}
 }
 /* ヘッダーの直後（補助の帯がないとき）から最初の段までの余白（--shell-top）をそろえる。閉じた帯（高さ 0 の .collapse）なら帯の上に付ける */
 .top + .shell-main > .content:first-child{padding-top:var(--shell-top)}
@@ -176,8 +176,8 @@
   .ttl .select-opt{white-space:normal}
   .ttl .select-opt .sel-label{min-width:0}
   .ttl .select-opt .sel-meta{flex:none}
-  .sbar:not(.has-search) > .btn:has(> [data-fit="extra"]),.sbar:not(.has-search) > .popover > .btn:has(> [data-fit="extra"]){padding:0 12px} /* design-ok: 文字を落としてアイコンだけになったボタン（組み方の切り替え。上の @container と同じ） */
-  .sbar:not(.has-search) > .btn > [data-fit="extra"],.sbar:not(.has-search) > .popover > .btn > [data-fit="extra"]{display:none}
+  .sbar:not(.has-search) > .btn:has([data-fit="extra"]),.sbar:not(.has-search) > .popover > .btn:has([data-fit="extra"]){padding:0 12px;gap:0} /* design-ok: 文字を落としてアイコンだけになったボタン（組み方の切り替え。上の @container と同じ） */
+  .sbar:not(.has-search) > .btn [data-fit="extra"],.sbar:not(.has-search) > .popover > .btn [data-fit="extra"]{display:none}
 }
 @media (orientation:landscape) and (max-height:500px){
   /* 縦が狭いので内容に高さを回す: 検索欄と道具もヘッダーの 1 段目に並べ、補助の帯（aux）は出さない */

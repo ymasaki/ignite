@@ -26,8 +26,14 @@
   opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .14s ease-in,transform .14s ease-in}
 .pstick.on .pstick-bar{opacity:1;transform:none;pointer-events:auto;transition:opacity .18s ease-out,transform .2s var(--ease-in-out)}
 .pstick-t{display:flex;flex:1;flex-direction:column;min-width:0;line-height:1.3}
-.pstick-t b{overflow:hidden;font-size:var(--fs-16);text-overflow:ellipsis;white-space:nowrap}
+/* 名前は省略せず、入らなければ 2 行にする（2 行＋補足で 58px。高さ 64px に収まる） */
+.pstick-t b{display:-webkit-box;overflow:hidden;font-size:var(--fs-16);overflow-wrap:anywhere;-webkit-box-orient:vertical;-webkit-line-clamp:2}
 .pstick-t span{overflow:hidden;font-size:var(--fs-12);color:var(--ink-3);text-overflow:ellipsis;white-space:nowrap}
+
+/* 固定ヘッダーは名前を優先し、アイコンのある文字ボタンをアイコンだけにする（寸法は .btn のまま。文字は読み上げに残し、吹き出しは ui/Panel.tsx が付ける） */
+.pstick-bar .btn:has(svg):has(.btn-l){flex:none;justify-content:center;width:34px;padding:0;gap:0;border-color:transparent;background:none;color:var(--ink-2)}
+.pstick-bar .btn:has(svg):has(.btn-l):hover{background:var(--hover);color:var(--ink)}
+.pstick-bar .btn:has(svg) .btn-l{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 
 /* ---------- 本文 ---------- */
 .pb{padding:4px 18px 22px}
