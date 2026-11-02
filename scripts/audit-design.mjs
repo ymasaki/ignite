@@ -29,23 +29,31 @@ function start(args, ipc = false) {
   children.push(child)
   return child
 }
+async function tryAcquire() {
+  try { await mkdir(lock) } catch (error) {
+    if (error.code === 'EEXIST') return false
+    throw error
+  }
+  owned = true
+  await writeFile(`${lock}/owner.json`, JSON.stringify({ pid: process.pid, root }))
+  console.log(`[audit] ロック取得: ${root}`)
+  return true
+}
 async function acquire() {
   const deadline = Date.now() + 600000
   let reported = false
   while (!interrupted) {
-    try {
-      await mkdir(lock)
-      owned = true
-      await writeFile(`${lock}/owner.json`, JSON.stringify({ pid: process.pid, root }))
-      console.log(`[audit] ロック取得: ${root}`)
-      return
-    } catch (error) {
-      if (error.code !== 'EEXIST') throw error
-    }
+    if (await tryAcquire()) return
     let owner
     try { owner = JSON.parse(await readFile(`${lock}/owner.json`, 'utf8')) } catch {}
     if (owner && Number.isInteger(owner.pid) && owner.pid > 0 && !alive(owner.pid)) {
-      throw new Error(`監査ロックが残っています: ${lock} (${JSON.stringify(owner)})。所有元と5198の終了を確認して手動で除去してください。自動削除はしません。`)
+      // 読み取った直後に先行監査が解放・終了した可能性がある。
+      if (await tryAcquire()) return
+      let current
+      try { current = JSON.parse(await readFile(`${lock}/owner.json`, 'utf8')) } catch {}
+      if (current?.pid === owner.pid && current?.root === owner.root && !alive(current.pid)) {
+        throw new Error(`監査ロックが残っています: ${lock} (${JSON.stringify(owner)})。所有元と5198の終了を確認して手動で除去してください。自動削除はしません。`)
+      }
     }
     if (Date.now() >= deadline) throw new Error(`監査ロック待機が10分を超えました: ${lock} (${JSON.stringify(owner)})`)
     if (!reported) { console.log(`[audit] 他の監査を待機: ${lock}`); reported = true }
@@ -53,13 +61,18 @@ async function acquire() {
   }
   throw new Error('監査を中断しました')
 }
+function signalGroup(group, signal) {
+  try { process.kill(group, signal) } catch (error) {
+    if (error.code !== 'ESRCH') throw error
+  }
+}
 async function stop(child) {
   if (!child.pid) return
   const group = -child.pid
   if (!alive(group)) return
-  process.kill(group, 'SIGTERM')
+  signalGroup(group, 'SIGTERM')
   for (let i = 0; i < 50 && alive(group); i++) await delay(100)
-  if (alive(group)) process.kill(group, 'SIGKILL')
+  if (alive(group)) signalGroup(group, 'SIGKILL')
   for (let i = 0; i < 50 && alive(group); i++) await delay(100)
   if (alive(group)) throw new Error(`所有プロセス群 ${child.pid} の停止を確認できません。ロックを残します: ${lock}`)
 }
@@ -80,6 +93,8 @@ try {
     if (interrupted || audit.failure || server.failure || server.result !== undefined) throw new Error('監査が中断されたか、監査サーバーが終了しました')
     await delay(100)
   }
+  // 両方の終了通知が同じ待機区間に届いた場合も成功にしない。
+  if (interrupted || audit.failure || server.failure || server.result !== undefined) throw new Error('監査が中断されたか、監査サーバーが終了しました')
   process.exitCode = audit.result
 } catch (error) {
   console.error(`[audit] ${error.message}`)

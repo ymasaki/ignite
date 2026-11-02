@@ -71,6 +71,45 @@ test('監査の排他と終了処理', async t => {
       assert.throws(() => process.kill(pid, 0))
       await gone()
     })
+    await t.test('同じ待機区間でサーバー終了と監査成功が届いても失敗', async () => {
+      const root = await fixture('both-exit', 'setInterval(()=>{},1000)')
+      // イベントがポーリング再開前に両方届いた状態を固定する。
+      await writeFile(path.join(root, 'scripts/audit-design.mjs'), source.replace(
+        '  while (audit.result === undefined) {',
+        '  server.result = 0; audit.result = 0;\n  while (audit.result === undefined) {'))
+      assert.equal((await run(root).done).code, 1)
+      await gone()
+    })
+    await t.test('停止要求直前に群が消えてESRCHになっても解放', async () => {
+      const root = await fixture('kill-race', '')
+      const inject = `
+const realKill = process.kill.bind(process)
+process.kill = (pid, signal) => {
+  if (pid < 0 && signal === 'SIGTERM') {
+    realKill(pid, 'SIGKILL')
+    console.log('停止直前終了を注入')
+    throw Object.assign(new Error('終了済み'), {code:'ESRCH'})
+  }
+  return realKill(pid, signal)
+}
+`
+      await writeFile(path.join(root, 'scripts/audit-design.mjs'), inject + source)
+      const result = await run(root).done
+      assert.match(result.output, /停止直前終了を注入/)
+      assert.equal(result.code, 0)
+      await gone()
+    })
+    await t.test('所有情報読取直後に先行が解放したら取得を再試行', async () => {
+      const root = await fixture('release-race', '')
+      await mkdir(lock)
+      await writeFile(path.join(lock, 'owner.json'), JSON.stringify({pid:2147483647}))
+      // EEXISTと所有情報読取の後、先行監査の解放と終了を固定する。
+      await writeFile(path.join(root, 'scripts/audit-design.mjs'), source.replace(
+        '    if (owner && Number.isInteger(owner.pid)',
+        "    await rm(lock, {recursive:true, force:true})\n    if (owner && Number.isInteger(owner.pid)"))
+      assert.equal((await run(root).done).code, 0)
+      await gone()
+    })
     await t.test('残骸と待機期限は削除せず明示', async () => {
       await mkdir(lock)
       const root = await fixture('locked', '')
