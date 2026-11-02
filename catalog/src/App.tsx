@@ -85,7 +85,7 @@ export function App() {
         <>
           <Brand mark={LOGO} name="Ignite" small="デザインシステム" onClick={() => go({ nav: 'overview' })} />
           <SideNav items={NAV} current={nav === 'settings' ? null : nav} collapsed={state.collapsed} onSelect={(key) => { go({ nav: key }); closeSide() }} />
-          <SettingsButton current={nav === 'settings'} onClick={() => { go({ nav: 'settings' }); closeSide() }} />
+          <SettingsButton current={nav === 'settings'} collapsed={state.collapsed} onClick={() => { go({ nav: 'settings' }); closeSide() }} />
         </>
       )}
       collapse={{ collapsed, onChange: setCollapsed }}

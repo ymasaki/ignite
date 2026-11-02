@@ -16,9 +16,9 @@ export function App() {
         <>
           <Brand name="アプリ" />
           <SideNav items={NAV} current={nav === 'home' ? 'home' : null} collapsed={state.collapsed} onSelect={() => { setNav('home'); close() }} />
+          <SettingsButton current={nav === 'settings'} collapsed={state.collapsed} onClick={() => { setNav('settings'); close() }} />
         </>
       )}
-      foot={<SettingsButton current={nav === 'settings'} onClick={() => setNav('settings')} />}
       title={nav === 'home' ? 'ホーム' : '設定'}
     >
       {nav === 'home' ? (

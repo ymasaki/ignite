@@ -269,6 +269,23 @@ export function checkNativeUi(file: string, text: string): Problem[] {
   return codeLines(text).flatMap((line, i) => (OK.test(raw[i] ?? '') ? [] : NATIVE_UI.filter(([re]) => re.test(line)).map(([, message]) => ({ path: file, line: i + 1, message }))))
 }
 
+/** 設定のボタンは side の SideNav の直後に置く。foot は線が重なり、畳むと消え、引き出しも閉じない。既存の配置を止めないよう注意にとどめる */
+export function checkSideFoot(file: string, text: string): Problem[] {
+  const code = codeLines(text).join('\n')
+  const raw = text.split('\n')
+  const out: Problem[] = []
+  for (const m of code.matchAll(/\bfoot=\{/g)) {
+    let depth = 1
+    let end = m.index + m[0].length
+    for (; end < code.length && depth > 0; end++) depth += code[end] === '{' ? 1 : code[end] === '}' ? -1 : 0
+    const at = code.slice(m.index, end).search(/<SettingsButton\b/)
+    if (at < 0) continue
+    const line = code.slice(0, m.index + at).split('\n').length
+    if (!OK.test(raw[line - 1] ?? '')) out.push({ path: file, line, message: 'SettingsButton は foot に入れない。side の SideNav の直後に置き、collapsed と close を渡す' })
+  }
+  return out
+}
+
 export function checkWords(file: string, text: string, rule: ForbiddenWords): Problem[] {
   const re = new RegExp(rule.pattern, rule.flags)
   return text.split('\n').flatMap((line, i) => (!OK.test(line) && re.test(line) ? [{ path: file, line: i + 1, message: rule.message }] : []))
@@ -304,6 +321,7 @@ export function run(files: Map<string, string>, config: CheckConfig, added?: (fi
       if (!config.self) problems.push(...checkShellJs(file, text))
       if (!file.endsWith('format/date.ts')) problems.push(...checkDate(file, text))
     }
+    if (file.endsWith('.tsx')) warnings.push(...checkSideFoot(file, text))
     if (file.endsWith('.tsx') && within(file, config.screens)) {
       problems.push(...checkScreen(file, text), ...checkCopy(file, text, config.maxText))
       warnings.push(...checkNativeUi(file, text))

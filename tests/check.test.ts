@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_CONFIG, checkNativeUi, checkCopy, checkCss, checkDate, checkFontFamily, checkFontLink, checkMedia, checkMediaSpacing, checkOverride, checkScreen, checkShellCss, checkShellJs, checkWords, run } from '../cli/check'
+import { DEFAULT_CONFIG, checkNativeUi, checkCopy, checkCss, checkDate, checkFontFamily, checkFontLink, checkMedia, checkMediaSpacing, checkOverride, checkScreen, checkShellCss, checkShellJs, checkSideFoot, checkWords, run } from '../cli/check'
 
 const lines = (ps: { line: number }[]) => ps.map((p) => p.line)
 
@@ -96,6 +96,19 @@ describe('書体の注意', () => {
   })
   it('見本の index.html は書体を読む', () => {
     expect(checkFontLink('index.html', fs.readFileSync(path.resolve(import.meta.dirname, '../templates/app/index.html'), 'utf8'))).toEqual([])
+  })
+})
+
+describe('設定のボタンの置き場所の注意', () => {
+  it('foot の中の SettingsButton を、複数行でも見つける', () => {
+    expect(lines(checkSideFoot('a.tsx', 'x\n<AppShell foot={<SettingsButton current={false} onClick={() => go({ nav: 1 })} />} />'))).toEqual([2])
+    expect(lines(checkSideFoot('a.tsx', 'foot={\n  <>\n    <SettingsButton current={false} onClick={go} />\n  </>\n}'))).toEqual([3])
+  })
+  it('side に置いたもの・ほかの欄の中身・理由つきの例外は通し、止めずに注意にする', () => {
+    for (const ok of ['side={() => <SettingsButton current={false} onClick={go} />}', 'foot={<Sync at={at} />} side={() => <SettingsButton current={false} onClick={go} />}', '// foot={<SettingsButton />}', 'foot={<SettingsButton current={false} onClick={go} />} // design-ok: 検証用']) expect(checkSideFoot('a.tsx', ok), ok).toEqual([])
+    const { problems, warnings } = run(new Map([['src/App.tsx', 'foot={<SettingsButton current={false} onClick={go} />}']]), DEFAULT_CONFIG)
+    expect(problems).toEqual([])
+    expect(warnings.map((w) => w.path)).toEqual(['src/App.tsx'])
   })
 })
 
