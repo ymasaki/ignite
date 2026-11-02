@@ -28,7 +28,7 @@
     "test": "vitest run",
     "catalog": "vite catalog",
     "check:design": "node dist/cli.js check",
-    "audit:design": "playwright test -c catalog/playwright.audit.config.ts",
+    "audit:design": "node scripts/audit-design.mjs",
     "smoke": "node scripts/smoke.mjs"
   },
   "peerDependencies": {
