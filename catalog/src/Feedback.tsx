@@ -19,7 +19,7 @@ export function FeedbackPage({ target }: { target?: string | null }) {
   }
   return (
     <Page page={p} target={target}>
-      <Spec page={p} id="notice" wide plain>
+      <Spec page={p} id="notice">
         <div className="cat-stack">
           <Notice>同期が止まっています</Notice>
           <Notice tone="danger">保存できませんでした</Notice>

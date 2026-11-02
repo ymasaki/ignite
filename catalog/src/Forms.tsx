@@ -51,8 +51,8 @@ export function FormsPage({ target }: { target?: string | null }) {
   const [sel, setSel] = useState('recent')
   return (
     <Page page={p} target={target}>
-      <Spec page={p} id="suggest" wide><SuggestDemo /></Spec>
-      <Spec page={p} id="field" wide>
+      <Spec page={p} id="suggest"><SuggestDemo /></Spec>
+      <Spec page={p} id="field">
         <div className="cat-sheet">
           <div className="cat-form two">
             <FormField label="名前" required hint="画面に出る名前" error={sent && !name ? '名前を入れてください' : undefined}><TextField value={name} onChange={setName} placeholder="佐藤 葵" /></FormField>
@@ -76,13 +76,13 @@ export function FormsPage({ target }: { target?: string | null }) {
           <FormField label="割合"><NumberField value={rate} onChange={setRate} min={0} max={1} step={0.1} /></FormField>
         </div>
       </Spec>
-      <Spec page={p} id="pick" wide>
+      <Spec page={p} id="pick">
         <div className="cat-form two">
           <FormField label="拠点" hint="打って絞り込む"><Combobox value={city} onChange={setCity} options={CITIES} placeholder="拠点の名前" /></FormField>
           <FormField label="期限"><DatePicker value={date} onChange={setDate} clearable min="2026-01-01" max="2027-12-31" today="2026-10-30" /></FormField>
         </div>
       </Spec>
-      <Spec page={p} id="error" wide>
+      <Spec page={p} id="error">
         <div className="cat-form two">
           <ErrorCase label="スイッチ"><FormField label="同意" error="同意してください"><Switch checked={false} onChange={() => undefined} /></FormField></ErrorCase>
           <ErrorCase label="プルダウン"><FormField label="担当" error="担当を選んでください"><Select value="none" onChange={() => undefined} options={[{ value: 'none', label: '未選択' }]} /></FormField></ErrorCase>

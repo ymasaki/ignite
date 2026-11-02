@@ -44,13 +44,13 @@ export function CodePage({ target }: { target?: string | null }) {
   const p = 'code'
   return (
     <Page page={p} target={target}>
-      <Spec page={p} id="lines" wide plain><CodeBlock title="retry.ts" language="ts" lineNumbers code={CODE_TS} /></Spec>
-      <Spec page={p} id="json" plain><CodeBlock title="settings.json" language="json" code={CODE_JSON} /></Spec>
-      <Spec page={p} id="sql" plain><CodeBlock language="sql" code={CODE_SQL} /></Spec>
-      <Spec page={p} id="shell" plain><CodeBlock language="shell" code={CODE_SHELL} /></Spec>
-      <Spec page={p} id="log" plain><CodeBlock title="sync.log" language="log" maxLines={3} code={CODE_LOG} /></Spec>
-      <Spec page={p} id="wrap" plain><CodeBlock title="長い行の折り返し" wrap code={CODE_LONG} /></Spec>
-      <Spec page={p} id="grid" plain><CodeBlock title="桁の確認" code={CODE_GRID} /></Spec>
+      <Spec page={p} id="lines"><CodeBlock title="retry.ts" language="ts" lineNumbers code={CODE_TS} /></Spec>
+      <Spec page={p} id="json"><CodeBlock title="settings.json" language="json" code={CODE_JSON} /></Spec>
+      <Spec page={p} id="sql"><CodeBlock language="sql" code={CODE_SQL} /></Spec>
+      <Spec page={p} id="shell"><CodeBlock language="shell" code={CODE_SHELL} /></Spec>
+      <Spec page={p} id="log"><CodeBlock title="sync.log" language="log" maxLines={3} code={CODE_LOG} /></Spec>
+      <Spec page={p} id="wrap"><CodeBlock title="長い行の折り返し" wrap code={CODE_LONG} /></Spec>
+      <Spec page={p} id="grid"><CodeBlock title="桁の確認" code={CODE_GRID} /></Spec>
     </Page>
   )
 }

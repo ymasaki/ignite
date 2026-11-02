@@ -16,11 +16,11 @@ export function ColorPage({ target }: { target?: string | null }) {
   const p = 'color'
   return (
     <Page page={p} target={target}>
-      <Spec page={p} id="brand" wide plain><Swatches names={['--pri', '--solid', '--link', '--pri-ink', '--pri-soft', '--pri-soft-2']} /></Spec>
-      <Spec page={p} id="surface" plain><Swatches names={['--bg', '--panel', '--panel-2', '--hover', '--line', '--line-2']} /></Spec>
-      <Spec page={p} id="state" plain><Swatches names={['--ok-ink', '--ok-soft', '--warn', '--warn-soft', '--danger', '--danger-soft']} /></Spec>
-      <Spec page={p} id="ink" plain><Swatches names={['--ink', '--ink-2', '--ink-3']} /></Spec>
-      <Spec page={p} id="scale" plain>
+      <Spec page={p} id="brand"><Swatches names={['--pri', '--solid', '--link', '--pri-ink', '--pri-soft', '--pri-soft-2']} /></Spec>
+      <Spec page={p} id="surface"><Swatches names={['--bg', '--panel', '--panel-2', '--hover', '--line', '--line-2']} /></Spec>
+      <Spec page={p} id="state"><Swatches names={['--ok-ink', '--ok-soft', '--warn', '--warn-soft', '--danger', '--danger-soft']} /></Spec>
+      <Spec page={p} id="ink"><Swatches names={['--ink', '--ink-2', '--ink-3']} /></Spec>
+      <Spec page={p} id="scale">
         <div className="cat-ramp">{[1, 2, 3, 4, 5].map((n) => <i className="cat-ramp-i" key={n} ref={(el) => el?.style.setProperty('background', `var(--chart-${n})`)} />)}</div>
         <div className="cat-row">{[1, 2, 3, 4, 5].map((n) => <CopyText key={n} text={`--chart-${n}`} label="トークン" />)}</div>
       </Spec>
@@ -34,10 +34,10 @@ export function TypePage({ target }: { target?: string | null }) {
   const p = 'type'
   return (
     <Page page={p} target={target}>
-      <Spec page={p} id="sizes" wide plain>
+      <Spec page={p} id="sizes">
         <div className="cat-stack">{SIZES.map(([s, use]) => <div className="cat-scale" key={s}><span className="cat-scale-v num">{s}</span><span className="cat-scale-t" ref={(el) => el?.style.setProperty('font-size', `var(--fs-${s})`)}>{use}</span></div>)}</div>
       </Spec>
-      <Spec page={p} id="faces" wide plain>
+      <Spec page={p} id="faces">
         <div className="cat-stack">
             <span className="cat-face"><span className="cat-face-l">LINE Seed JP</span><span>本文と見出し。English words mix naturally.</span></span>
             <span className="cat-face"><span className="cat-face-l">Inter</span><span className="cat-face-v num">¥1,234,567<small>円</small></span><span className="cat-face-v num">98.6%</span><span className="cat-face-v num">12,480<small>件</small></span></span>
@@ -66,7 +66,7 @@ export function ShapePage({ target }: { target?: string | null }) {
   const p = 'shape'
   return (
     <Page page={p} target={target}>
-      <Spec page={p} id="radius" wide>
+      <Spec page={p} id="radius">
         <div className="cat-cases cols3">{[[6, '印'], [8, '行'], [10, 'ボタン'], [12, 'カード'], [14, 'パネル'], [99, 'タグ']].map(([r, use]) => <div className={`cat-box cat-r${r}`} key={r}>{r} {use}</div>)}</div>
       </Spec>
       <Spec page={p} id="shadow">
@@ -77,10 +77,10 @@ export function ShapePage({ target }: { target?: string | null }) {
           <div className="cat-box cat-r12 cat-s2">重ねるもの</div>
         </div>
       </Spec>
-      <Spec page={p} id="space" plain>
+      <Spec page={p} id="space">
         <div className="cat-stack">{[4, 8, 12, 16, 24, 32].map((s) => <div className="cat-gap" key={s}><span className="num">{s}</span><i className="cat-gap-b" ref={(el) => el?.style.setProperty('width', `${s * 4}px`)} /></div>)}</div>
       </Spec>
-      <Spec page={p} id="icons" wide>
+      <Spec page={p} id="icons">
         <div className="cat-icons">{[IconSearch, IconPencil, IconTrash, IconSettings, IconBell, IconUsers, IconChartBar, IconCheck].map((I, i) => <I key={i} size={18} stroke={1.8} aria-hidden="true" />)}</div>
       </Spec>
     </Page>
@@ -95,13 +95,13 @@ export function MotionPage({ target }: { target?: string | null }) {
   const [loaded, setLoaded] = useState(false)
   return (
     <Page page={p} target={target}>
-      <Spec page={p} id="collapse" tall>
+      <Spec page={p} id="collapse">
         <div className="cat-sheet">
           <Switch label="補足を見せる" checked={more} onChange={setMore} />
           <Collapse open={more}><Prose>押し下げて出す本文。下の段がなめらかに動く</Prose></Collapse>
         </div>
       </Spec>
-      <Spec page={p} id="list" tall>
+      <Spec page={p} id="list">
         <div className="cat-sheet">
           <div className="cat-row"><Button onClick={() => setCount(count === 3 ? 1 : count + 1)}>行を増やす</Button></div>
           <AnimatedList items={PROJECTS.slice(0, count)} keyOf={(x) => x.id}>{(x) => <EntityRow lead={<Avatar initial={x.initial} tone={x.tone} size="sm" />} title={x.name} sub={x.owner} />}</AnimatedList>
@@ -120,7 +120,7 @@ export function MotionPage({ target }: { target?: string | null }) {
         </div>
         <div className="cat-row"><Button onClick={() => setLoaded(!loaded)}>{loaded ? '読み込みに戻す' : '読み込みを終える'}</Button></div>
       </Spec>
-      <Spec page={p} id="expand" wide>
+      <Spec page={p} id="expand">
         <div className="cat-sheet"><Expandable lines={2}>月末の請求を手で集計していた作業を、自動の取り込みに置き換える。{'\n'}対象は 4 つの窓口で、受付から支払いの確認までを 1 つの画面にまとめる。{'\n'}10 月に第 1 弾を出し、11 月に残りの窓口へ広げる。{'\n'}切り替えのあいだは、手作業の結果と毎日見比べる。</Expandable></div>
       </Spec>
     </Page>

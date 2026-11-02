@@ -1,4 +1,4 @@
-import { ChartCard, CopyText, LinkButton, reducedMotion, Board, useScrollFocus } from '@ymasaki/ignite'
+import { CopyText, LinkButton, reducedMotion, Board, useScrollFocus } from '@ymasaki/ignite'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { pageOf, specOf } from './nav'
 
@@ -42,17 +42,23 @@ export function Page({ page, target, children }: { page: string; target?: string
   )
 }
 
-/** 標本の 1 枚。見出し・見せる面・部品の名前（押すとコピー）を持つ。見出しと部品の名前は目録から読む */
-export function Spec({ page, id, wide = false, tall = false, plain = false, center = false, children }: { page: string; id: string; wide?: boolean; tall?: boolean; plain?: boolean; center?: boolean; children: ReactNode }) {
-  const s = specOf(page, id)
+/** まとまりの 1 段。左に見出しと補足、右に中身。段の間は線 1 本で区切り、枠や角丸を重ねない（DESIGN.md 7 章） */
+export function Row({ title, aside, id, children }: { title: ReactNode; aside?: ReactNode; id?: string; children: ReactNode }) {
   return (
-    <div className={`cat-spec${wide ? ' wide' : ''}`} data-spec={id}>
-      <ChartCard title={s?.title ?? id}>
-        <div className={`cat-stage${tall ? ' tall' : ''}${plain ? ' plain' : ''}${center ? ' center' : ''}`}>{children}</div>
-        {!!s?.parts?.length && <div className="cat-parts">{s.parts.map((p) => <CopyText key={p} text={p} label="部品の名前" />)}</div>}
-      </ChartCard>
-    </div>
+    <section className="cat-spec" data-spec={id}>
+      <div className="cat-spec-h">
+        <span className="cat-spec-t" role="heading" aria-level={2}>{title}</span>
+        {aside}
+      </div>
+      <div className="cat-stage">{children}</div>
+    </section>
   )
+}
+
+/** 標本の 1 段。見出しと部品の名前（押すとコピー）は目録から読む */
+export function Spec({ page, id, children }: { page: string; id: string; children: ReactNode }) {
+  const s = specOf(page, id)
+  return <Row id={id} title={s?.title ?? id} aside={!!s?.parts?.length && <div className="cat-parts">{s.parts.map((p) => <CopyText key={p} text={p} label="部品の名前" />)}</div>}>{children}</Row>
 }
 
 /** 変種 1 つと、その名前 */

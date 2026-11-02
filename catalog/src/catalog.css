@@ -1,9 +1,16 @@
 /* カタログの配置。色・文字・枠は部品に任せる */
 .cat-wrap{container-type:inline-size;height:100%}
 .cat{display:grid;grid-template-columns:minmax(0,1fr);gap:32px;align-items:start;height:100%;padding:24px;overflow-y:auto;scroll-padding-top:24px}
-.cat-main{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(380px,100%),1fr));gap:16px;min-width:0}
-.cat-spec{display:grid;min-width:0}
-.cat-spec.wide,.cat-full{grid-column:1 / -1}
+.cat-main{display:grid;grid-template-columns:minmax(0,1fr);min-width:0}
+/* まとまりの 1 段。線 1 本だけで区切る。左の見出しは長い段でも見えるよう、面の上端に留める */
+.cat-spec{display:grid;grid-template-columns:184px minmax(0,1fr);gap:12px 32px;min-width:0;padding:24px 0;border-top:1px solid var(--line)}
+.cat-spec:first-child{padding-top:4px;border-top:0}
+.cat-spec-h{position:sticky;top:0;display:grid;align-content:start;gap:8px;align-self:start;min-width:0}
+.cat-spec-t{font-size:var(--fs-14);font-weight:700;color:var(--ink)}
+@container (max-width:700px){
+  .cat-spec{grid-template-columns:minmax(0,1fr)}
+  .cat-spec-h{position:static}
+}
 
 /* 目次。入らない幅では出さない（左メニューと標本だけで移れる） */
 .cat-toc{display:none}
@@ -14,12 +21,10 @@
 .cat-toc-i{--link:var(--ink-3);--link-hover:var(--ink);--link-press:var(--pri-ink);padding:4px 0 4px 12px;border-left:2px solid var(--line)}
 .cat-toc-i[data-on]{--link:var(--pri-ink);--link-hover:var(--ink);--link-press:var(--pri-ink-2);border-left-color:var(--pri)}
 
-/* 見せる面。部品が地の上に載って見えるよう一段沈める */
-.cat-stage{display:flex;flex:1;flex-direction:column;justify-content:center;gap:16px;min-width:0;min-height:112px;padding:20px;background-color:var(--panel);background-image:radial-gradient(var(--line) 1px,transparent 1px);background-size:16px 16px;border:1px solid var(--line);border-radius:8px}
-.cat-stage.tall{min-height:200px}
-.cat-stage.center .cat-row{justify-content:center}
-.cat-stage.plain{justify-content:flex-start;min-height:0;padding:0;background:none;border:0}
+/* 実物を置く欄。部品が地の上に直接載る */
+.cat-stage{display:flex;flex-direction:column;gap:16px;min-width:0}
 .cat-parts{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:var(--fs-12)}
+.cat-parts .copytext{min-height:24px}
 .cat-case .cat-parts{white-space:nowrap}
 .cat-cases{display:flex;flex-wrap:wrap;align-items:flex-end;gap:16px 24px;min-width:0}
 .cat-cases.cols2,.cat-cases.cols3{display:grid;align-items:start}
@@ -32,16 +37,16 @@
 .cat-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;min-width:0}
 .cat-stack{display:flex;flex-direction:column;gap:12px;min-width:0}
 .cat-tight{display:flex;flex-direction:column;min-width:0}
-.cat-form{display:grid;gap:16px;width:100%;max-width:420px;margin-inline:auto}
+.cat-form{display:grid;gap:16px;width:100%;max-width:420px}
 .cat-form.two{grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr));align-items:start;max-width:none}
 .cat-form .span{grid-column:1 / -1}
-.cat-sheet{min-width:0;padding:16px;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+.cat-sheet{min-width:0}
 .cat-detail{display:flex;flex-direction:column;gap:16px;padding:0 18px 18px}
 .cat-pop{display:grid;gap:12px;min-width:220px;padding:14px}
 .cat-end{display:flex;justify-content:flex-end;gap:8px}
 
 /* 基礎 */
-.cat-swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(132px,100%),1fr));gap:12px}
+.cat-swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(108px,100%),1fr));gap:12px}
 .cat-swatch{display:flex;flex-direction:column;gap:6px;min-width:0}
 .cat-chip{display:block;height:56px;border:1px solid var(--line);border-radius:10px}
 .cat-ramp{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));overflow:hidden;border-radius:10px}
@@ -63,17 +68,12 @@
 .cat-icons{display:flex;flex-wrap:wrap;gap:20px;color:var(--ink-2)}
 
 /* 概要 */
-.cat-hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(340px,100%),1fr));gap:32px;align-items:center;padding:8px 0 16px}
+.cat-hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(340px,100%),1fr));gap:32px;align-items:center;padding:8px 0 32px}
 .cat-hero-t{display:block;font-size:var(--fs-32);font-weight:700;line-height:1.35;color:var(--ink)}
 .cat-hero-b{display:grid;gap:20px;min-width:0}
 .cat-hero-s{display:flex;flex-wrap:wrap;gap:32px}
 .cat-show{display:grid;gap:12px;min-width:0}
-.cat-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(240px,100%),1fr));gap:12px}
-.cat-tile{position:relative;display:flex;flex-direction:column;min-width:0;overflow:hidden;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);transition:box-shadow var(--dur-fast) ease-out}
-.cat-tile:has(button:hover){box-shadow:var(--shadow-2)}
-.cat-tile > button::after{content:"";position:absolute;inset:0}
-.cat-thumb{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;height:112px;padding:12px;overflow:hidden;background-color:var(--panel-2);background-image:radial-gradient(var(--line) 1px,transparent 1px);background-size:16px 16px}
-.cat-thumb-w{width:100%}
+.cat-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(220px,100%),1fr));gap:4px 16px}
 
 /* 画面の型 */
 .cat-filter{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:var(--shell-gap);padding-inline:var(--shell-x);font-size:var(--fs-12);color:var(--ink-2)}

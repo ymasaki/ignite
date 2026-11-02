@@ -20,7 +20,7 @@ export function ActionsPage({ target }: { target?: string | null }) {
   useTick()
   return (
     <Page page={p} target={target}>
-      <Spec page={p} id="button" wide>
+      <Spec page={p} id="button">
         <Cases>
           <Case label="主"><Button variant="primary" icon={<IconPlus {...I} />}>追加する</Button></Case>
           <Case label="通常"><Button icon={<IconDownload {...I} />}>書き出す</Button></Case>
@@ -43,13 +43,13 @@ export function ActionsPage({ target }: { target?: string | null }) {
           <Case label="値をコピー"><div className="cat-parts"><CopyText text="ignite" label="名前" /></div></Case>
         </Cases>
       </Spec>
-      <Spec page={p} id="menu" center>
+      <Spec page={p} id="menu">
         <div className="cat-row">
           <Menu label="操作" items={[{ key: 'edit', label: '編集する', icon: <IconPencil {...I} />, onSelect: () => toast('編集を開きました') }, { key: 'copy', label: '複製する', icon: <IconCopy {...I} />, onSelect: () => toast('複製しました', { tone: 'ok' }) }, { key: 'off', label: '書き出す', disabled: true, onSelect: () => undefined }, { key: 'del', label: '削除する', icon: <IconTrash {...I} />, danger: true, separator: true, onSelect: () => toast('削除できませんでした', { tone: 'danger' }) }]} />
           <Menu label="その他の操作" iconOnly items={[{ key: 'a', label: '編集する', onSelect: () => undefined }]} />
         </div>
       </Spec>
-      <Spec page={p} id="popover" center>
+      <Spec page={p} id="popover">
         <div className="cat-row">
           <Popover trigger={(open, toggle) => <Button active={open} aria-expanded={open} onClick={toggle} icon={<IconSearch {...I} />}>担当を見る</Button>}>
             <div className="cat-detail"><KeyValues rows={[['担当', '佐藤 葵'], ['期限', '2026年11月']]} /></div>
@@ -69,18 +69,18 @@ export function NavigatePage({ target }: { target?: string | null }) {
   const [page, setPage] = useState(4)
   return (
     <Page page={p} target={target}>
-      <Spec page={p} id="segmented" center><div className="cat-row"><Segmented label="状態で絞り込む" value={seg} onChange={setSeg} options={[{ value: 'all', label: 'すべて', count: 6 }, { value: 'open', label: '進行中', count: 3 }, { value: 'done', label: '完了', count: 2 }]} /></div></Spec>
+      <Spec page={p} id="segmented"><div className="cat-row"><Segmented label="状態で絞り込む" value={seg} onChange={setSeg} options={[{ value: 'all', label: 'すべて', count: 6 }, { value: 'open', label: '進行中', count: 3 }, { value: 'done', label: '完了', count: 2 }]} /></div></Spec>
       <Spec page={p} id="tabs"><Tabs label="表示の切り替え" value={tab} onChange={setTab} tabs={[{ value: 'a', label: '概要' }, { value: 'b', label: '履歴', count: 12 }, { value: 'c', label: 'メンバー', count: 4 }]} /></Spec>
-      <Spec page={p} id="stepper" wide>
+      <Spec page={p} id="stepper">
         <Cases>
           <Case label="対象の月"><MonthStepper value={month} months={MONTHS} onChange={setMonth} /></Case>
           <Case label="対象の週"><Stepper label="対象の週" prevLabel="前の週" nextLabel="次の週" value={week} onChange={setWeek} options={[{ value: 'w2', label: '第 2 週' }, { value: 'w1', label: '第 1 週' }]} /></Case>
         </Cases>
       </Spec>
-      <Spec page={p} id="pagination" wide><Pagination page={page} count={20} onChange={setPage} /></Spec>
+      <Spec page={p} id="pagination"><Pagination page={page} count={20} onChange={setPage} /></Spec>
       <Spec page={p} id="crumbs"><Crumbs items={['プロジェクト', '進行中']} label={(x) => x} onPick={() => undefined} current="ウェブサイト刷新" /></Spec>
       <Spec page={p} id="steps"><Steps label="登録の手順" steps={['入力', '確認', '完了']} current={1} /></Spec>
-      <Spec page={p} id="accordion" wide>
+      <Spec page={p} id="accordion">
         <div className="cat-sheet"><Accordion defaultOpen={['a']} items={[{ key: 'a', title: '概要', meta: '3件', children: 'デザインを更新し、表示速度を改善する' }, { key: 'b', title: '履歴', children: '10 月に第 1 弾を公開した' }]} /></div>
       </Spec>
     </Page>

@@ -30,6 +30,7 @@
 
 ### 変更
 
+- `DESIGN.md` に「面の中に角丸の枠のカードを重ねない」を足した
 - `SideNav` の選択中の地が、押した項目へ `Segmented` と同じばねでスライドする
 - `Pagination` の選択中の地が、押したページへスライドする
 - `LineChart` はホバーした点に印と縦線を出す。`BarList`・`StackColumns` はホバーした要素以外を薄くする
