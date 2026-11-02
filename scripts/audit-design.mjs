@@ -15,6 +15,7 @@ for (const [signal, code] of [['SIGINT', 130], ['SIGTERM', 143], ['SIGHUP', 129]
 function alive(pid) {
   try { process.kill(pid, 0); return true } catch (error) {
     if (error.code === 'ESRCH') return false
+    if (error.code === 'EPERM') return true // 確認不能は生存として扱い、解放しない
     throw error
   }
 }
@@ -61,18 +62,22 @@ async function acquire() {
   }
   throw new Error('監査を中断しました')
 }
-function signalGroup(group, signal) {
+async function signalGroup(group, signal) {
   try { process.kill(group, signal) } catch (error) {
-    if (error.code !== 'ESRCH') throw error
+    if (error.code === 'ESRCH') return
+    // 送信エラーが出ても、すでに終了している可能性がある。
+    // 終了が確認できた場合だけ許容し、生存・確認不能なら保持する。
+    for (let i = 0; i < 50 && alive(group); i++) await delay(100)
+    if (alive(group)) throw error
   }
 }
 async function stop(child) {
   if (!child.pid) return
   const group = -child.pid
   if (!alive(group)) return
-  signalGroup(group, 'SIGTERM')
+  await signalGroup(group, 'SIGTERM')
   for (let i = 0; i < 50 && alive(group); i++) await delay(100)
-  if (alive(group)) signalGroup(group, 'SIGKILL')
+  if (alive(group)) await signalGroup(group, 'SIGKILL')
   for (let i = 0; i < 50 && alive(group); i++) await delay(100)
   if (alive(group)) throw new Error(`所有プロセス群 ${child.pid} の停止を確認できません。ロックを残します: ${lock}`)
 }
@@ -105,5 +110,12 @@ try {
     try { await stop(child) } catch (error) { stopped = false; console.error(error.message); process.exitCode = 1 }
   }
   if (owned && stopped) await rm(lock, { recursive: true })
+  if (!stopped) {
+    // 停止不能でも呼出し元を無限待機させない。ロックは残して失敗を返す。
+    for (const child of children) {
+      if (child.connected) child.disconnect()
+      child.unref()
+    }
+  }
   if (interrupted) process.exitCode = interrupted
 }

@@ -22,15 +22,16 @@ test('監査の排他と終了処理', async t => {
     await writeFile(path.join(root, 'node_modules/@playwright/test/cli.js'), body)
     return root
   }
+  let lastOutput = ''
   function run(root) {
     const child = spawn(process.execPath, ['scripts/audit-design.mjs'], { cwd: root })
     let output = ''
     child.stdout.on('data', x => { output += x })
     child.stderr.on('data', x => { output += x })
-    child.done = new Promise(resolve => child.on('exit', code => resolve({code, output})))
+    child.done = new Promise(resolve => child.on('exit', code => { lastOutput = output; resolve({code, output}) }))
     return child
   }
-  async function gone() { await assert.rejects(access(lock)) }
+  async function gone() { await assert.rejects(access(lock), undefined, lastOutput) }
   try {
     await t.test('異なる版が同時開始しても順番に自分の版を実行', async () => {
       const a = await fixture('a', 'console.log("版A"); setTimeout(()=>{},200)')
@@ -51,7 +52,9 @@ test('監査の排他と終了処理', async t => {
       for (let i=0;i<100;i++) { try { await access(marker); break } catch { await delay(20) } }
       const pid = Number(await readFile(marker, 'utf8'))
       child.kill(signal)
-      assert.notEqual((await child.done).code, 0)
+      const result = await child.done
+      assert.equal(result.code, signal === 'SIGTERM' ? 143 : 130, result.output)
+      assert.ok(!result.output.includes('停止を確認できません'), result.output)
       assert.throws(() => process.kill(pid, 0))
       await gone()
     })
@@ -80,15 +83,15 @@ test('監査の排他と終了処理', async t => {
       assert.equal((await run(root).done).code, 1)
       await gone()
     })
-    await t.test('停止要求直前に群が消えてESRCHになっても解放', async () => {
-      const root = await fixture('kill-race', '')
+    for (const errorCode of ['ESRCH', 'EPERM']) await t.test(`停止要求直前に群が消えて${errorCode}になっても解放`, async () => {
+      const root = await fixture(`kill-race-${errorCode}`, '')
       const inject = `
 const realKill = process.kill.bind(process)
 process.kill = (pid, signal) => {
   if (pid < 0 && signal === 'SIGTERM') {
     realKill(pid, 'SIGKILL')
     console.log('停止直前終了を注入')
-    throw Object.assign(new Error('終了済み'), {code:'ESRCH'})
+    throw Object.assign(new Error('終了済み'), {code:'${errorCode}'})
   }
   return realKill(pid, signal)
 }
@@ -96,8 +99,35 @@ process.kill = (pid, signal) => {
       await writeFile(path.join(root, 'scripts/audit-design.mjs'), inject + source)
       const result = await run(root).done
       assert.match(result.output, /停止直前終了を注入/)
-      assert.equal(result.code, 0)
+      assert.equal(result.code, 0, result.output)
       await gone()
+    })
+    await t.test('送信エラーで群が生存している場合はロックを保持', async () => {
+      const marker = path.join(dir, 'denied-groups')
+      const root = await fixture('denied', '')
+      const inject = `
+import {appendFileSync} from 'node:fs'
+const realKill = process.kill.bind(process)
+process.kill = (pid, signal) => {
+  if (pid < 0 && signal === 'SIGTERM') {
+    appendFileSync(${JSON.stringify(marker)}, String(pid)+'\\n')
+    throw Object.assign(new Error('停止権限なし'), {code:'EPERM'})
+  }
+  return realKill(pid, signal)
+}
+`
+      await writeFile(path.join(root, 'scripts/audit-design.mjs'), inject + source)
+      try {
+        const result = await run(root).done
+        assert.equal(result.code, 1, result.output)
+        assert.match(result.output, /停止権限なし/)
+        await access(lock)
+      } finally {
+        for (const group of (await readFile(marker, 'utf8')).trim().split('\n').map(Number)) {
+          try { process.kill(group, 'SIGKILL') } catch (error) { if (error.code !== 'ESRCH') throw error }
+        }
+        await rm(lock, {recursive:true})
+      }
     })
     await t.test('所有情報読取直後に先行が解放したら取得を再試行', async () => {
       const root = await fixture('release-race', '')
