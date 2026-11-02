@@ -62,6 +62,15 @@ test('監査の排他と終了処理', async t => {
       await writeFile(path.join(root, 'scripts/audit-server.mjs'), 'setInterval(()=>{},1000)')
       assert.equal((await run(root).done).code, 1); await gone()
     })
+    await t.test('監査中のサーバー終了は監査も失敗・停止する', async () => {
+      const marker = path.join(dir, 'server-death.pid')
+      const root = await fixture('server-death', `require('fs').writeFileSync(${JSON.stringify(marker)}, String(process.pid));setInterval(()=>{},1000)`)
+      await writeFile(path.join(root, 'scripts/audit-server.mjs'), 'process.send({ready:true});setTimeout(()=>process.exit(0),500)')
+      assert.equal((await run(root).done).code, 1)
+      const pid = Number(await readFile(marker, 'utf8'))
+      assert.throws(() => process.kill(pid, 0))
+      await gone()
+    })
     await t.test('残骸と待機期限は削除せず明示', async () => {
       await mkdir(lock)
       const root = await fixture('locked', '')
