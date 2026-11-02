@@ -31,6 +31,17 @@ test('監査の排他と終了処理', async t => {
     child.done = new Promise(resolve => child.on('exit', code => { lastOutput = output; resolve({code, output}) }))
     return child
   }
+  async function finishWithin(child) {
+    let timer
+    try {
+      return await Promise.race([child.done, new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error('監査ラッパーが30秒以内に終了しません')), 30000)
+      })])
+    } finally {
+      clearTimeout(timer)
+      if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL')
+    }
+  }
   async function gone() { await assert.rejects(access(lock), undefined, lastOutput) }
   try {
     await t.test('異なる版が同時開始しても順番に自分の版を実行', async () => {
@@ -118,7 +129,7 @@ process.kill = (pid, signal) => {
 `
       await writeFile(path.join(root, 'scripts/audit-design.mjs'), inject + source)
       try {
-        const result = await run(root).done
+        const result = await finishWithin(run(root))
         assert.equal(result.code, 1, result.output)
         assert.match(result.output, /停止権限なし/)
         await access(lock)
@@ -127,6 +138,47 @@ process.kill = (pid, signal) => {
           try { process.kill(group, 'SIGKILL') } catch (error) { if (error.code !== 'ESRCH') throw error }
         }
         await rm(lock, {recursive:true})
+      }
+    })
+    for (const persistent of [false, true]) await t.test(`生存照会EPERMが${persistent ? '継続したら保持して有限終了' : '一時的なら消滅確認後に解放'}`, async () => {
+      const marker = path.join(dir, `probe-${persistent}.pid`)
+      const root = await fixture(`probe-${persistent}`, '')
+      await writeFile(path.join(root, 'scripts/audit-server.mjs'), `
+import {writeFileSync} from 'node:fs'
+writeFileSync(${JSON.stringify(marker)}, String(process.pid))
+process.send({ready:true});setInterval(()=>{},1000)
+`)
+      const inject = `
+import {readFileSync} from 'node:fs'
+const realKill = process.kill.bind(process)
+let probes = 0
+process.kill = (pid, signal) => {
+  if (pid < 0 && signal === 0 && pid === -Number(readFileSync(${JSON.stringify(marker)}, 'utf8'))) {
+    probes++
+    if (${persistent} || probes <= 3) {
+      console.log('生存照会EPERMを注入')
+      throw Object.assign(new Error('生存照会不能'), {code:'EPERM'})
+    }
+  }
+  return realKill(pid, signal)
+}
+`
+      await writeFile(path.join(root, 'scripts/audit-design.mjs'), inject + source)
+      try {
+        const result = await finishWithin(run(root))
+        assert.match(result.output, /生存照会EPERMを注入/)
+        assert.equal(result.code, persistent ? 1 : 0, result.output)
+        if (persistent) {
+          assert.match(result.output, /停止を確認できません/)
+          await access(lock)
+        } else {
+          assert.equal(result.output.match(/生存照会EPERMを注入/g).length, 3)
+          await gone()
+        }
+      } finally {
+        const group = -Number(await readFile(marker, 'utf8'))
+        try { process.kill(group, 'SIGKILL') } catch (error) { if (error.code !== 'ESRCH') throw error }
+        await rm(lock, {recursive:true, force:true})
       }
     })
     await t.test('所有情報読取直後に先行が解放したら取得を再試行', async () => {
