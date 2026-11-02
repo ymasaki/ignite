@@ -1,5 +1,5 @@
 import { IconPalette } from '@tabler/icons-react'
-import { AppShell, Brand, currentTheme, IconBox, IconButton, Popover, SearchSuggest, Segmented, setTheme, SettingsButton, SideNav, useShell, type Mode, type Skin, type SuggestGroup } from '@ymasaki/ignite'
+import { AppShell, Brand, currentTheme, IconBox, IconButton, Popover, SearchSuggest, Segmented, setTheme, SettingsButton, SideNav, useShell, withFade, type Mode, type Skin, type SuggestGroup } from '@ymasaki/ignite'
 import { useEffect, useState } from 'react'
 import { ChartsPage } from './Charts'
 import { CodePage } from './Code'
@@ -60,7 +60,7 @@ function PanelContent({ id, onClose, go }: { id: string; onClose: () => void; go
 /** テーマをその場で試す。画面を移らずに、見ている部品の色が変わる */
 function ThemePicker() {
   const [theme, set] = useState(currentTheme)
-  const change = (next: Partial<typeof theme>) => { const t = { ...theme, ...next }; setTheme(t); set(t) }
+  const change = (next: Partial<typeof theme>) => { const t = { ...theme, ...next }; withFade(() => setTheme(t)); set(t) }
   return (
     <Popover trigger={(open, toggle) => <IconButton size="lg" label="テーマを変える" tip="テーマ" aria-expanded={open} onClick={toggle}><IconPalette size={18} stroke={1.8} /></IconButton>}>
       <div className="cat-theme">

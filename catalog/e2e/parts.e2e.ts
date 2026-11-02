@@ -526,6 +526,39 @@ test('テーマ: ヘッダーから切り替えると、その場で色が変わ
   await expect(page.locator('html')).toHaveAttribute('data-skin', 'blue')
 })
 
+// 実際に動いた View Transition の長さを window.__fade に残す（走らなければ undefined のまま）
+const recordFade = (page: import('@playwright/test').Page) => page.addInitScript(() => {
+  const start = Document.prototype.startViewTransition
+  Document.prototype.startViewTransition = function (this: Document, cb: () => void) {
+    const t = start.call(this, cb)
+    ;(window as unknown as { __fade: Promise<number[]> }).__fade = t.ready.then(() => document.getAnimations()
+      .filter((a) => (a.effect as KeyframeEffect).pseudoElement?.startsWith('::view-transition'))
+      .map((a) => Number(a.effect?.getTiming().duration)))
+    return t
+  } as typeof start
+})
+const fadeDurations = (page: import('@playwright/test').Page) => page.evaluate(() => (window as unknown as { __fade?: Promise<number[]> }).__fade ?? null)
+const pickDark = async (page: import('@playwright/test').Page) => {
+  await page.getByRole('button', { name: 'テーマを変える' }).click()
+  await page.getByRole('group', { name: '表示モード' }).getByRole('button', { name: 'ダーク' }).click()
+  await expect(page.locator('html')).toHaveAttribute('data-mode', 'dark')
+}
+
+test('テーマ: ライトとダークの切り替えは 0.3s でフェードする', async ({ page }) => {
+  await recordFade(page)
+  await open(page, 'actions')
+  await pickDark(page)
+  expect(await fadeDurations(page)).toContain(300)
+})
+
+test('テーマ: 動きを減らす設定ではフェードせず、すぐ切り替わる', async ({ page }) => {
+  await recordFade(page)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await open(page, 'actions')
+  await pickDark(page)
+  expect(await fadeDurations(page)).toBeNull()
+})
+
 test('KPI: 押すと絞り込みのタグが出て、× で外せる', async ({ page }) => {
   await open(page, 'dashboard')
   await page.getByRole('button', { name: /^進行中/ }).first().click()

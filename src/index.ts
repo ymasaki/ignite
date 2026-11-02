@@ -10,7 +10,7 @@ export { Delta, Kpi, KpiBand, kpiVariants, pickWidestFit, type KpiGroup, type Kp
 export { Drawer, type DrawerPeek, isTyping, Popover, SearchField, Segmented, Select, type SelectOption, tabPanelProps, Tabs, useFocusShortcut } from './ui/Controls'
 export { EntityRow, Highlight } from './ui/List'
 export { Avatar, AvatarGroup, AvatarStack, IconBox, type AvatarSize, type AvatarTone, type IconBoxSize } from './ui/Avatar'
-export { AnimatedList, Appear, Collapse, CollapseInline, Expandable, RollingNumber, Skeleton, reducedMotion } from './ui/Motion'
+export { AnimatedList, Appear, Collapse, CollapseInline, Expandable, RollingNumber, Skeleton, reducedMotion, withFade } from './ui/Motion'
 export { Board, Crumbs, DashboardScreen, EmptyState, KeyValues, ListScreen, Notice, Prose, ScreenBar, Section, SubHeading } from './ui/Layout'
 export { MonthStepper, Stepper } from './ui/Month'
 export { FitBar, fitSlots, pickFitStep, useFitCount, useFitStep } from './ui/Fit'

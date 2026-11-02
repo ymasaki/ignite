@@ -9,6 +9,17 @@ import { useEffect, useLayoutEffect, useReducer, useRef, useState, type CSSPrope
 export const reducedMotion = () => document.documentElement.dataset.motion === 'reduce' || window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 /**
+ * テーマなど画面全体の色の切り替えを、0.3s のフェードで見せる（View Transitions。長さは motion.css）。
+ * setTheme は当てるだけで動かないので、利用者の操作で切り替えるときはこれで包む。
+ * 対応していないブラウザ・動きを減らす設定では、apply をその場で呼ぶ
+ */
+export function withFade(apply: () => void) {
+  const start = (document as Document & { startViewTransition?: (cb: () => void) => unknown }).startViewTransition
+  if (start && !reducedMotion()) start.call(document, apply)
+  else apply()
+}
+
+/**
  * 読み込み中の形。中身と同じ並び（見出し＋数行）の薄い帯を、左から右へ光らせる。
  * 「読み込み中…」の文字や回転するマークの代わりに、中身が出る場所で使う
  */

@@ -8,7 +8,7 @@ import { useState, type ReactNode } from 'react'
 import { currentAssist, setAssist, type Assist } from '../assist'
 import { currentTheme, setTheme, type Mode, type Skin, type Theme } from '../skin'
 import { Segmented } from './Controls'
-import { reducedMotion } from './Motion'
+import { withFade } from './Motion'
 
 /**
  * 左メニューの下の「設定」。current: 設定の画面を開いている。collapsed: 左メニューを畳んでいる（アイコンだけにし、名前は吹き出しで出す）。
@@ -104,13 +104,6 @@ const SKIN_OPTIONS: { value: Skin; label: string }[] = [
 ]
 const mode = (value: Mode, label: string, I: Icon) => ({ value, label: <><I size={14} stroke={1.8} aria-hidden="true" />{label}</> })
 const MODE_OPTIONS = [mode('light', 'ライト', IconSun), mode('dark', 'ダーク', IconMoon), mode('auto', '自動', IconDeviceDesktop)]
-
-/** 切り替えを、画面全体のなめらかな入れ替わりで見せる（対応していないブラウザ・動きを減らす設定ではすぐ切り替える） */
-function withFade(apply: () => void) {
-  const start = (document as Document & { startViewTransition?: (cb: () => void) => unknown }).startViewTransition
-  if (start && !reducedMotion()) start.call(document, apply)
-  else apply()
-}
 
 /**
  * テーマのまとまり（テーマカラーと表示モード）。テーマカラーは実際の色の丸で選ぶ。children でアプリの行を足せる。

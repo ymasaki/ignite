@@ -65,5 +65,5 @@
   .expand-body,.expand-t svg{transition:none}
 }
 
-/* テーマ（色の組）の切り替えは、画面全体を 0.3s で入れ替える（ui/Settings.tsx の withFade。View Transitions） */
+/* テーマ（色の組）の切り替えは、画面全体を 0.3s で入れ替える（ui/Motion.tsx の withFade。View Transitions） */
 ::view-transition-old(root),::view-transition-new(root){animation-duration:.3s}
