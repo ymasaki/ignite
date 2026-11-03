@@ -92,7 +92,7 @@ export function App() {
       )}
       collapse={{ collapsed, onChange: setCollapsed }}
       title={headerTools ? 'メンバー検索' : nav === 'settings' ? '設定' : pageOf(nav)?.label}
-      titleAfter={headerTools ? <Select label="会社" size="lg" fit value={company} onChange={setCompany} options={[{ value: 'all', label: '会社', lead: <IconBuilding size={16} stroke={1.8} />, meta: '285名' }, { value: 'long', label: '長い名前の会社', meta: '123名' }]} /> : undefined}
+      titleAfter={headerTools ? <Select label="対象" size="lg" fit value={company} onChange={setCompany} options={[{ value: 'all', label: '対象', lead: <IconBuilding size={16} stroke={1.8} />, meta: '285名' }, { value: 'long', label: '長い名前の対象', meta: '123名' }]} /> : undefined}
       search={headerTools ? undefined : <div className="cat-search"><SearchSuggest label="部品を探す" placeholder="部品を探す" shortcut priority={1} value={find} onChange={setFind} groups={FIND} onSelect={(it) => { const [n, s] = it.key.split('/'); setFind(''); go({ nav: n, spec: s }) }} /></div>}
       tools={headerTools ? <IconButton label="絞り込み" size="lg" onClick={() => toast('絞り込みを開きました')}><IconFilter size={18} stroke={1.8} /></IconButton> : undefined}
       actions={headerTools ? undefined : <ThemePicker />}
