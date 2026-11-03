@@ -12,11 +12,12 @@ trap 'rm -rf "$work"' EXIT
 git archive "$commit" | tar -x -C "$work"
 output="$PWD/releases"
 cd "$work"
+version=$(node -p "JSON.parse(require('fs').readFileSync('package.json')).version")
+[[ ! -e "$output/$version" ]] || { echo '同じ版の成果物が存在します。版と変更履歴を確認してください' >&2; exit 1; }
 npm ci --include=dev
 bash scripts/test.sh
 mkdir artifacts
 npm pack --pack-destination artifacts
-version=$(node -p "JSON.parse(require('fs').readFileSync('package.json')).version")
 cd artifacts
 shasum -a 256 ./*.tgz > SHA256SUMS
 printf '%s\n' "$commit" > COMMIT
