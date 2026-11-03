@@ -2,7 +2,7 @@
 
 採用アプリは `npx ignite upgrade` でこの内容を確かめて取り込む。形式は [docs/releasing.md](docs/releasing.md)。
 
-## 2.0.0（2026-11-03）
+## 1.3.0（2026-11-03）
 
 ### 破壊的変更
 
