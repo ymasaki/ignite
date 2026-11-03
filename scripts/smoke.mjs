@@ -106,7 +106,7 @@ const extension: import('@ymasaki/ignite/audit').AuditScreen = {
   } },
 }
 const panRegions: import('@ymasaki/ignite/audit').AuditPanRegion[] = [{ viewport: '.diagram-viewport', content: '.diagram-viewport > .diagram-content' }]
-defineIgniteAudit({ panRegions,`).replace('screens: [', 'screens: [extension,'))
+defineIgniteAudit({`).replace("panRegions: [{ viewport: '.diagram-viewport', content: '.diagram-viewport > .diagram-content' }]", 'panRegions').replace('screens: [', 'screens: [extension,'))
   owned.set('e2e/ignite.audit.ts', read('e2e/ignite.audit.ts'))
 
   // 別端末を模し、生成物・node_modules・npm キャッシュを引き継がず lockfile だけで復元する。
