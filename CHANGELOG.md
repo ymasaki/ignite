@@ -2,6 +2,12 @@
 
 採用アプリは `npx ignite upgrade` でこの内容を確かめて取り込む。形式は [docs/releasing.md](docs/releasing.md)。
 
+## 1.4.0（2026-11-03）
+
+### 追加
+
+- 共通画面監査に省略可能な `panRegions`（切り抜くviewport・パンするcontentの組）を追加。意図した描画面の横クリップだけを受理し、内部の別の枠・固定操作・描画面外の操作・viewport自体の外部クリップの検出を維持する。未指定時は従来どおり。他の測定やpopover検査は変更しない。設定例と境界は `docs/adopting.md` を参照
+
 ## 1.3.1（2026-11-03）
 
 ### 修正
