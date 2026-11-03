@@ -162,7 +162,7 @@
   .side-handle svg{transition:transform .28s var(--ease-in-out)}
   .side-min .side-handle{left:calc(var(--side-rail,64px) - 12px)}
   /* 左右の余白（--shell-x）はつまみの半分（12px）より狭くなるので、ヘッダーの左だけはつまみをよける */
-  :where(.app:has(> .side-handle)) .top{padding-left:max(var(--shell-x), 20px)}
+  :where(.app:has(> .side-handle)) .ttl{margin-left:max(0px, calc(20px - var(--shell-x)))} /* よけるのは画面名だけ。2 段目に落ちた検索欄などは内容の段（--shell-x）にそろえる */
   .side-min .side-handle svg{transform:rotate(180deg)}
 }
 @keyframes tipInRight{from{opacity:0;transform:translate(-2px,-50%)}to{opacity:1;transform:translate(0,-50%)}}
@@ -198,10 +198,11 @@
   /* 1 段目にメニュー・画面名・範囲の選択、2 段目に検索欄と、その右に道具（検索に付随するもの）。
      検索欄のない画面では、道具だけを 2 段目に落とさず 1 段目の右端に置く。範囲の選択は長ければ省略記号で詰める。ショートカットの手がかりは落とす */
   .top{flex-wrap:wrap}
-  .ttl{flex:1}
+  .ttl{flex:1 1 auto}
   .ttl .select{min-width:0;flex:0 1 auto}
   .ttl .select-btn{max-width:100%}
-  .sbar.has-search{order:3;flex-basis:100%;max-width:none}
+  /* 1 段目に空きがあれば狭めて 1 段目に置き、収まらないときだけ 2 段目に落とす。2 段目ではつまみをよける必要がないので、左端は内容の段（--shell-x）にそろえる */
+  .sbar.has-search{order:3;flex:1 1 260px;max-width:none;min-width:min(260px,100%)}
   .sbar:not(.has-search){flex:none}
   .top [data-fit="hint"]{display:none}
 }
