@@ -36,7 +36,7 @@
 
 ステージングは、検査済みの変更を main に取り込み、そのソースを読むカタログへ反映する段階です。部品変更時はカタログも更新します。DevBoard の取り込み後の処理で `bash scripts/build-catalog.sh` を実行し、未コミット変更と対象コミットを照合したうえで、その固定コピーから配信用カタログを `catalog-dist/` へビルドします。URL は `http://localhost:5199/` です。URLを開くと `staging.start` が専用サーバーを起動します。WebDockは使いません。手動起動も `bash scripts/start-catalog.sh` で行えます（停止まで動きます）。既に起動中なら、取り込み後にブラウザを再読み込みすると更新済みの配信用ファイルを表示します。ポート競合時は別ポートへ逃げずに失敗します。ビルド済みカタログはNode.js標準機能で配信し、通常起動にVite・Rolldownや依存の再インストールは不要です。初回ビルドには従来どおり開発依存とネイティブライブラリが必要です。worktreeの一時検証には `bash scripts/start-catalog.sh 15222` のように別ポートを指定し、検証後に停止します。
 
-プロダクションは、人が DevBoard の「プロダクションへ」を押して、Private GitHub Releaseへパッケージを配布する段階です。`production.command` は `node scripts/release.mjs` を実行します。`gh` で `ymasaki/ignite` の読み書きができる認証を用意し、対象コミットをDevBoardのGitHub同期で先に送っておきます。公開先がPrivateでない、コミットが未同期、未コミット変更や対象コミットとの不一致がある場合は停止します。ソースのpushや可視性の変更は行いません。
+プロダクションは、人が DevBoard の「プロダクションへ」を押して、Private GitHub Releaseへパッケージを配布する段階です。`production.command` は `node scripts/release.mjs` を実行します。`gh` で `ymasaki/ignite` の読み書きができる認証を用意します（Gitの送信も `gh auth git-credential` を使います）。Privateを確認した後、GitHubの `main` が対象コミットより遅れていれば、対象コミットを `main` へ早送りだけで送ります。同じか既に含まれていれば送りません。分岐していて早送りできない場合は、強制上書きせずに停止します。DevBoardのGitHub同期はDevBoard自身専用のため、Igniteでは使いません。公開先がPrivateでない、送信後もコミットが見つからない、未コミット変更や対象コミットとの不一致がある場合は停止します。`main` 以外のブランチの送信や可視性の変更は行いません。
 
 固定コミットの一時コピーで `npm ci --include=dev`・一括検査・`npm pack` を実行します。成功したtgz、`SHA256SUMS`、由来のコミットを記した `COMMIT` とローカル限定の `VERIFIED.json` を、一時保存先から `releases/<版>/` へまとめて移します。版単位のロックで並行実行を止めます。同版の保存先がある場合は、検証記録・コミット・全ファイルのハッシュが一致するときだけ再利用し、作り直しません。検証記録がない過去の配布物や内容が違う版は上書きせず停止します。内容を変える場合は版を上げます。
 

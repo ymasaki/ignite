@@ -7,15 +7,29 @@ import path from 'node:path'
 import { release, buildPackage, command } from './release.mjs'
 
 const commit = 'a'.repeat(40)
+const older = 'c'.repeat(40) // 手元で対象コミットの祖先
+const newer = 'd'.repeat(40) // 手元で対象コミットの子孫
 function fixture(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ignite-release-test-'))
   t.after(() => fs.rmSync(root, { recursive: true, force: true }))
   fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify({ name: '@ymasaki/ignite', version: '1.3.1' }))
-  const state = { private: true, synced: true, dirty: false, tag: null, remote: null, assets: [], builds: 0, writes: 0, calls: [], failUpload: false, losePublish: false }
+  const state = { private: true, synced: true, dirty: false, tag: null, remote: null, assets: [], builds: 0, writes: 0, calls: [], failUpload: false, losePublish: false, main: commit, pushes: [], failPush: false }
   const filename = 'ymasaki-ignite-1.3.1.tgz'
   const json = value => Buffer.from(JSON.stringify(value))
   const run = (cmd, args) => {
     state.calls.push([cmd, args])
+    if (cmd === 'git' && args[0] === 'merge-base') {
+      const [, , a, b] = args
+      const line = [older, commit, newer]
+      if (!line.includes(a) || !line.includes(b) || line.indexOf(a) > line.indexOf(b)) throw Error('祖先ではない')
+      return Buffer.alloc(0)
+    }
+    if (cmd === 'git' && args[0] === 'push') {
+      state.pushes.push(args)
+      if (state.failPush) throw Error('push失敗')
+      state.main = args.at(-1).split(':')[0]
+      return Buffer.alloc(0)
+    }
     if (cmd === 'git') return Buffer.from(args[0] === 'rev-parse' ? commit : state.dirty ? ' M package.json' : '')
     if (cmd === 'tar') return json({ name: '@ymasaki/ignite', version: '1.3.1' })
     assert.equal(cmd, 'gh')
@@ -31,8 +45,9 @@ function fixture(t) {
     const endpoint = args[3]
     const method = args.includes('--method') ? args[args.indexOf('--method') + 1] : 'GET'
     if (endpoint === 'repos/ymasaki/ignite') return json({ private: state.private })
+    if (endpoint.endsWith('/git/ref/heads/main')) return json({ object: { sha: state.main } })
     if (endpoint.endsWith(`/commits/${commit}`)) {
-      if (!state.synced) throw Error('同期されていない')
+      if (!state.synced || ![commit, newer].includes(state.main)) throw Error('No commit found (HTTP 422)')
       return json({ sha: commit })
     }
     if (endpoint.endsWith('/git/ref/tags/v1.3.1')) {
@@ -92,6 +107,41 @@ for (const [label, change] of [
   assert.throws(() => perform())
   assert.equal(state.builds, 0)
   assert.equal(state.writes, 0)
+})
+test('GitHubのmainが遅れていれば早送りだけで送ってから公開する', t => {
+  const { perform, state } = fixture(t)
+  state.main = older
+  assert.match(perform(), /v1.3.1$/)
+  assert.deepEqual(state.pushes, [['push', 'https://github.com/ymasaki/ignite.git', `${commit}:refs/heads/main`]])
+  perform()
+  assert.equal(state.pushes.length, 1)
+})
+test('GitHubのmainが同じか先にあれば送らない', t => {
+  for (const main of [commit, newer]) {
+    const { perform, state } = fixture(t)
+    state.main = main
+    perform()
+    assert.deepEqual(state.pushes, [])
+    assert.equal(state.main, main)
+  }
+})
+for (const [label, change, pattern] of [
+  ['GitHubのmainが分岐', s => { s.main = 'e'.repeat(40) }, /祖先ではありません/],
+  ['push失敗', s => { s.main = older; s.failPush = true }, /push失敗/],
+]) test(`${label}なら強制せず配布を始めない`, t => {
+  const { perform, state } = fixture(t)
+  change(state)
+  assert.throws(() => perform(), pattern)
+  assert.ok(state.pushes.every(args => !args.some(a => a.startsWith('-'))))
+  assert.equal(state.builds, 0)
+  assert.equal(state.writes, 0)
+})
+test('準備だけならGitHubへ送らない', t => {
+  const { perform, state } = fixture(t)
+  state.main = older
+  perform({ prepareOnly: true })
+  assert.deepEqual(state.pushes, [])
+  assert.ok(!state.calls.some(([cmd]) => cmd === 'gh'))
 })
 test('指定コミット不一致を止める', t => {
   const { perform } = fixture(t)

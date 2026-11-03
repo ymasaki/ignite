@@ -60,6 +60,16 @@ export function release({ root, commit: requested = process.env.DEVBOARD_COMMIT,
     // commits APIで注釈付きタグも元コミットまで解決する。
     return api(`${base}/commits/${tag}`).sha
   }
+  const isAncestor = (older, newer) => {
+    try { git('merge-base', '--is-ancestor', older, newer); return true } catch { return false }
+  }
+  // GitHubのmainを対象コミットまで早送りする。強制上書き・main以外の参照の送信はしない。
+  const syncMain = () => {
+    const remoteMain = api(`${base}/git/ref/heads/main`).object.sha
+    if (remoteMain === commit || isAncestor(commit, remoteMain)) return
+    assert(isAncestor(remoteMain, commit), 'GitHubのmainが対象コミットの祖先ではありません。分岐を確認してください')
+    run('git', ['push', `https://github.com/${REPO}.git`, `${commit}:refs/heads/main`], { cwd: root, stdio: ['ignore', 'inherit', 'inherit'] })
+  }
   const checkTag = (required = false) => {
     const found = tagCommit()
     assert(found ? found === commit : !required, '同版のタグが別コミットを指すか、公開済みタグがありません')
@@ -73,6 +83,7 @@ export function release({ root, commit: requested = process.env.DEVBOARD_COMMIT,
   try {
     if (!prepareOnly) {
       privateRepo()
+      syncMain()
       assert(api(`${base}/commits/${commit}`).sha === commit, '元コミットがGitHubに同期されていません')
       checkTag()
     }
