@@ -3,7 +3,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-node --test scripts/audit-runner.test.mjs
+node --test scripts/audit-runner.test.mjs scripts/serve-catalog.test.mjs
 npx tsc --noEmit
 npx vitest run --dir tests
 node scripts/build.mjs

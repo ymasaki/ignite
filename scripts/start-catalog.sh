@@ -3,12 +3,8 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
-# 配信済みファイルの有無と独立して、配信サーバーの依存を復元する。
-if [ ! -x node_modules/.bin/vite ] || [ ! -f node_modules/.package-lock.json ] || [ package-lock.json -nt node_modules/.package-lock.json ]; then
-  npm ci --include=dev
-fi
 # 初回起動にも対応する。通常の取り込み後はstaging.commandがビルド済み。
 if [ ! -f catalog-dist/index.html ]; then
   bash scripts/build-catalog.sh
 fi
-exec node_modules/.bin/vite preview catalog --host 127.0.0.1 --port 5199 --strictPort
+exec node scripts/serve-catalog.mjs "$@"
