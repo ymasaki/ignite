@@ -3,6 +3,9 @@ import type { Page } from '@playwright/test'
 
 export type LayoutMeasurement = 'rows' | 'boardLeft' | 'boardRight' | 'boardBottom'
 
+/** 横の切り抜きだけを受理する、パン描画の枠と内容のセレクタ */
+export interface AuditPanRegion { viewport: string; content: string }
+
 export interface MeasureArgs {
   FONT_SIZES: number[]
   FONT_WEIGHTS: string[]
@@ -12,12 +15,13 @@ export interface MeasureArgs {
   overflow: string
   bars: string
   frames: string
+  panRegions?: AuditPanRegion[]
   skipLayout?: LayoutMeasurement[]
 }
 export type Measured = { rule: string; where: string; expected: string; actual: string }
 
 export function measure(page: Page, args: MeasureArgs): Promise<Measured[]> {
-  return page.evaluate(({ FONT_SIZES, FONT_WEIGHTS, RADII, SHELL, rows: rowSel, overflow, bars, frames, skipLayout = [] }) => {
+  return page.evaluate(({ FONT_SIZES, FONT_WEIGHTS, RADII, SHELL, rows: rowSel, overflow, bars, frames, panRegions = [], skipLayout = [] }) => {
     const out: Measured[] = []
     const root = getComputedStyle(document.querySelector('.mainwrap') || document.documentElement)
     const px = (v: string) => parseFloat(root.getPropertyValue(v))
@@ -73,6 +77,39 @@ export function measure(page: Page, args: MeasureArgs): Promise<Measured[]> {
 
     // 5 章: 横にはみ出さない（ページ全体と、帯・切り替えの中）
     if (document.documentElement.scrollWidth > innerWidth + 1) out.push({ rule: '横のはみ出し（5 章）', where: 'ページ全体', expected: `幅 ${innerWidth}px 以内`, actual: `${document.documentElement.scrollWidth}px` })
+    // セレクタは実要素へ解決し、厳密な子孫関係がある組だけを使う。
+    const pans = panRegions.flatMap(({ viewport, content }) => {
+      const contents = [...document.querySelectorAll(content)]
+      return [...document.querySelectorAll(viewport)].flatMap((vp) => {
+        if (!['hidden', 'clip'].includes(getComputedStyle(vp).overflowX)) return []
+        return contents.filter((c) => c !== vp && vp.contains(c)).map((c) => ({ viewport: vp, content: c }))
+      })
+    })
+    const acceptsPan = (el: Element, vp: Element) => {
+      if (!pans.some((p) => p.viewport === vp && p.content.contains(el))) return false
+      // 固定操作は、対象自身も含めてパン内容と区別する。
+      for (let n: Element | null = el; n; n = n.parentElement) {
+        if (['fixed', 'sticky'].includes(getComputedStyle(n).position)) return false
+        if (n === vp) return true
+      }
+      return false
+    }
+    // 枠自身は子が窓外にパンされていても独立して測る。
+    for (const vp of new Set(pans.map((p) => p.viewport))) {
+      if (!visible(vp)) continue
+      const r = vp.getBoundingClientRect()
+      let clip = ''
+      let scrolls = false
+      for (let a = vp.parentElement; a && !clip && !scrolls; a = a.parentElement) {
+        const ox = getComputedStyle(a).overflowX
+        scrolls = ox === 'auto' || ox === 'scroll'
+        if (ox !== 'hidden' && ox !== 'clip') continue
+        const ar = a.getBoundingClientRect()
+        if (r.right > ar.right + 1 || r.left < ar.left - 1) clip = who(a)
+      }
+      if (!clip && !scrolls && (r.right > innerWidth + 1 || r.left < -1)) clip = '窓'
+      if (clip) out.push({ rule: '横のはみ出し（5 章）', where: parentWho(vp), expected: 'パンの枠が切られない', actual: `${clip} の外へ ${Math.round(r.left)}〜${Math.round(r.right)}px` })
+    }
     // 枠に切られた中身（5 章「どの大きさでも崩さない」）。枠は overflow:hidden なので、ページ全体のはみ出しには出ない。スクロールできる枠の中はよい
     for (const el of document.querySelectorAll<HTMLElement>('button, a[href], input, textarea, [role="tab"], h1, h2, h3, th, td, label')) {
       if (el.closest('[inert], [aria-hidden="true"], .fit-measure, .sr-only') || !visible(el)) continue
@@ -82,6 +119,7 @@ export function measure(page: Page, args: MeasureArgs): Promise<Measured[]> {
       let scrolls = false
       for (let a = el.parentElement; a && !clip && !scrolls; a = a.parentElement) {
         const ox = getComputedStyle(a).overflowX
+        if (acceptsPan(el, a)) { scrolls = true; break }
         scrolls = ox === 'auto' || ox === 'scroll'
         if (ox !== 'hidden' && ox !== 'clip') continue
         const ar = a.getBoundingClientRect()

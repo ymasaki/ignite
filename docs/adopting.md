@@ -174,3 +174,19 @@ node node_modules/@ymasaki/ignite/dist/cli.js sync --check
 その後 `npm install --save-exact @ymasaki/ignite@1.1.1 --ignore-scripts --no-audit --no-fund` で依存とlockfileを更新します。既存node_modules・distのない別コピーと空の `--cache` で上記ci、公開入口、型チェック、ビルドを確認してから切替を確定します。成功前にvendorを削除しません。
 
 認証・権限の正本: [GitHub npm registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry)、[Packages permissions](https://docs.github.com/en/packages/learn-github-packages/about-permissions-for-github-packages)。
+
+### パン・ズームする描画領域の横クリップ
+
+`panRegions` は、横方向の意図した切り抜きだけを受理する省略可能な設定です。指定しない場合は従来どおりです。
+
+```ts
+panRegions: [{ viewport: '.diagram-viewport', content: '.diagram-viewport > .diagram-content' }],
+```
+
+両セレクタはdocumentから解決します。contentはviewport自身ではなくその子孫で、ドラッグ・ズーム・キーボード等により枠外の内容へ到達できる描画面だけを指定します。パン操作そのものは共通監査では検証しないため、採用アプリの操作テストで確かめてください。複数の枠も指定できます。
+
+実際のviewportの`overflow-x`が`hidden`か`clip`のときだけ、その枠による描画内容の横クリップを受理します。内容内部の別の枠による切れ、viewport自体の外側の枠・窓による切れ、内容外の兄弟操作、対象自身からviewportまでの間に`position:fixed/sticky`がある操作は受理しません。固定ツールバーやMiniMapはcontentの外に置きます。absolute配置でもcontent外なら通常の検出対象です。枠の検査は子が窓外へパンされていても行います。
+
+文字・コントラスト・操作の重なり等の他の測定や、開いたpopoverの縦横クリップ検査は変わりません。横方向の共通クリップ測定は従来の対象タグと可視性の範囲で行い、任意の文字ノードの内部切れや縦方向全般を保証する設定ではありません。`exceptions`の広い正規表現で描画要素をまとめて除外しないでください。
+
+OrgNavi TreeViewでは`{ viewport: '.vp', content: '.vp > .stage' }`を指定します。`.vp`直下で`.stage`の兄弟のMiniMap、board直下のtoolbar、共通headerは含めません。DraftCanvas等の別画面へ例外を広げません。

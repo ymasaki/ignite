@@ -8,10 +8,10 @@ import type { Assist } from '../src/assist'
 import { contrastRatio, contrastRulesFor, type ContrastRule } from '../src/contrast'
 import { SKINS } from '../src/skin'
 import { SHELL_SIZES, shellBreakpoints } from '../src/ui/shellLayout'
-import { measure, type LayoutMeasurement, type Measured } from './measure'
+import { measure, type AuditPanRegion, type LayoutMeasurement, type Measured } from './measure'
 import { withPreparation } from './lifecycle'
 
-export type { LayoutMeasurement } from './measure'
+export type { AuditPanRegion, LayoutMeasurement } from './measure'
 export type AuditFinding = Measured
 
 export interface AuditScreen {
@@ -61,6 +61,8 @@ export interface IgniteAuditConfig {
   hoverSkip?: string[]
   /** アプリの部品の分の測る対象を足す */
   rows?: string[]
+  /** 意図して横を切り抜くパン描画の枠と内容。固定操作は内容の外に置く */
+  panRegions?: AuditPanRegion[]
   overflow?: string[]
   bars?: string[]
   frames?: string[]
@@ -149,6 +151,7 @@ export function defineIgniteAudit(config: IgniteAuditConfig): void {
   const panelParams = config.panelParams ?? ['open', 'tab', 'mode', 'skin']
   const bp = shellBreakpoints()
   const args = {
+    panRegions: config.panRegions,
     FONT_SIZES,
     FONT_WEIGHTS,
     RADII,
