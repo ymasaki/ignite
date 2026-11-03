@@ -41,7 +41,7 @@ async function tryAcquire() {
   return true
 }
 async function acquire() {
-  const deadline = Date.now() + 600000
+  const deadline = Date.now() + 1800000
   let reported = false
   while (!interrupted) {
     if (await tryAcquire()) return
@@ -56,7 +56,7 @@ async function acquire() {
         throw new Error(`監査ロックが残っています: ${lock} (${JSON.stringify(owner)})。所有元と5198の終了を確認して手動で除去してください。自動削除はしません。`)
       }
     }
-    if (Date.now() >= deadline) throw new Error(`監査ロック待機が10分を超えました: ${lock} (${JSON.stringify(owner)})`)
+    if (Date.now() >= deadline) throw new Error(`監査ロック待機が30分を超えました: ${lock} (${JSON.stringify(owner)})`)
     if (!reported) { console.log(`[audit] 他の監査を待機: ${lock}`); reported = true }
     await delay(200)
   }
