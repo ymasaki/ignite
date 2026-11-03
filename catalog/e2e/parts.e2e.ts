@@ -691,3 +691,45 @@ for (const [width, height] of [[320, 568], [568, 320], [844, 390]]) {
     await expect(body.getByRole('button', { name: '今日' })).toBeInViewport()
   })
 }
+
+for (const width of [320, 360, 600, 860]) {
+  test(`AppShell: 検索欄なしの${width}pxでは範囲を詰めて絞り込みを1段目に保つ`, async ({ page }, info) => {
+    await open(page, 'header')
+    await page.setViewportSize({ width, height: 800 })
+    await page.evaluate(() => document.fonts.ready)
+    const title = page.locator('.ttl')
+    const tools = page.locator('.sbar')
+    await expect.poll(async () => Math.abs((await title.boundingBox())!.y - (await tools.boundingBox())!.y)).toBeLessThan(2)
+    const company = page.locator('.ttl .select-btn')
+    const filter = tools.getByRole('button', { name: '絞り込み' })
+    await expect(company).toBeVisible()
+    await expect(filter).toBeVisible()
+    const [choice, button] = await Promise.all([company.boundingBox(), filter.boundingBox()])
+    expect(choice!.x + choice!.width).toBeLessThanOrEqual(button!.x)
+    expect(button!.x + button!.width).toBeLessThanOrEqual(width)
+    expect(await page.locator('.ttl .sel-label').innerText()).toBe('会社')
+    await expect.poll(() => page.locator('.ttl .sel-label').evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true)
+    if (width === 320) await page.screenshot({ path: info.outputPath('header-320.png') })
+    // 行数だけでなく選択・操作が使えることも保つ。
+    await company.click()
+    await page.getByRole('option', { name: /長い名前の会社/ }).click()
+    await expect.poll(async () => Math.abs((await title.boundingBox())!.y - (await tools.boundingBox())!.y)).toBeLessThan(2)
+    await filter.click()
+    await expect(page.getByText('絞り込みを開きました')).toBeVisible()
+  })
+}
+
+test('AppShell: 検索ありは狭い幅で2段・広い幅で1段を保ち、検索欄の左端が内容にそろう', async ({ page }) => {
+  await open(page, 'list')
+  await page.setViewportSize({ width: 320, height: 800 })
+  const title = page.locator('.ttl')
+  const search = page.locator('.sbar.has-search')
+  await expect.poll(async () => (await search.boundingBox())!.y - (await title.boundingBox())!.y).toBeGreaterThan(30)
+  const content = page.locator('.content').first()
+  expect(Math.abs((await search.boundingBox())!.x - (await content.boundingBox())!.x - await content.evaluate(el => parseFloat(getComputedStyle(el).paddingLeft)))).toBeLessThan(2)
+  await page.setViewportSize({ width: 860, height: 800 })
+  await expect.poll(async () => {
+    const a = (await search.boundingBox())!, b = (await title.boundingBox())!
+    return Math.abs(a.y + a.height / 2 - b.y - b.height / 2)
+  }).toBeLessThan(2)
+})

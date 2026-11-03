@@ -29,6 +29,7 @@ defineIgniteAudit({
     { name: '一覧と表', path: '/?nav=data' },
     { name: 'グラフと数字', path: '/?nav=charts' },
     { name: '一覧の型', path: '/?nav=list' },
+    { name: '検索欄のないヘッダー', path: '/?nav=header' },
     { name: '一覧の型（詳細）', path: '/?nav=list&open=p1' },
     { name: 'ダッシュボードの型', path: '/?nav=dashboard' },
     { name: '設定の型', path: '/?nav=settings' },

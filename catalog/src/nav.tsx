@@ -113,6 +113,7 @@ export const PAGES: PageDef[] = [
     { id: 'tile', title: '面積と濃さ', parts: ['TileMap'] },
   ] },
   { key: 'list', label: '一覧と詳細', group: '画面の型', icon: icon(IconLayoutList), specs: [] },
+  { key: 'header', label: '検索欄のないヘッダー', group: '画面の型', icon: icon(IconLayoutList), specs: [] },
   { key: 'dashboard', label: 'ダッシュボード', group: '画面の型', icon: icon(IconLayoutDashboard), specs: [] },
   { key: 'login', label: 'ログイン', group: '画面の型', icon: icon(IconLogin2), specs: [] },
 ]

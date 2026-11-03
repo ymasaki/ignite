@@ -1,5 +1,5 @@
-import { IconPalette } from '@tabler/icons-react'
-import { AppShell, Brand, currentTheme, IconBox, IconButton, Popover, SearchSuggest, Segmented, setTheme, SettingsButton, SideNav, useShell, withFade, type Mode, type Skin, type SuggestGroup } from '@ymasaki/ignite'
+import { IconBuilding, IconFilter, IconPalette } from '@tabler/icons-react'
+import { AppShell, Brand, currentTheme, IconBox, IconButton, Popover, SearchSuggest, Segmented, Select, setTheme, SettingsButton, SideNav, toast, useShell, withFade, type Mode, type Skin, type SuggestGroup } from '@ymasaki/ignite'
 import { useEffect, useState } from 'react'
 import { ChartsPage } from './Charts'
 import { CodePage } from './Code'
@@ -75,6 +75,8 @@ export function App() {
   const { nav, open, spec, go } = useRoute()
   const [collapsed, setCollapsed] = useState(false)
   const [find, setFind] = useState('')
+  const [company, setCompany] = useState('all')
+  const headerTools = nav === 'header'
   const close = () => go({ open: null })
   const View = PAGE_VIEWS[nav as keyof typeof PAGE_VIEWS]
   // ログインはアプリの枠の外に置く画面なので、カタログでも枠を出さない
@@ -89,15 +91,17 @@ export function App() {
         </>
       )}
       collapse={{ collapsed, onChange: setCollapsed }}
-      title={nav === 'settings' ? '設定' : pageOf(nav)?.label}
-      search={<div className="cat-search"><SearchSuggest label="部品を探す" placeholder="部品を探す" shortcut priority={1} value={find} onChange={setFind} groups={FIND} onSelect={(it) => { const [n, s] = it.key.split('/'); setFind(''); go({ nav: n, spec: s }) }} /></div>}
-      actions={<ThemePicker />}
+      title={headerTools ? 'メンバー検索' : nav === 'settings' ? '設定' : pageOf(nav)?.label}
+      titleAfter={headerTools ? <Select label="会社" size="lg" fit value={company} onChange={setCompany} options={[{ value: 'all', label: '会社', lead: <IconBuilding size={16} stroke={1.8} />, meta: '285名' }, { value: 'long', label: '長い名前の会社', meta: '123名' }]} /> : undefined}
+      search={headerTools ? undefined : <div className="cat-search"><SearchSuggest label="部品を探す" placeholder="部品を探す" shortcut priority={1} value={find} onChange={setFind} groups={FIND} onSelect={(it) => { const [n, s] = it.key.split('/'); setFind(''); go({ nav: n, spec: s }) }} /></div>}
+      tools={headerTools ? <IconButton label="絞り込み" size="lg" onClick={() => toast('絞り込みを開きました')}><IconFilter size={18} stroke={1.8} /></IconButton> : undefined}
+      actions={headerTools ? undefined : <ThemePicker />}
       aux={nav === 'dashboard' ? <DashboardPage.Band /> : undefined}
       panel={{ open: !!open, onClose: close, id: open ?? undefined, peek: { title: 'プロジェクトの詳細' }, content: open ? <PanelContent id={open} onClose={close} go={(n) => go({ nav: n })} /> : null }}
     >
       {nav === 'overview' && <OverviewPage onOpen={(key) => go({ nav: key })} />}
       {View && <View key={nav} target={spec} />}
-      {nav === 'list' && <ListPage selected={open} onOpen={(id) => go({ open: id })} />}
+      {(nav === 'list' || headerTools) && <ListPage selected={open} onOpen={(id) => go({ open: id })} />}
       {nav === 'dashboard' && <DashboardPage />}
       {nav === 'settings' && <SettingsPage />}
     </AppShell>
