@@ -12,7 +12,7 @@ trap 'rm -rf "$work"' EXIT
 git archive "$commit" | tar -x -C "$work"
 output="$PWD/releases"
 cd "$work"
-npm ci
+npm ci --include=dev
 bash scripts/test.sh
 mkdir artifacts
 npm pack --pack-destination artifacts

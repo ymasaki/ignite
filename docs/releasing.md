@@ -34,7 +34,7 @@
 
 ステージングは、検査済みの変更を main に取り込み、そのソースを読むカタログへ反映する段階です。部品変更時はカタログも更新します。DevBoard の取り込み後の処理で `bash scripts/build-catalog.sh` を実行し、配信用カタログを `catalog-dist/` へビルドします。URL は `http://localhost:5199/` です。URLを開くと `staging.start` が専用サーバーを起動します。WebDockは使いません。手動起動も `bash scripts/start-catalog.sh` で行えます（停止まで動きます）。既に起動中なら、取り込み後にブラウザを再読み込みすると更新済みの配信用ファイルを表示します。ポート競合時は別ポートへ逃げずに失敗します。
 
-プロダクションは、人が DevBoard の「プロダクションへ」を押して、配布できるパッケージを用意する段階です。`production.command` は `bash scripts/prepare-package.sh` を実行します。未コミット変更と対象コミットの不一致があれば停止し、固定コミットの一時コピーで `npm ci`・一括検査・`npm pack` を実行します。
+プロダクションは、人が DevBoard の「プロダクションへ」を押して、配布できるパッケージを用意する段階です。`production.command` は `bash scripts/prepare-package.sh` を実行します。未コミット変更と対象コミットの不一致があれば停止し、固定コミットの一時コピーで `npm ci --include=dev`・一括検査・`npm pack` を実行します。
 
 成功すると、プロジェクトの `releases/<版>/` に tgz、`SHA256SUMS`、由来のコミットを記した `COMMIT` が残ります。同じ版の保存先がある場合は上書きせず停止します。内容が変わる場合は、版と変更履歴を更新してから再実行します。生成物は Git 管理外です。成功後に DevBoard が `release` を進めます。これにより main は確認中の変更、release は配布物を用意した変更を表します。
 
