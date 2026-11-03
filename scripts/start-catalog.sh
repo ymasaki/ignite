@@ -1,18 +1,15 @@
 #!/usr/bin/env bash
-# カタログの開発サーバーを http://localhost:5199 で起動する（DevBoard の staging.start）。止めるまで動き続ける。
-# カタログは dist ではなく src を直接読むので、依存の準備のほかにビルドは要らない
+# DevBoardのmain取り込み後にカタログをWebDockへ反映する。
 set -euo pipefail
 cd "$(dirname "$0")/.."
-
-# GUI のアプリから動かすとシェルの設定が読まれず、PATH に node がない
-if ! command -v node > /dev/null; then
-  export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
-fi
-
-# 依存がない、またはロックファイルより古いときだけ入れ直す
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+[[ "$(git branch --show-current)" = main ]] || { echo '通常のカタログ登録はmainの作業場所で行ってください。worktreeは別名で登録してください' >&2; exit 1; }
 if [ ! -f node_modules/.package-lock.json ] || [ package-lock.json -nt node_modules/.package-lock.json ]; then
   npm ci
 fi
-
-# ポートは catalog/vite.config.ts で固定している。localhost から開けるよう IPv4 でだけ待ち受け、LAN には出さない
-exec node_modules/.bin/vite catalog --host 127.0.0.1
+webdock="$HOME/.local/bin/webdock"
+"$webdock" register "$PWD"
+"$webdock" restart ignite-catalog
+curl --fail --silent --show-error --retry 10 --retry-connrefused --retry-delay 1 \
+  --resolve ignite-catalog.localhost:18480:127.0.0.1 \
+  http://ignite-catalog.localhost:18480/ > /dev/null

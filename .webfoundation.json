@@ -1,0 +1,11 @@
+{
+  "name": "ignite-catalog",
+  "title": "Ignite カタログ",
+  "primary": "web",
+  "services": {
+    "web": {
+      "command": ["npm", "run", "catalog", "--", "--host", "{host}", "--port", "{port}", "--strictPort"],
+      "health": "/"
+    }
+  }
+}

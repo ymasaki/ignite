@@ -23,3 +23,12 @@
 ## 確認
 
 `bash scripts/test.sh`（型・単体テスト・ビルド・`ignite check`・カタログの監査・配布から更新までの通し確認）。
+
+## カタログの運用
+
+- WebDock登録名: `ignite-catalog`。通常登録はmainの作業場所を使う。
+- URL: `http://ignite-catalog.localhost:18480/`
+- 取り込み後の反映: `bash scripts/start-catalog.sh`（登録・再起動・HTTP確認）。
+- 停止後の再開: `webdock start ignite-catalog`。停止: `webdock stop ignite-catalog`。
+- 確認: `curl --fail --resolve ignite-catalog.localhost:18480:127.0.0.1 http://ignite-catalog.localhost:18480/`。
+- worktreeの検証はmanifestの登録名を別名にした検証コピーで行い、通常登録を差し替えない。

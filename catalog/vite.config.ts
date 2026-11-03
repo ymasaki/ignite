@@ -14,5 +14,5 @@ export default defineConfig({
       { find: '@ymasaki/ignite', replacement: path.join(root, 'src/index.ts') },
     ],
   },
-  server: { port: 5199, strictPort: true },
+  server: { port: 5199, strictPort: true, allowedHosts: [process.env.WEBDOCK_NAME ? `${process.env.WEBDOCK_NAME}.localhost` : 'ignite-catalog.localhost'] },
 })

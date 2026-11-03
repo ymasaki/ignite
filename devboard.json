@@ -1,12 +1,18 @@
 {
   "icon": "docs/logo/ignite-icon.svg",
   "staging": {
-    "url": "http://localhost:5199",
-    "start": "bash scripts/start-catalog.sh"
+    "url": "http://ignite-catalog.localhost:18480",
+    "command": "bash scripts/start-catalog.sh",
+    "note": "main取り込み後にWebDockのカタログを更新して応答確認する"
   },
   "workflow": {
     "base": "main",
     "setup": "npm ci",
     "test": "bash scripts/test.sh"
+  },
+  "production": {
+    "branch": "release",
+    "command": "bash scripts/prepare-package.sh",
+    "note": "検査済みのtgzとSHA256をreleases/<版>/へ保存する。レジストリへの発行はしない"
   }
 }
