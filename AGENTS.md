@@ -26,9 +26,8 @@
 
 ## カタログの運用
 
-- WebDock登録名: `ignite-catalog`。通常登録はmainの作業場所を使う。
-- URL: `http://ignite-catalog.localhost:18480/`
-- 取り込み後の反映: `bash scripts/start-catalog.sh`（登録・再起動・HTTP確認）。
-- 停止後の再開: `webdock start ignite-catalog`。停止: `webdock stop ignite-catalog`。
-- 確認: `curl --fail --resolve ignite-catalog.localhost:18480:127.0.0.1 http://ignite-catalog.localhost:18480/`。
-- worktreeの検証はmanifestの登録名を別名にした検証コピーで行い、通常登録を差し替えない。
+- #20 のオーナー指定により、カタログはWebDockを使わずスタンドアロンで起動する。
+- URL: `http://localhost:5199/`。main取り込み後に `bash scripts/build-catalog.sh` で反映する。
+- 起動: `bash scripts/start-catalog.sh`（停止まで動く。DevBoardのstaging.startから起動）。停止は起動元で行う。
+- 確認: `curl --fail http://localhost:5199/`。専用ポートを固定し、競合時には停止する。
+- worktreeの一時検証は別ポートを使い、終了後に必ず止める。

@@ -7,3 +7,4 @@ playwright-report/
 test-results-audit/
 **/test-results-audit/
 releases/
+catalog-dist/

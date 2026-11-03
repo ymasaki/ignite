@@ -1,9 +1,10 @@
 {
   "icon": "docs/logo/ignite-icon.svg",
   "staging": {
-    "url": "http://ignite-catalog.localhost:18480",
-    "command": "bash scripts/start-catalog.sh",
-    "note": "main取り込み後にWebDockのカタログを更新して応答確認する"
+    "url": "http://localhost:5199",
+    "start": "bash scripts/start-catalog.sh",
+    "command": "bash scripts/build-catalog.sh",
+    "note": "main取り込み後にカタログをビルド。URLを開くと専用サーバーを起動する"
   },
   "workflow": {
     "base": "main",
