@@ -703,6 +703,7 @@ for (const width of [320, 360, 600, 860]) {
     const company = page.locator('.ttl .select-btn')
     const filter = tools.getByRole('button', { name: '絞り込み' })
     await expect(company).toBeVisible()
+    await expect(company).toHaveAccessibleName('対象: 対象 285名')
     await expect(filter).toBeVisible()
     const [choice, button] = await Promise.all([company.boundingBox(), filter.boundingBox()])
     expect(choice!.x + choice!.width).toBeLessThanOrEqual(button!.x)

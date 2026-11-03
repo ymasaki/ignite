@@ -225,7 +225,7 @@ export function Select<T extends string>({ value, options, onChange, label: labe
     <Popover
       className={`select ${size}`}
       trigger={(open, toggle) => (
-        <button ref={btnRef} id={f.id} type="button" disabled={disabled} className={`btn select-btn ${open ? 'on' : ''}`} aria-invalid={f.invalid || undefined} aria-haspopup="listbox" aria-expanded={open} aria-label={`${label}: ${cur?.label ?? ''}`} aria-describedby={f.describedBy} onClick={toggle}>
+        <button ref={btnRef} id={f.id} type="button" disabled={disabled} className={`btn select-btn ${open ? 'on' : ''}`} aria-invalid={f.invalid || undefined} aria-haspopup="listbox" aria-expanded={open} aria-label={`${label}: ${cur?.label ?? ''}${typeof cur?.meta === 'string' || typeof cur?.meta === 'number' ? ` ${cur.meta}` : ''}`} aria-describedby={f.describedBy} onClick={toggle}>
           {/* data-fit: 狭いときに落とす順番の目印（DESIGN.md 5 章。監査が「主役を詰める前に extra を隠したか」を測る） */}
           {cur?.lead && <span className="sel-lead" data-fit="extra">{cur.lead}</span>}
           <span className="sel-label" data-fit="main">{display ?? cur?.label}</span>
