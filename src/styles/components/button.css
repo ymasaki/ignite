@@ -2,6 +2,8 @@
 
 /* 通常のボタン。主ボタン（.pri）は 1 画面に 1 つまで。.on は押し込まれている状態（絞り込み中など） */
 .btn{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border:1px solid var(--line-2);border-radius:10px;background:var(--panel);font-size:var(--fs-13);white-space:nowrap}
+/* 文字とアイコンを一緒に包んだとき（Menu の開く矢印など）は中央でそろえる。文の流れのままだとアイコンが文字のベースラインに乗って上に寄る */
+.btn-l:has(> svg){display:inline-flex;align-items:center}
 .btn:hover{border-color:var(--pri);color:var(--pri-ink)}
 .btn:active{background:var(--press)}
 /* 押している間は縮め、離すとばねで戻す（ボタン・アイコンのボタンは小さな部品。DESIGN.md 8 章「押している間」） */
@@ -38,7 +40,8 @@
 .linkbtn.extlink{display:inline-flex;align-items:center;gap:4px;overflow-wrap:anywhere}
 
 /* 値そのものがコピーのボタン。ホバー（またはキーボードで入ったとき）で地が付き、右にコピーのアイコンが出る（ui/CopyText.tsx） */
-.copytext{display:inline-flex;align-items:center;gap:4px;min-width:0;max-width:100%;margin:-2px -6px;padding:2px 6px;border-radius:6px;text-align:left}
+/* 上限は左右の負の余白（地を文字の外へ広げる分）を足した幅。100% のままだと、中身に合わせて幅を決める入れ物の中で 12px 縮み、値がアイコンの下へはみ出す */
+.copytext{display:inline-flex;align-items:center;gap:4px;min-width:0;max-width:calc(100% + 12px);margin:-2px -6px;padding:2px 6px;border-radius:6px;text-align:left}
 .copytext:hover,.copytext:focus-visible{background:var(--pri-soft);color:var(--pri-ink)}
 .copytext:active{background:var(--pri-soft-2);color:var(--pri-ink-2)}
 .copytext .ct-v{min-width:0;overflow-wrap:anywhere}

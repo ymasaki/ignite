@@ -146,7 +146,10 @@
   .line-hits > span:hover::before{content:"";position:absolute;top:0;bottom:0;left:50%;width:1px;background:var(--pri);opacity:.35}
   .line-hits > span.edge:first-child:hover::before{left:0}
   .line-hits > span.edge:last-child:hover::before{left:100%}
-  .line-pt{display:none;position:absolute;left:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:var(--panel);border:2px solid var(--chart-1);box-sizing:border-box;pointer-events:none}
+  /* ホバーした点の印。系列の色で塗り、地の色の縁で線と帯から浮かせる（白抜きの輪は線と同じ太さで溶け、薄い系列にも濃い輪が乗って浮くため）。
+     薄い系列は線の色（--chart-4）では帯の上で見えないので一段濃く小さくし、主の系列を上に重ねる */
+  .line-pt{display:none;position:absolute;z-index:1;left:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:var(--chart-1);box-shadow:0 0 0 2px var(--panel);pointer-events:none}
+  .line-pt.soft{z-index:0;width:8px;height:8px;margin:-4px 0 0 -4px;background:var(--chart-3)}
   .line-hits > span.edge:first-child .line-pt{left:0}
   .line-hits > span.edge:last-child .line-pt{left:100%}
   .line-hits > span:hover .line-pt{display:block}

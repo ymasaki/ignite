@@ -9,7 +9,7 @@ import { shortcutsOn } from '../assist'
 import { FOCUSABLE } from './A11y'
 import { Button } from './Button'
 import { Toaster } from './Toast'
-import { Drawer, isTyping, useThumb, type DrawerPeek } from './Controls'
+import { Drawer, isTyping, type DrawerPeek } from './Controls'
 import { reducedMotion } from './Motion'
 import { SHELL_SIZES, shellLayout, type ShellSizes } from './shellLayout'
 
@@ -65,13 +65,11 @@ export interface NavItem<K extends string> {
 
 /**
  * 左メニューの項目の並び。選んでいる項目は aria-current="page"（current が null なら、どれも選んでいない。設定の画面など）。collapsed（AppShell の side が受け取る状態）なら、名前（.side-t）は消え、
- * ホバーで右に吹き出し（data-tip）と読み上げ用の名前（aria-label）を付ける。選択中の地は、Segmented と同じ .thumb が選んだ項目へスライドする
+ * ホバーで右に吹き出し（data-tip）と読み上げ用の名前（aria-label）を付ける。選択中の地は選んだ項目にその場で付け、項目の間を動かさない
  */
 export function SideNav<K extends string>({ items, current, onSelect, collapsed = false, label = 'メインメニュー' }: { items: NavItem<K>[]; current: K | null; onSelect: (key: K) => void; collapsed?: boolean; label?: string }) {
-  const { ref, thumb, ready } = useThumb<HTMLElement>(current ?? '')
   return (
-    <nav className={`nav${ready ? ' ready' : ''}`} aria-label={label} ref={ref}>
-      <span className="thumb" ref={thumb} aria-hidden="true" />
+    <nav className="nav" aria-label={label}>
       {items.map((it, i) => (
         <Fragment key={it.key}>
           {it.group != null && it.group !== items[i - 1]?.group && <span className="nav-h">{it.group}</span>}

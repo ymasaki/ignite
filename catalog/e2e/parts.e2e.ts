@@ -213,6 +213,53 @@ test('DataTable: 見出しを押すと並び順が読み上げに出て、すべ
   await expect(table.getByRole('checkbox', { checked: true })).toHaveCount(0)
 })
 
+test('DataTable: ホバーは行見出しを含む行全体の地を変え、選んだ行は灰色にしない', async ({ page }) => {
+  await open(page, 'data')
+  const table = page.getByRole('table', { name: '並べ替えと選択' })
+  const bgs = (row: import('@playwright/test').Locator) => row.locator(':scope > th, :scope > td').evaluateAll((els) => els.map((el) => `${getComputedStyle(el).backgroundColor} ${getComputedStyle(el).backgroundImage}`))
+  // 選んでいない行: 行見出しも含めて同じ地になる
+  const row = table.locator('tbody tr:not(.sel)').first()
+  await page.mouse.move(0, 0)
+  const idle = await bgs(row)
+  await row.locator(':scope > th').hover()
+  const hovered = await bgs(row)
+  expect(new Set(hovered).size).toBe(1)
+  expect(hovered[0]).not.toBe(idle[0])
+  // 選んだ行: 灰色を重ねず、選択中のホバーの地に変える
+  const sel = table.locator('tbody tr.sel').first()
+  await expect(sel).toHaveCount(1)
+  await page.mouse.move(0, 0)
+  const selIdle = await bgs(sel)
+  await sel.locator(':scope > th').hover()
+  const selHover = await bgs(sel)
+  expect(new Set(selHover).size).toBe(1)
+  expect(selHover[0]).not.toContain('gradient')
+  expect(selHover[0]).not.toBe(selIdle[0])
+})
+
+test('Menu: 開く矢印は文字の中央にそろい、開いている間は吹き出しを出さない', async ({ page }) => {
+  await open(page, 'actions')
+  const menu = page.getByRole('button', { name: '操作', exact: true })
+  const mid = (r: { top: number; height: number }) => r.top + r.height / 2
+  const [btn, chev] = await menu.evaluate((el) => [el.getBoundingClientRect().toJSON(), el.querySelector('svg')!.getBoundingClientRect().toJSON()])
+  expect(Math.abs(mid(chev) - mid(btn))).toBeLessThanOrEqual(1)
+  const more = page.getByRole('button', { name: 'その他の操作' })
+  const tip = () => more.evaluate((el) => getComputedStyle(el, '::after').display)
+  await more.hover()
+  await expect.poll(tip).toBe('block')
+  await more.click()
+  await expect(page.getByRole('menu', { name: 'その他の操作' })).toBeVisible()
+  await expect.poll(tip).toBe('none')
+})
+
+test('CopyText: 狭い入れ物でも値とコピーのアイコンが重ならない', async ({ page }) => {
+  await open(page, 'actions')
+  const ct = page.getByRole('button', { name: 'ignite 名前をコピー' })
+  await ct.hover()
+  const r = await ct.evaluate((el) => { const v = el.querySelector('.ct-v')!; return { textEnd: v.getBoundingClientRect().left + v.scrollWidth, icon: el.querySelector('.ct-i')!.getBoundingClientRect().left } })
+  expect(r.textEnd).toBeLessThanOrEqual(r.icon + 0.5)
+})
+
 test('Pagination: 番号を押すと移り、端では前後のボタンが押せない', async ({ page }) => {
   await open(page, 'navigate')
   const nav = page.getByRole('navigation', { name: 'ページ送り' })
@@ -495,18 +542,19 @@ test('LoginForm: 外部認証のボタンは主ボタンの下に並び、Enter 
   await expect(page.getByText('メールアドレスを入れてください')).toHaveCount(0)
 })
 
-test('SideNav: 押すと選択中の地が次の項目へ動き、まとまりをまたいでも 1 枚のまま', async ({ page }) => {
+test('SideNav: 押すと選択中の地がその場で次の項目に付き、項目の間を動かない', async ({ page }) => {
   await open(page, 'color')
   const nav = page.getByRole('navigation', { name: 'メインメニュー' })
-  const thumb = nav.locator('.thumb')
-  await expect(nav.getByRole('button', { name: '色' })).toHaveAttribute('aria-current', 'page')
-  const top = () => thumb.evaluate((el) => el.getBoundingClientRect().top)
-  const before = await top()
-  await nav.getByRole('button', { name: 'ダッシュボード' }).click()
-  await expect(thumb).toHaveCSS('transition-property', /top/)
-  const target = await nav.getByRole('button', { name: 'ダッシュボード' }).evaluate((el) => el.getBoundingClientRect().top)
-  await expect.poll(top).toBeCloseTo(target, 0)
-  expect(target).toBeGreaterThan(before)
+  const color = nav.getByRole('button', { name: '色' })
+  const dash = nav.getByRole('button', { name: 'ダッシュボード' })
+  await expect(color).toHaveAttribute('aria-current', 'page')
+  await expect(nav.locator('.thumb')).toHaveCount(0)
+  const soft = await color.evaluate((el) => getComputedStyle(el).backgroundColor)
+  await dash.click()
+  await page.mouse.move(0, 0)
+  await expect(dash).toHaveAttribute('aria-current', 'page')
+  expect(await dash.evaluate((el) => [getComputedStyle(el).backgroundColor, getComputedStyle(el).transitionProperty])).toEqual([soft, expect.not.stringMatching(/background|all/)])
+  expect(await color.evaluate((el) => getComputedStyle(el).backgroundColor)).not.toBe(soft)
 })
 
 test('部品の検索: 選ぶとそのページの標本へ移り、目次で別の標本へ移れる', async ({ page }) => {

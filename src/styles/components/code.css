@@ -6,6 +6,8 @@
 .cb-t{min-width:0;overflow:hidden;font-weight:600;text-overflow:ellipsis;white-space:nowrap}
 .cb-l{flex:none;color:var(--ink-3)}
 .cb-h .icon-btn{flex:none;margin-left:auto}
+/* コピーの吹き出しは見出しの行の中、ボタンの左に出す（右端のボタンの下に中央ぞろえで出すと、角丸のために切り抜いた枠の外へはみ出して見切れる） */
+@media (hover:hover){.cb-h [data-tip]:is(:hover,:focus-visible)::after{top:50%;left:auto;right:calc(100% + 6px);transform:translateY(-50%);animation-name:tipInLeft}}
 
 .cb-b{--cb-lh:1.6;min-width:0;overflow:auto;font-size:var(--fs-13);line-height:var(--cb-lh)}
 .cb.limited .cb-b{max-height:calc(var(--cb-lines) * var(--cb-lh) * 1em + 24px)}
