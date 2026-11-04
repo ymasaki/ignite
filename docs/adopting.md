@@ -37,7 +37,7 @@ npm install -D vite @vitejs/plugin-react typescript @types/react @types/react-do
 |---|---|
 | `ignite.config.json` | ソースの検査の設定 |
 | `e2e/ignite.audit.ts` | 監査する画面の一覧 |
-| `playwright.ignite.config.ts` | 監査の実行の設定。ポート 5317 を使う |
+| `playwright.ignite.config.ts` | 監査の実行の設定。実行のたびに空いているポートを選ぶ |
 | `AGENTS.md` の Ignite の節（`CLAUDE.md` があればそこにも） | AI エージェント向けの決まり |
 | `.claude/skills/ignite-audit`・`.agents/skills/ignite-audit` | 監査のスキル |
 | `package.json` の `ignite:check`・`ignite:audit`・`ignite:sync`・`ignite:upgrade` | 実行の入口 |

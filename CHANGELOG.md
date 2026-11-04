@@ -4,6 +4,10 @@
 
 ## 1.5.0（2026-11-04）
 
+### 修正
+
+- 監査の設定 `playwright.ignite.config.ts` がポート 5317 に固定されていて、ほかのアプリの監査や開発サーバーが 5317 を使っていると `npm run ignite:audit` が失敗していた。実行のたびに空いているポートを選ぶようにした。この設定は `ignite init` で一度だけ置かれ、`ignite upgrade` では上書きされない。既に置いてあるアプリは、同梱の `templates/app/playwright.ignite.config.ts` で置き換える（独自に変えた箇所があれば移す）
+
 ### 変更
 
 - `AuthScreen` の画面名（`title`）を目に見える見出しとしては出さず、読み上げ用の `h1`（`sr-only`）にした。ログインの型は印と名前のすぐ下に入力が続く。`title` の指定はそのまま使える（画面には出ない）。`.auth-title` クラスは廃止した。採用アプリで `.auth-title` を直接指定していれば外す

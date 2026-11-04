@@ -1,4 +1,4 @@
-// 実プロセスでロック・失敗・中断を確認する。固定5198の他者のサーバーには触れない。
+// 実プロセスでロック・失敗・中断を確認する。実際の監査サーバーは立てない。
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { mkdtemp, mkdir, readFile, writeFile, access, rm } from 'node:fs/promises'
@@ -18,7 +18,7 @@ test('監査の排他と終了処理', async t => {
     await mkdir(path.join(root, 'scripts'), { recursive: true })
     await mkdir(path.join(root, 'node_modules/@playwright/test'), { recursive: true })
     await writeFile(path.join(root, 'scripts/audit-design.mjs'), source)
-    await writeFile(path.join(root, 'scripts/audit-server.mjs'), "process.send({ready:true}); setInterval(()=>{},1000)")
+    await writeFile(path.join(root, 'scripts/audit-server.mjs'), "process.send({ready:true,port:41234}); setInterval(()=>{},1000)")
     await writeFile(path.join(root, 'node_modules/@playwright/test/cli.js'), body)
     return root
   }
@@ -53,6 +53,20 @@ test('監査の排他と終了処理', async t => {
       assert.ok(results.some(x => x.output.includes('他の監査を待機')))
       await gone()
     })
+    await t.test('監査サーバーが知らせたポートを監査へ渡す', async () => {
+      const result = await run(await fixture('port', 'console.log("port=" + process.env.IGNITE_AUDIT_PORT)')).done
+      assert.equal(result.code, 0, result.output)
+      assert.match(result.output, /port=41234/)
+      await gone()
+    })
+    await t.test('ポートを知らせないサーバーでは監査を始めない', async () => {
+      const root = await fixture('noport', 'console.log("監査を実行")')
+      await writeFile(path.join(root, 'scripts/audit-server.mjs'), "process.send({ready:true}); setInterval(()=>{},1000)")
+      const result = await run(root).done
+      assert.notEqual(result.code, 0)
+      assert.doesNotMatch(result.output, /監査を実行/)
+      await gone()
+    })
     await t.test('監査失敗でも解放', async () => {
       assert.equal((await run(await fixture('fail', 'process.exit(7)')).done).code, 7)
       await gone()
@@ -79,7 +93,7 @@ test('監査の排他と終了処理', async t => {
     await t.test('監査中のサーバー終了は監査も失敗・停止する', async () => {
       const marker = path.join(dir, 'server-death.pid')
       const root = await fixture('server-death', `require('fs').writeFileSync(${JSON.stringify(marker)}, String(process.pid));setInterval(()=>{},1000)`)
-      await writeFile(path.join(root, 'scripts/audit-server.mjs'), 'process.send({ready:true});setTimeout(()=>process.exit(0),500)')
+      await writeFile(path.join(root, 'scripts/audit-server.mjs'), 'process.send({ready:true,port:41234});setTimeout(()=>process.exit(0),500)')
       assert.equal((await run(root).done).code, 1)
       const pid = Number(await readFile(marker, 'utf8'))
       assert.throws(() => process.kill(pid, 0))
@@ -146,7 +160,7 @@ process.kill = (pid, signal) => {
       await writeFile(path.join(root, 'scripts/audit-server.mjs'), `
 import {writeFileSync} from 'node:fs'
 writeFileSync(${JSON.stringify(marker)}, String(process.pid))
-process.send({ready:true});setInterval(()=>{},1000)
+process.send({ready:true,port:41234});setInterval(()=>{},1000)
 `)
       const inject = `
 import {readFileSync} from 'node:fs'
