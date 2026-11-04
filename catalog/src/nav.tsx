@@ -50,6 +50,7 @@ export const PAGES: PageDef[] = [
     { id: 'button', title: 'ボタン', parts: ['Button'] },
     { id: 'icon', title: 'アイコンのボタン', parts: ['IconButton'] },
     { id: 'text', title: '文字のボタン', parts: ['LinkButton', 'ExternalLink', 'CopyText'] },
+    { id: 'provider', title: '外部認証のロゴ', parts: ['ProviderLogo'] },
     { id: 'menu', title: '操作の一覧', parts: ['Menu'] },
     { id: 'popover', title: '小さなパネル', parts: ['Popover'] },
   ] },

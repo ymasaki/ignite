@@ -1,5 +1,5 @@
-import { IconBrandAppleFilled, IconBrandGoogle, IconChartLine, IconChecks, IconClock, IconListCheck, IconPencil, IconShare, IconShieldLock } from '@tabler/icons-react'
-import { AssistSettings, AuthScreen, Avatar, BarList, Board, Button, ChartCard, ChartGrid, Chip, DashboardScreen, Delta, EmptyState, EntityRow, Funnel, IconBox, IconButton, KeyValues, Kpi, KpiBand, LineChart, LinkButton, ListScreen, LoginForm, PanelBody, PanelFrame, PanelHeader, SearchField, Section, Segmented, SettingBody, SettingGroup, SettingKey, SettingRow, SettingsScreen, Sparkline, StackColumns, Stat, tabPanelProps, Tabs, Tag, ThemeSettings, TileMap, toast } from '@ymasaki/ignite'
+import { IconChartLine, IconChecks, IconClock, IconListCheck, IconPencil, IconShare } from '@tabler/icons-react'
+import { AssistSettings, AuthScreen, Avatar, BarList, Board, Button, ChartCard, ChartGrid, Chip, DashboardScreen, Delta, EmptyState, EntityRow, Funnel, IconBox, IconButton, KeyValues, Kpi, KpiBand, LineChart, LinkButton, ListScreen, LoginForm, PanelBody, PanelFrame, PanelHeader, ProviderLogo, SearchField, Section, Segmented, SettingBody, SettingGroup, SettingKey, SettingRow, SettingsScreen, Sparkline, StackColumns, Stat, tabPanelProps, Tabs, Tag, ThemeSettings, TileMap, toast } from '@ymasaki/ignite'
 import { useRef, useState, type ReactNode } from 'react'
 import { VALUES } from './Charts'
 import { MONTHS, PROJECTS, UPDATES } from './data'
@@ -120,9 +120,9 @@ export function LoginPage({ mark, onBack }: { mark: ReactNode; onBack: () => voi
         onForgot={() => undefined}
         alternatives={kind === 'alt' ? (
           <>
-            <Button icon={<IconBrandGoogle size={16} stroke={1.8} aria-hidden="true" />}>Google でログインする</Button>
-            <Button icon={<IconBrandAppleFilled size={16} aria-hidden="true" />}>Apple でログインする</Button>
-            <Button icon={<IconShieldLock size={16} stroke={1.8} aria-hidden="true" />}>Okta でログインする</Button>
+            <Button icon={<ProviderLogo provider="google" />}>Google でログインする</Button>
+            <Button icon={<ProviderLogo provider="apple" />}>Apple でログインする</Button>
+            <Button icon={<ProviderLogo provider="okta" />}>Okta でログインする</Button>
           </>
         ) : undefined}
       />

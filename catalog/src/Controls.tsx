@@ -1,5 +1,5 @@
 import { IconBookmark, IconCopy, IconDownload, IconFilter, IconPencil, IconPlus, IconRefresh, IconSearch, IconSettings, IconShare, IconTrash } from '@tabler/icons-react'
-import { Accordion, Button, CopyText, Crumbs, ExternalLink, IconButton, KeyValues, LinkButton, Menu, MonthStepper, Pagination, Popover, Segmented, Stepper, Steps, Tabs, toast } from '@ymasaki/ignite'
+import { Accordion, Button, CopyText, Crumbs, ExternalLink, IconButton, KeyValues, LinkButton, Menu, MonthStepper, Pagination, Popover, ProviderLogo, Segmented, Stepper, Steps, Tabs, toast } from '@ymasaki/ignite'
 import { useEffect, useState } from 'react'
 import { MONTHS } from './data'
 import { Case, Cases, Page, Spec } from './kit'
@@ -42,6 +42,15 @@ export function ActionsPage({ target }: { target?: string | null }) {
           <Case label="外部のページ"><ExternalLink href="https://example.com/">利用の案内</ExternalLink></Case>
           <Case label="値をコピー"><div className="cat-parts"><CopyText text="ignite" label="名前" /></div></Case>
         </Cases>
+      </Spec>
+      <Spec page={p} id="provider">
+        <div className="cat-row">
+          <Button icon={<ProviderLogo provider="google" />}>Google でログインする</Button>
+          <Button icon={<ProviderLogo provider="apple" />}>Apple でログインする</Button>
+          <Button icon={<ProviderLogo provider="microsoft" />}>Microsoft でログインする</Button>
+          <Button icon={<ProviderLogo provider="github" />}>GitHub でログインする</Button>
+          <Button icon={<ProviderLogo provider="okta" />}>Okta でログインする</Button>
+        </div>
       </Spec>
       <Spec page={p} id="menu">
         <div className="cat-row">

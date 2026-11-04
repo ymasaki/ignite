@@ -322,11 +322,12 @@
 | `TextArea` / `TextField` | `TextArea.tsx` / `controls.css` | 文字を書く入力欄。`TextArea` は複数行（`.field.area`）、`TextField` は 1 行で幅いっぱい（`.field.wide`。設定の行に置くと値の側が広がる。`secret` でトークンなどを伏せる）。`type`（`email`・`tel`・`url`）・`autoComplete`・`name`・`autoCapitalize` で欄の種類をブラウザと端末に伝える。上限は `maxLength` で止め、残りの字数は出さない |
 | `PasswordField` | `TextArea.tsx` / `controls.css` | パスワードの欄。右端のボタンで打った文字を確かめられ（`aria-pressed`）、フォームを送ると伏せた形へ戻す。`autoComplete` はログインなら既定の `current-password`、新しく決める欄は `new-password`。トークンなど覚えさせない値は `TextField` の `secret` |
 | `AuthScreen` / `LoginForm` | `Auth.tsx` / `auth.css` | ログインの画面の型（`AppShell` の外に置く。7 章「画面の型」）/ ログインの入力。認証は持たず、`onSubmit` に検証済みの値を渡し、結果を `loading`・`error` で受け取る。`identifierType` と `identifierLabel` でユーザー名に、`remember`・`onForgot`・`alternatives` で項目を足す |
+| `ProviderLogo` | `Auth.tsx` | 外部認証の提供元の公式ロゴ（`google`・`apple`・`microsoft`・`github`・`okta`）。`LoginForm` の `alternatives` に置く `Button` の `icon` に使う。形と色は各社の決まりなのでトークンにせず、スキンでも変えない（Google の 4 色の「G」・Microsoft の 4 色の四角。単色の Apple・GitHub・Okta は文字の色）。読み上げない（ボタンの文字が名前になる）。既定は 16px |
 | `FormField` | `Field.tsx` / `form.css` | 入力欄の見出し（上）・補足 `hint`・エラー `error`・`required`（「必須」の印）を 1 つにまとめる枠。中に入力の部品を 1 つ置き、その部品の `label` は省ける（見出しが名前になり、補足とエラーは欄と一緒に読まれる）。複数の項目を選ぶ部品は `group`。送信で検証に失敗したら `focusFirstInvalid()` で最初のエラーへ移す。検証のタイミングは「欄を離れたとき」か「送信のとき」で、打っている途中にエラーを出さない |
 | `Checkbox` | `Form.tsx` / `form.css` | 1 項目の入/切。保存のボタンと一緒に使う（押してすぐ効くなら `Switch`）。`hint` で補足、`indeterminate` で一部選択、`hideLabel` で名前を隠す（表の中） |
 | `RadioGroup` | 同上 | 文面まで見せて 1 つを選ぶ。選択肢が短く 5 つまでなら `Segmented`、多いなら `Select`。`hint` で各項目の補足、`inline` で横並び |
 | `Switch` | 同上 | 押すとすぐ効く入/切（設定の行など）。保存のボタンのある画面には置かない。つまみは `--ease-spring` |
-| `NumberField` | 同上 | 数の欄。↑↓ と − ＋ で増減、全角の数字も読む、欄を離れるときに `min`・`max` へ収める。`step` の桁で端数を出さない。`unit` は欄の右の単位。読めない文字は欄を離れると空に戻す |
+| `NumberField` | 同上 | 数の欄。↑↓ と − ＋ で増減（変えた直後だけ欄の数字を `RollingNumber` と同じように桁で回す。打ち込みの途中は回さない。回る数字は飾りで、読み上げは欄の値）、全角の数字も読む、欄を離れるときに `min`・`max` へ収める。`step` の桁で端数を出さない。`unit` は欄の右の単位。読めない文字は欄を離れると空に戻す |
 | `Combobox` | 同上 | 打って絞り込み、候補から 1 つを選ぶ。候補が 10 を超えるとき（少なければ `Select`）。候補の見た目は `Select` と同じ。変換の確定の Enter では選ばない。欄を空にして離れると選択を外す。候補は `SelectOption` |
 | `DatePicker` | `DatePicker.tsx`（計算は `calendar.ts`）/ `form.css` | 1 日を選ぶカレンダー。値は `2026-09-27` の文字列で、表記は 9 章の `fmtDate`。`min`・`max`、`clearable`（選択を外す）、`weekStart`（週の始まり、既定は日曜）。週末・祝日を色で塗り分けない。キーは ←→↑↓・Home・End・PageUp・PageDown（Shift で年） |
 | `Select` | 同上 | 1 つを選ぶプルダウン。選択肢は `lead`（アイコン・ロゴ）と `meta`（件数など）を持てる。`fit` で幅が足りないとき `meta` → `lead` の順に隠す。ブラウザ標準の `<select>` は使わない。文字列・数値の補足（`meta`）はボタンの読み上げ名にも含める |

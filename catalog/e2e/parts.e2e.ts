@@ -161,6 +161,28 @@ test('NumberField: 全角の数字を読み、離すと上限へ収め、↑↓ 
   await expect(rate).toHaveValue('0.6')
 })
 
+test('NumberField: − ＋ で変えた直後だけ数字を回し、打ち込むと欄の文字に戻る', async ({ page }) => {
+  await open(page, 'forms')
+  const input = page.getByRole('spinbutton', { name: '人数' })
+  const box = input.locator('..')
+  const before = Number(await input.inputValue())
+  await page.getByRole('button', { name: '人数を増やす' }).click()
+  await expect(box).toHaveClass(/rolling/)
+  await expect(input).toHaveAttribute('aria-valuenow', String(before + 1))
+  // 回る数字は飾り（読み上げは欄の値）。欄の文字は透明にして重ねた数字を見せる
+  await expect(box.locator('.nf-roll')).toHaveAttribute('aria-hidden', 'true')
+  expect(await input.evaluate((el) => getComputedStyle(el).color)).toBe('rgba(0, 0, 0, 0)')
+  // しばらくで欄の文字に戻る
+  await expect(box).not.toHaveClass(/rolling/, { timeout: 2000 })
+  await page.getByRole('button', { name: '人数を減らす' }).click()
+  await expect(box).toHaveClass(/rolling/)
+  // 欄の文字を選んで打ち替える（macOS では End で行末へ移らないので、選んでから打つ）
+  await input.selectText()
+  await input.pressSequentially('7')
+  await expect(box).not.toHaveClass(/rolling/)
+  await expect(input).toHaveValue('7')
+})
+
 test('FormField: エラーを出すと欄の補足として読まれ、見出しを押すと欄へ移る', async ({ page }) => {
   await open(page, 'forms')
   await page.getByRole('button', { name: '保存する' }).click()

@@ -32,7 +32,7 @@ export { CONTRAST_RULES, CONTRAST_TEXT, CONTRAST_TEXT_MORE, CONTRAST_UI, contras
 export { AssistSettings, SettingBody, SettingGroup, SettingKey, SettingRow, SettingsButton, SettingsScreen, ThemeSettings } from './ui/Settings'
 export { CONTRASTS, DEFAULT_ASSIST, MOTIONS, TEXT_SCALE, TEXT_SIZES, applyAssist, assistChanged, assistEnv, currentAssist, parseAssist, sameAssist, setAssist, shortcutsOn, startAssist, type Assist, type AssistEnv } from './assist'
 export { PasswordField, TextArea, TextField } from './ui/TextArea'
-export { AuthScreen, LoginForm, type LoginValues } from './ui/Auth'
+export { AuthScreen, LoginForm, ProviderLogo, type AuthProvider, type LoginValues } from './ui/Auth'
 export { MARK_NAMES, MarkPicker } from './ui/Mark'
 export { FormField } from './ui/Field'
 export { Checkbox, Combobox, NumberField, RadioGroup, Switch, type RadioOption } from './ui/Form'

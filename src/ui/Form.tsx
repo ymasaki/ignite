@@ -5,6 +5,7 @@ import { IconCheck, IconChevronDown, IconMinus, IconPlus } from '@tabler/icons-r
 import { useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { usePlaced, type SelectOption } from './Controls'
 import { fieldProps, useField } from './Field'
+import { RollingNumber } from './Motion'
 
 /** 1 つの項目の入/切。indeterminate は「一部だけ選んでいる」（表の見出しのすべて選ぶなど）。hideLabel は名前を見せない（表の中など） */
 export function Checkbox({ checked, onChange, label, hint, indeterminate = false, hideLabel = false, disabled = false }: { checked: boolean; onChange: (v: boolean) => void; label?: string; hint?: ReactNode; indeterminate?: boolean; hideLabel?: boolean; disabled?: boolean }) {
@@ -92,7 +93,18 @@ export function NumberField({ value, onChange, label, min, max, step = 1, unit, 
   // 打っている途中に外から値が変わったら、外の値を優先する（古い下書きを離れるときに書き戻さない）
   useEffect(() => setDraft(null), [value])
   const shown = draft === null ? value : parseNumber(draft)
+  // − ＋ と ↑↓ で変えたときだけ、欄の数字の上に回る数字（RollingNumber）を重ねて桁を回す。打ち込みの途中は欄の文字のまま。
+  // 回る数字は初めの表示では動かないので、ふだんから見えない形で置いておき、変えた直後だけ見せる
+  const [rolling, setRolling] = useState(false)
+  useEffect(() => {
+    if (!rolling) return
+    const t = window.setTimeout(() => setRolling(false), 700)
+    return () => clearTimeout(t)
+  }, [rolling, value])
+  const text = value == null ? '' : String(value)
+  const rollable = draft === null && /^\d+(\.\d+)?$/.test(text)
   const set = (n: number) => (setDraft(null), onChange(n))
+  const stepBy = (n: number) => (setRolling(true), set(n))
   const commit = () => {
     if (draft === null) return
     const n = parseNumber(draft)
@@ -102,15 +114,18 @@ export function NumberField({ value, onChange, label, min, max, step = 1, unit, 
   const onKey = (e: KeyboardEvent) => {
     if (e.nativeEvent.isComposing || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return
     e.preventDefault()
-    set(stepNumber(draft === null ? value : parseNumber(draft), e.key === 'ArrowUp' ? step : -step, step, min, max))
+    const next = stepNumber(draft === null ? value : parseNumber(draft), e.key === 'ArrowUp' ? step : -step, step, min, max)
+    if (draft === null) stepBy(next)
+    else set(next)
   }
   return (
     <span className="numfield">
-      <span className="nf-box">
-        <input className="field" type="text" inputMode="decimal" role="spinbutton" autoComplete="off" aria-label={f.label} aria-valuenow={shown ?? undefined} aria-valuemin={min} aria-valuemax={max} aria-valuetext={shown != null && unit ? `${shown}${unit}` : undefined} placeholder={placeholder} disabled={disabled} value={draft ?? value ?? ''} onChange={(e) => setDraft(e.target.value)} onBlur={commit} onKeyDown={onKey} {...fieldProps(f)} />
+      <span className={`nf-box${rolling && rollable ? ' rolling' : ''}`}>
+        <input className="field" type="text" inputMode="decimal" role="spinbutton" autoComplete="off" aria-label={f.label} aria-valuenow={shown ?? undefined} aria-valuemin={min} aria-valuemax={max} aria-valuetext={shown != null && unit ? `${shown}${unit}` : undefined} placeholder={placeholder} disabled={disabled} value={draft ?? value ?? ''} onChange={(e) => (setRolling(false), setDraft(e.target.value))} onBlur={commit} onKeyDown={onKey} {...fieldProps(f)} />
+        {rollable && <span className="nf-roll" aria-hidden="true"><RollingNumber value={value!} decimals={text.split('.')[1]?.length ?? 0} /></span>}
         {/* ↑↓ で同じことができるので Tab では止まらない */}
-        <button type="button" className="nf-btn" tabIndex={-1} aria-label={`${f.label ?? ''}を減らす`} data-tip={`${f.label ?? ''}を減らす`} disabled={disabled || (value != null && min != null && value <= min)} onClick={() => set(stepNumber(value, -step, step, min, max))}><IconMinus size={14} stroke={1.8} /></button>
-        <button type="button" className="nf-btn" tabIndex={-1} aria-label={`${f.label ?? ''}を増やす`} data-tip={`${f.label ?? ''}を増やす`} disabled={disabled || (value != null && max != null && value >= max)} onClick={() => set(stepNumber(value, step, step, min, max))}><IconPlus size={14} stroke={1.8} /></button>
+        <button type="button" className="nf-btn" tabIndex={-1} aria-label={`${f.label ?? ''}を減らす`} data-tip={`${f.label ?? ''}を減らす`} disabled={disabled || (value != null && min != null && value <= min)} onClick={() => stepBy(stepNumber(value, -step, step, min, max))}><IconMinus size={14} stroke={1.8} /></button>
+        <button type="button" className="nf-btn" tabIndex={-1} aria-label={`${f.label ?? ''}を増やす`} data-tip={`${f.label ?? ''}を増やす`} disabled={disabled || (value != null && max != null && value >= max)} onClick={() => stepBy(stepNumber(value, step, step, min, max))}><IconPlus size={14} stroke={1.8} /></button>
       </span>
       {unit && <span className="nf-unit">{unit}</span>}
     </span>

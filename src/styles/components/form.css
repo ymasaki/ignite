@@ -51,6 +51,10 @@
 .nf-btn:active{background:var(--press);scale:var(--press-scale)}
 .nf-btn:disabled{opacity:.45;pointer-events:none}
 .nf-unit{font-size:var(--fs-13);color:var(--ink-3)}
+/* − ＋・↑↓ で変えた直後だけ、欄の数字の上に回る数字を重ねる（ui/Form.tsx の NumberField）。欄の文字と同じ位置・書体にそろえ、欄の文字は透明にする（カーソルは残す） */
+.nf-roll{position:absolute;inset:1px var(--field-pr) 1px 1px;display:flex;align-items:center;padding-left:var(--field-pl,12px);overflow:hidden;font-family:var(--font-num);font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap;pointer-events:none;opacity:0}
+.nf-box.rolling > .nf-roll{opacity:1}
+.nf-box.rolling > .field{color:transparent;caret-color:var(--ink)}
 
 /* 候補から選ぶ入力。候補の見た目は Select と同じ */
 .combo{display:block;width:100%}
