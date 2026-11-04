@@ -12,7 +12,7 @@ import { PasswordField, TextField } from './TextArea'
 
 /**
  * アプリの枠（AppShell）の外に置く、ログインなどの画面の型。窓の中央に 1 枚の面を置く。
- * mark と name はアプリの印と名前、title は h1、footer は面の外の下に添えるもの。低い窓では画面の中をスクロールする
+ * mark と name はアプリの印と名前、title は h1（読み上げ用。画面には出さない）、footer は面の外の下に添えるもの。低い窓では画面の中をスクロールする
  */
 export function AuthScreen({ mark, name, title, footer, children }: { mark?: ReactNode; name: ReactNode; title: string; footer?: ReactNode; children: ReactNode }) {
   const titleId = useId()
@@ -24,7 +24,7 @@ export function AuthScreen({ mark, name, title, footer, children }: { mark?: Rea
             {mark && <span className="auth-mark">{mark}</span>}
             <span className="auth-name">{name}</span>
           </div>
-          <h1 className="auth-title" id={titleId}>{title}</h1>
+          <h1 className="auth-title sr-only" id={titleId}>{title}</h1>
           {children}
         </section>
         {footer && <div className="auth-foot">{footer}</div>}

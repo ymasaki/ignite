@@ -3,12 +3,13 @@
 /* 中央寄せは margin:auto（align-items:center だと低い窓で上が切れる） */
 .auth-column{display:grid;gap:var(--space-4);width:100%;max-width:400px;margin:auto}
 .auth-card{display:grid;gap:var(--space-5);min-width:0;padding:var(--space-5);border:1px solid var(--line);border-radius:14px;background:var(--panel);box-shadow:var(--shadow)}
-.auth-brand{display:flex;align-items:center;justify-content:center;gap:var(--space-2);min-width:0;margin-bottom:calc(var(--space-2) * -1)}
+.auth-brand{display:flex;align-items:center;justify-content:center;gap:var(--space-2);min-width:0}
 /* 印はアプリから受け取るので、形によらず同じ大きさで置く */
 .auth-mark{display:block;flex:none;color:var(--pri)}
 .auth-mark > *{display:block;width:48px;height:48px;object-fit:contain}
 .auth-name{min-width:0;overflow:hidden;font-size:var(--fs-24);font-weight:700;line-height:1.2;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
-.auth-title{margin:0;font-size:var(--fs-16);font-weight:700;line-height:1.3;text-align:center;color:var(--ink-2)}
+/* 画面名は読み上げ用（sr-only）。見えなくても文字の大きさは決まりの値にする */
+.auth-title{margin:0;font-size:var(--fs-16)}
 .auth-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:var(--space-2) var(--space-3);font-size:var(--fs-12);color:var(--ink-3)}
 
 .login{display:grid;gap:var(--space-4);min-width:0}

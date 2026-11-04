@@ -478,9 +478,9 @@ test('LoginForm: キーボードの順は入力欄から再設定を通って送
 
 test('AuthScreen: 低い窓では画面の中をスクロールして主ボタンまで届く', async ({ page }) => {
   await open(page, 'login')
-  await page.setViewportSize({ width: 720, height: 360 })
+  await page.setViewportSize({ width: 720, height: 300 })
   const screen = page.locator('.auth-screen')
-  await expect(page.getByRole('heading', { level: 1 })).toBeInViewport()
+  await expect(page.locator('.auth-name')).toBeInViewport()
   await page.getByRole('button', { name: 'ログインする' }).scrollIntoViewIfNeeded()
   await expect(page.getByRole('button', { name: 'ログインする' })).toBeInViewport()
   expect(await screen.evaluate((el) => el.scrollTop > 0 && document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
