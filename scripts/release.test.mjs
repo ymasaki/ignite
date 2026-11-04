@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import { release, buildPackage, command } from './release.mjs'
+import { release, buildPackage, command, accountToken } from './release.mjs'
 
 const commit = 'a'.repeat(40)
 const older = 'c'.repeat(40) // 手元で対象コミットの祖先
@@ -16,15 +16,17 @@ function fixture(t) {
   const state = { private: true, synced: true, dirty: false, tag: null, remote: null, assets: [], builds: 0, writes: 0, calls: [], failUpload: false, losePublish: false, main: commit, pushes: [], failPush: false }
   const filename = 'ymasaki-ignite-1.3.1.tgz'
   const json = value => Buffer.from(JSON.stringify(value))
-  const run = (cmd, args) => {
-    state.calls.push([cmd, args])
+  const run = (cmd, args, options = {}) => {
+    state.calls.push([cmd, args, options])
     if (cmd === 'git' && args[0] === 'merge-base') {
       const [, , a, b] = args
       const line = [older, commit, newer]
       if (!line.includes(a) || !line.includes(b) || line.indexOf(a) > line.indexOf(b)) throw Error('祖先ではない')
       return Buffer.alloc(0)
     }
-    if (cmd === 'git' && args[0] === 'push') {
+    if (cmd === 'git' && args.includes('push')) {
+      assert.equal(options.env?.GH_TOKEN, 'ymasaki-token')
+      args = args.slice(args.indexOf('push'))
       state.pushes.push(args)
       if (state.failPush) throw Error('push失敗')
       state.main = args.at(-1).split(':')[0]
@@ -33,6 +35,7 @@ function fixture(t) {
     if (cmd === 'git') return Buffer.from(args[0] === 'rev-parse' ? commit : state.dirty ? ' M package.json' : '')
     if (cmd === 'tar') return json({ name: '@ymasaki/ignite', version: '1.3.1' })
     assert.equal(cmd, 'gh')
+    assert.equal(options.env?.GH_TOKEN, 'ymasaki-token')
     if (args[0] === 'release') {
       assert.ok(!args.includes('--clobber'))
       assert.ok(args.includes('github.com/ymasaki/ignite'))
@@ -83,7 +86,8 @@ function fixture(t) {
     throw Error(`想定外: ${cmd} ${args}`)
   }
   const build = (_root, _commit, stage) => { state.builds++; fs.writeFileSync(path.join(stage, filename), '固定tgz') }
-  const perform = options => release({ root, commit, run, build, ...options })
+  const token = () => { state.tokens = (state.tokens || 0) + 1; return 'ymasaki-token' }
+  const perform = options => release({ root, commit, run, build, token, ...options })
   return { root, state, filename, perform, run }
 }
 
@@ -136,12 +140,36 @@ for (const [label, change, pattern] of [
   assert.equal(state.builds, 0)
   assert.equal(state.writes, 0)
 })
+test('ghの有効アカウントによらず、送信の認証にymasakiのトークンだけを使う', t => {
+  const { perform, state } = fixture(t)
+  state.main = older
+  perform()
+  assert.equal(state.tokens, 1)
+  const push = state.calls.find(([cmd, args]) => cmd === 'git' && args.includes('push'))
+  assert.deepEqual(push[1].slice(0, 4), ['-c', 'credential.helper=', '-c', 'credential.helper=!gh auth git-credential'])
+})
+test('ymasakiの認証がなければGitHubへ触らず停止する', t => {
+  const { perform, state } = fixture(t)
+  assert.throws(() => perform({ token: () => accountToken(() => { throw Error('no account') }) }), /ymasaki.*ログイン/)
+  assert.ok(!state.calls.some(([cmd]) => cmd === 'gh'))
+  assert.equal(state.builds, 0)
+})
+test('トークンは環境変数を外してymasaki指定で取り出す', () => {
+  const calls = []
+  process.env.GH_TOKEN = 'other'
+  try {
+    assert.equal(accountToken((cmd, args, options) => { calls.push([cmd, args, options]); return Buffer.from('tok\n') }), 'tok')
+  } finally { delete process.env.GH_TOKEN }
+  assert.deepEqual(calls[0][1], ['auth', 'token', '--hostname', 'github.com', '--user', 'ymasaki'])
+  assert.equal(calls[0][2].env.GH_TOKEN, undefined)
+})
 test('準備だけならGitHubへ送らない', t => {
   const { perform, state } = fixture(t)
   state.main = older
   perform({ prepareOnly: true })
   assert.deepEqual(state.pushes, [])
   assert.ok(!state.calls.some(([cmd]) => cmd === 'gh'))
+  assert.equal(state.tokens, undefined)
 })
 test('指定コミット不一致を止める', t => {
   const { perform } = fixture(t)

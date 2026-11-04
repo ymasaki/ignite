@@ -7,6 +7,8 @@ import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
 const REPO = 'ymasaki/ignite'
+// ghの有効アカウントは他の作業で切り替わる。Privateの公開先は常にこのアカウントで操作する。
+const ACCOUNT = 'ymasaki'
 const base = `repos/${REPO}`
 const hash = data => createHash('sha256').update(data).digest('hex')
 function assert(ok, message) { if (!ok) throw new Error(message) }
@@ -21,6 +23,17 @@ export function command(cmd, args, options = {}) {
   return result.stdout || Buffer.alloc(0)
 }
 
+// 環境変数のトークンではなく、ghに保存した公開用アカウントのトークンを取り出す。
+export function accountToken(run = command) {
+  const env = { ...process.env }
+  delete env.GH_TOKEN
+  delete env.GITHUB_TOKEN
+  let token = ''
+  try { token = run('gh', ['auth', 'token', '--hostname', 'github.com', '--user', ACCOUNT], { env }).toString().trim() } catch {}
+  assert(token, `ghに${ACCOUNT}アカウントの認証がありません。gh auth login --hostname github.com で${ACCOUNT}としてログインしてください`)
+  return token
+}
+
 export function buildPackage(root, commit, destination, run) {
   const work = fs.mkdtempSync(path.join(os.tmpdir(), 'ignite-release-'))
   try {
@@ -32,7 +45,7 @@ export function buildPackage(root, commit, destination, run) {
   } finally { fs.rmSync(work, { recursive: true, force: true }) }
 }
 
-export function release({ root, commit: requested = process.env.DEVBOARD_COMMIT, prepareOnly = false, run = command, build = buildPackage }) {
+export function release({ root, commit: requested = process.env.DEVBOARD_COMMIT, prepareOnly = false, run = command, build = buildPackage, token = accountToken }) {
   const git = (...args) => run('git', args, { cwd: root }).toString().trim()
   const commit = git('rev-parse', 'HEAD')
   assert(!requested || requested === commit, '対象コミットとHEADが一致しません')
@@ -50,7 +63,10 @@ export function release({ root, commit: requested = process.env.DEVBOARD_COMMIT,
   // 残骸は勝手に削除しない。公開の途中停止も再照合してから再開する。
   fs.mkdirSync(lock)
   let stage
-  const api = (endpoint, args = []) => JSON.parse(run('gh', ['api', '--hostname', 'github.com', endpoint, ...args]).toString())
+  let env
+  // GitHubへ触る呼び出しはすべて公開用アカウントのトークンで行う。
+  const gh = args => run('gh', args, { env: (env ??= { ...process.env, GH_TOKEN: token() }) })
+  const api = (endpoint, args = []) => JSON.parse(gh(['api', '--hostname', 'github.com', endpoint, ...args]).toString())
   const privateRepo = () => assert(api(base).private === true, 'GitHubリポジトリがPrivateではありません')
   const tagCommit = () => {
     try { api(`${base}/git/ref/tags/${tag}`) } catch (error) {
@@ -68,7 +84,8 @@ export function release({ root, commit: requested = process.env.DEVBOARD_COMMIT,
     const remoteMain = api(`${base}/git/ref/heads/main`).object.sha
     if (remoteMain === commit || isAncestor(commit, remoteMain)) return
     assert(isAncestor(remoteMain, commit), 'GitHubのmainが対象コミットの祖先ではありません。分岐を確認してください')
-    run('git', ['push', `https://github.com/${REPO}.git`, `${commit}:refs/heads/main`], { cwd: root, stdio: ['ignore', 'inherit', 'inherit'] })
+    // 保存済みの別認証（キーチェーン等）を使わず、gh経由で同じトークンを渡す。
+    run('git', ['-c', 'credential.helper=', '-c', 'credential.helper=!gh auth git-credential', 'push', `https://github.com/${REPO}.git`, `${commit}:refs/heads/main`], { cwd: root, stdio: ['ignore', 'inherit', 'inherit'], env })
   }
   const checkTag = (required = false) => {
     const found = tagCommit()
@@ -126,7 +143,7 @@ export function release({ root, commit: requested = process.env.DEVBOARD_COMMIT,
       assert(new Set(items.map(a => a.name)).size === items.length, '添付名が重複しています')
       for (const asset of items) {
         assert(names.includes(asset.name), `想定外の添付があります: ${asset.name}`)
-        const data = run('gh', ['api', '--hostname', 'github.com', `${base}/releases/assets/${asset.id}`, '-H', 'Accept: application/octet-stream'])
+        const data = gh(['api', '--hostname', 'github.com', `${base}/releases/assets/${asset.id}`, '-H', 'Accept: application/octet-stream'])
         assert(hash(data) === verified.hashes[asset.name], `GitHubの添付が一致しません: ${asset.name}`)
       }
       if (complete) assert(items.length === names.length, 'GitHubの添付が不足しています')
@@ -137,7 +154,7 @@ export function release({ root, commit: requested = process.env.DEVBOARD_COMMIT,
       for (const name of names) if (!present.some(a => a.name === name)) {
         // --clobberを使わない。競合や応答喪失は次回に読み直す。
         privateRepo()
-        run('gh', ['release', 'upload', tag, path.join(directory, name), '--repo', `github.com/${REPO}`])
+        gh(['release', 'upload', tag, path.join(directory, name), '--repo', `github.com/${REPO}`])
       }
       verifyAssets(assets(), true)
       privateRepo()
