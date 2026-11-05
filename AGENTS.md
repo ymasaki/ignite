@@ -31,3 +31,4 @@
 - 起動: `bash scripts/start-catalog.sh`（停止まで動く。DevBoardのstaging.startから起動）。停止は起動元で行う。
 - 確認: `curl --fail http://localhost:5199/`。専用ポートを固定し、競合時には停止する。
 - worktreeの一時検証は別ポートを使い、終了後に必ず止める。
+- 公開用のカタログは `https://ymasaki.github.io/ignite/`。GitHubのmainが更新されると `.github/workflows/pages.yml` が配信する（`docs/releasing.md` の「カタログの公開」）。

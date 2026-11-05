@@ -2,6 +2,14 @@
 
 採用アプリは `npx ignite upgrade` でこの内容を確かめて取り込む。形式は [docs/releasing.md](docs/releasing.md)。
 
+## 1.6.1（2026-11-05）
+
+### 修正
+
+- リポジトリ `ymasaki/ignite` を Public にした。GitHub Release の添付（tgz・`SHA256SUMS`・`COMMIT`）は、リポジトリの Read 権限なしで `gh release download` で取得できる。取り込み方とファイルは変わらない
+- カタログを `https://ymasaki.github.io/ignite/` でも公開した
+- コミット履歴の作者のメールアドレスを書き換えたため、v1.6.0 以前のコミットIDが変わった。v1.4.0・v1.6.0 の Release に添付した `COMMIT` は書き換え前のIDのまま。tgz と `SHA256SUMS` は変わらない
+
 ## 1.6.0（2026-11-05）
 
 ### 追加

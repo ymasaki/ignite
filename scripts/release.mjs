@@ -1,4 +1,4 @@
-// 本番操作専用。固定コミットを検査し、Private GitHub Releaseへ同じ配布物を渡す。
+// 本番操作専用。固定コミットを検査し、GitHub Releaseへ同じ配布物を渡す。
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
@@ -7,7 +7,7 @@ import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
 const REPO = 'ymasaki/ignite'
-// ghの有効アカウントは他の作業で切り替わる。Privateの公開先は常にこのアカウントで操作する。
+// ghの有効アカウントは他の作業で切り替わる。公開先は常にこのアカウントで操作する。
 const ACCOUNT = 'ymasaki'
 const base = `repos/${REPO}`
 const hash = data => createHash('sha256').update(data).digest('hex')
@@ -84,7 +84,6 @@ export function release({ root, commit: requested = process.env.DEVBOARD_COMMIT,
     const call = ['api', '--hostname', 'github.com', endpoint, ...args]
     return JSON.parse((args.includes('--method') ? gh(call) : fetchGh(call)).toString())
   }
-  const privateRepo = () => assert(api(base).private === true, 'GitHubリポジトリがPrivateではありません')
   const tagCommit = () => {
     try { api(`${base}/git/ref/tags/${tag}`) } catch (error) {
       if (error.notFound) return null
@@ -116,7 +115,6 @@ export function release({ root, commit: requested = process.env.DEVBOARD_COMMIT,
   }
   try {
     if (!prepareOnly) {
-      privateRepo()
       syncMain()
       assert(api(`${base}/commits/${commit}`).sha === commit, '元コミットがGitHubに同期されていません')
       checkTag()
@@ -143,7 +141,6 @@ export function release({ root, commit: requested = process.env.DEVBOARD_COMMIT,
     assert(read('COMMIT').toString() === `${commit}\n`, 'COMMITが一致しません')
     assert(read('SHA256SUMS').toString() === `${hash(read(filename))}  ${filename}\n`, 'SHA256SUMSが一致しません')
     if (prepareOnly) return directory
-    privateRepo()
     let remote = getRelease()
     if (!remote) {
       const notes = `元コミット: ${commit}\nSHA256: ${hash(read(filename))}\n\n互換性の注意は同梱CHANGELOG.mdを確認してください。`
@@ -170,11 +167,9 @@ export function release({ root, commit: requested = process.env.DEVBOARD_COMMIT,
     if (remote.draft) {
       for (const name of names) if (!present.some(a => a.name === name)) {
         // --clobberを使わない。競合や応答喪失は次回に読み直す。
-        privateRepo()
         gh(['release', 'upload', tag, path.join(directory, name), '--repo', `github.com/${REPO}`])
       }
       verifyAssets(assets(), true)
-      privateRepo()
       remote = api(`${base}/releases/${remote.id}`)
       checkRemote(remote)
       if (remote.draft) remote = api(`${base}/releases/${remote.id}`, ['--method', 'PATCH', '-F', 'draft=false'])

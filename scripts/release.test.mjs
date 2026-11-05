@@ -13,7 +13,7 @@ function fixture(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ignite-release-test-'))
   t.after(() => fs.rmSync(root, { recursive: true, force: true }))
   fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify({ name: '@ymasaki/ignite', version: '1.3.1' }))
-  const state = { private: true, synced: true, dirty: false, tag: null, remote: null, assets: [], builds: 0, writes: 0, calls: [], failUpload: false, losePublish: false, main: commit, pushes: [], failPush: false }
+  const state = { synced: true, dirty: false, tag: null, remote: null, assets: [], builds: 0, writes: 0, calls: [], failUpload: false, losePublish: false, main: commit, pushes: [], failPush: false }
   const filename = 'ymasaki-ignite-1.3.1.tgz'
   const json = value => Buffer.from(JSON.stringify(value))
   const run = (cmd, args, options = {}) => {
@@ -47,7 +47,6 @@ function fixture(t) {
     }
     const endpoint = args[3]
     const method = args.includes('--method') ? args[args.indexOf('--method') + 1] : 'GET'
-    if (endpoint === 'repos/ymasaki/ignite') return json({ private: state.private })
     if (endpoint.endsWith('/git/ref/heads/main')) return json({ object: { sha: state.main } })
     if (endpoint.endsWith(`/commits/${commit}`)) {
       if (!state.synced || ![commit, newer].includes(state.main)) throw Error('No commit found (HTTP 422)')
@@ -91,7 +90,7 @@ function fixture(t) {
   return { root, state, filename, perform, run }
 }
 
-test('Privateで固定物を公開し、再実行は読み取りだけで成功する', t => {
+test('固定物を公開し、再実行は読み取りだけで成功する', t => {
   const { perform, state } = fixture(t)
   assert.match(perform(), /v1.3.1$/)
   assert.equal(state.builds, 1)
@@ -101,7 +100,6 @@ test('Privateで固定物を公開し、再実行は読み取りだけで成功�
   assert.equal(state.writes, 5)
 })
 for (const [label, change] of [
-  ['Public', s => { s.private = false }],
   ['未同期', s => { s.synced = false }],
   ['他のタグコミット', s => { s.tag = 'b'.repeat(40) }],
   ['未コミット変更', s => { s.dirty = true }],
@@ -204,15 +202,6 @@ for (const label of ['違う添付', '余計な添付', '違うdraft元コミッ
   const writes = state.writes
   assert.throws(() => perform())
   assert.equal(state.writes, writes)
-  assert.equal(state.remote.draft, true)
-})
-test('公開前にPrivateでなくなったらdraftのまま停止', t => {
-  const { perform, state, run } = fixture(t)
-  const changing = (cmd, args, options) => {
-    if (cmd === 'gh' && args[3] === 'repos/ymasaki/ignite' && state.assets.length === 3) state.private = false
-    return run(cmd, args, options)
-  }
-  assert.throws(() => perform({ run: changing }), /Private/)
   assert.equal(state.remote.draft, true)
 })
 const timeout = () => Object.assign(Error('dial tcp: i/o timeout'), { network: true })
