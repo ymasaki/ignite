@@ -19,6 +19,7 @@
 - 測れる決まりを足したら、`cli/check.ts` か `audit/` にも足し、テストで違反を検出できることを確かめる。
 - 利用者に影響する変更は `CHANGELOG.md` に書き、`docs/releasing.md` の基準で版を決める。
 - 配布物だけに起きる不具合があるので、部品の土台を変えたら `npm run smoke` を通す。
+- 「プロダクションへ」は同じ版を別の中身で出さない。公開済みの版のあとの変更が配布物外のパス（`scripts/release.mjs` の `OUTSIDE_PACKAGE`: `devboard.json`・`AGENTS.md`・`CLAUDE.md`・`.github/`・公開スクリプト）だけなら版を据え置けるが、`docs/` を含むそれ以外を変えたら版を上げる。
 
 ## 確認
 
