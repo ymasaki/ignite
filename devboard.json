@@ -12,6 +12,7 @@
     "test": "bash scripts/test.sh"
   },
   "production": {
+    "url": "https://ymasaki.github.io/ignite/",
     "branch": "release",
     "command": "node scripts/release.mjs",
     "note": "固定コミットを検査し、tgz・SHA256・COMMITをPrivate GitHub Releaseへ配布する"
