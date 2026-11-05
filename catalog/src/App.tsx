@@ -10,6 +10,7 @@ import { FormsPage } from './Forms'
 import { ColorPage, MotionPage, ShapePage, TypePage } from './Foundations'
 import { pageOf, PAGES } from './nav'
 import { OverviewPage } from './Overview'
+import { SetupPage } from './Setup'
 import { DashboardPage, DetailPanel, ListPage, LoginPage, SettingsPage } from './Screens'
 
 // Ignite のロゴ（docs/logo/ignite-mark.svg と同じ形）。`.brand-mark` が `--pri` で塗るのでスキンに従う
@@ -22,7 +23,7 @@ const LOGO = (
 const NAV = PAGES.map(({ key, label, icon, group }) => ({ key, label, icon, group }))
 // 部品の検索の候補。部品の名前のほかに、標本の見出しとページの名前でも探せる（かな・カタカナの違いは部品が吸収する）
 const FIND: SuggestGroup[] = ['基礎', '部品'].map((group) => ({ key: group, label: group, items: PAGES.filter((p) => p.group === group).flatMap((p) => p.specs.flatMap((s) => (s.parts?.length ? s.parts : [s.title]).map((name) => ({ key: `${p.key}/${s.id}/${name}`, title: name, text: `${s.title} ${p.label}`, sub: name === s.title || s.title === p.label ? p.label : `${p.label} · ${s.title}`, lead: <IconBox>{p.icon}</IconBox> })))) }))
-const PAGE_VIEWS = { color: ColorPage, type: TypePage, shape: ShapePage, motion: MotionPage, actions: ActionsPage, navigate: NavigatePage, forms: FormsPage, feedback: FeedbackPage, marks: MarksPage, data: DataPage, code: CodePage, charts: ChartsPage }
+const PAGE_VIEWS = { setup: SetupPage, color: ColorPage, type: TypePage, shape: ShapePage, motion: MotionPage, actions: ActionsPage, navigate: NavigatePage, forms: FormsPage, feedback: FeedbackPage, marks: MarksPage, data: DataPage, code: CodePage, charts: ChartsPage }
 
 const read = () => {
   const p = new URLSearchParams(location.search)

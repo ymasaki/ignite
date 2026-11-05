@@ -1,4 +1,4 @@
-import { BarList, Board, CopyText, EntityRow, IconBox, LineChart, Stat, useScrollFocus } from '@ymasaki/ignite'
+import { BarList, Board, CopyText, EntityRow, IconBox, LineChart, LinkButton, Stat, useScrollFocus } from '@ymasaki/ignite'
 import { useRef } from 'react'
 import { VALUES } from './Charts'
 import { PROJECTS, MONTHS } from './data'
@@ -23,7 +23,7 @@ export function OverviewPage({ onOpen }: { onOpen: (key: string) => void }) {
                   <Stat label="スキン" value={3} />
                   <Stat label="表示モード" value={3} />
                 </div>
-                <div className="cat-row"><CopyText text="npm i @ymasaki/ignite" label="導入の命令" /></div>
+                <div className="cat-row"><CopyText text="npm i @ymasaki/ignite" label="導入の命令" /><LinkButton onClick={() => onOpen('setup')}>セットアップの手順</LinkButton></div>
               </div>
               <div className="cat-show" inert>
                 <LineChart unit="件" height={150} legend={false} xLabels={MONTHS.map((m) => m.slice(5))} series={[{ label: '完了', values: VALUES }]} />

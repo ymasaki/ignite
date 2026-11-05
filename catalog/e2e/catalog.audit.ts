@@ -6,6 +6,8 @@ defineIgniteAudit({
   outDir: path.join(import.meta.dirname, '../test-results-audit'),
   screens: [
     { name: '概要', path: '/' },
+    { name: 'セットアップ', path: '/?nav=setup' },
+    { name: 'セットアップ（ダーク）', path: '/?nav=setup&mode=dark' },
     { name: '色', path: '/?nav=color' },
     { name: '文字', path: '/?nav=type' },
     { name: '形と余白', path: '/?nav=shape' },

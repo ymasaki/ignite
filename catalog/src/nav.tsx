@@ -1,4 +1,4 @@
-import { IconBell, IconBoxMultiple, IconChartDonut, IconClick, IconCode, IconForms, IconHome, IconLayoutDashboard, IconLayoutList, IconLogin2, IconPalette, IconRoute, IconTable, IconTypography, IconUsers, IconWaveSine } from '@tabler/icons-react'
+import { IconBell, IconBoxMultiple, IconChartDonut, IconClick, IconCode, IconForms, IconHome, IconLayoutDashboard, IconLayoutList, IconLogin2, IconPalette, IconRocket, IconRoute, IconTable, IconTypography, IconUsers, IconWaveSine } from '@tabler/icons-react'
 import type { ReactNode } from 'react'
 
 // カタログの目録。左メニュー・ページの目次・部品の検索・概要の件数は、すべてここから作る
@@ -19,6 +19,17 @@ const icon = (Icon: typeof IconHome) => <Icon size={18} stroke={1.8} />
 
 export const PAGES: PageDef[] = [
   { key: 'overview', label: '概要', icon: icon(IconHome), specs: [] },
+  { key: 'setup', label: 'セットアップ', icon: icon(IconRocket), specs: [
+    { id: 'need', title: '必要なもの' },
+    { id: 'get', title: '取得' },
+    { id: 'install', title: '依存を入れる' },
+    { id: 'init', title: '初期化' },
+    { id: 'wire', title: 'アプリに組み込む' },
+    { id: 'config', title: '構成に合わせる' },
+    { id: 'verify', title: '確かめる' },
+    { id: 'upgrade', title: '更新する' },
+    { id: 'rules', title: '守ること' },
+  ] },
   { key: 'color', label: '色', group: '基礎', icon: icon(IconPalette), specs: [
     { id: 'brand', title: '主要色' },
     { id: 'surface', title: '地と線' },
