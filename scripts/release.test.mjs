@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import { release, buildPackage, command, accountToken } from './release.mjs'
+import { release, buildPackage, command, accountToken, outsidePackage } from './release.mjs'
 
 const commit = 'a'.repeat(40)
 const older = 'c'.repeat(40) // 手元で対象コミットの祖先
@@ -13,7 +13,7 @@ function fixture(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ignite-release-test-'))
   t.after(() => fs.rmSync(root, { recursive: true, force: true }))
   fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify({ name: '@ymasaki/ignite', version: '1.3.1' }))
-  const state = { synced: true, dirty: false, tag: null, remote: null, assets: [], builds: 0, writes: 0, calls: [], failUpload: false, losePublish: false, main: commit, pushes: [], failPush: false }
+  const state = { synced: true, dirty: false, tag: null, remote: null, assets: [], builds: 0, writes: 0, calls: [], failUpload: false, losePublish: false, main: commit, pushes: [], failPush: false, head: commit, changed: [] }
   const filename = 'ymasaki-ignite-1.3.1.tgz'
   const json = value => Buffer.from(JSON.stringify(value))
   const run = (cmd, args, options = {}) => {
@@ -32,7 +32,8 @@ function fixture(t) {
       state.main = args.at(-1).split(':')[0]
       return Buffer.alloc(0)
     }
-    if (cmd === 'git') return Buffer.from(args[0] === 'rev-parse' ? commit : state.dirty ? ' M package.json' : '')
+    if (cmd === 'git' && args[0] === 'diff') return Buffer.from(state.changed.join('\n'))
+    if (cmd === 'git') return Buffer.from(args[0] === 'rev-parse' ? state.head : state.dirty ? ' M package.json' : '')
     if (cmd === 'tar') return json({ name: '@ymasaki/ignite', version: '1.3.1' })
     assert.equal(cmd, 'gh')
     assert.equal(options.env?.GH_TOKEN, 'ymasaki-token')
@@ -48,9 +49,11 @@ function fixture(t) {
     const endpoint = args[3]
     const method = args.includes('--method') ? args[args.indexOf('--method') + 1] : 'GET'
     if (endpoint.endsWith('/git/ref/heads/main')) return json({ object: { sha: state.main } })
-    if (endpoint.endsWith(`/commits/${commit}`)) {
-      if (!state.synced || ![commit, newer].includes(state.main)) throw Error('No commit found (HTTP 422)')
-      return json({ sha: commit })
+    const sha = endpoint.match(/\/commits\/([0-9a-f]{40})$/)?.[1]
+    if (sha) {
+      const line = [older, commit, newer]
+      if (!state.synced || line.indexOf(sha) < 0 || line.indexOf(sha) > line.indexOf(state.main)) throw Error('No commit found (HTTP 422)')
+      return json({ sha })
     }
     if (endpoint.endsWith('/git/ref/tags/v1.3.1')) {
       if (!state.tag) throw Object.assign(Error('Not Found (HTTP 404)'), { notFound: true })
@@ -74,7 +77,7 @@ function fixture(t) {
       if (method === 'PATCH') {
         state.writes++
         state.remote.draft = false
-        state.tag = commit
+        state.tag = state.remote.target_commitish
         if (state.losePublish) { state.losePublish = false; throw Error('公開成功後の応答喪失') }
       }
       return json(state.remote)
@@ -203,6 +206,38 @@ for (const label of ['違う添付', '余計な添付', '違うdraft元コミッ
   assert.throws(() => perform())
   assert.equal(state.writes, writes)
   assert.equal(state.remote.draft, true)
+})
+test('公開済みの版のあとが配布物外の変更だけなら、版を据え置いて既存のReleaseを照合して成功する', t => {
+  const { perform, state } = fixture(t)
+  perform()
+  const { builds, writes } = state
+  state.head = newer
+  state.changed = ['devboard.json', '.github/workflows/pages.yml']
+  assert.match(perform({ commit: newer }), /v1.3.1$/)
+  assert.deepEqual(state.pushes.at(-1), ['push', 'https://github.com/ymasaki/ignite.git', `${newer}:refs/heads/main`])
+  assert.equal(state.builds, builds)
+  assert.equal(state.writes, writes)
+  assert.equal(state.tag, commit)
+})
+test('公開済みの版のあとに配布物に関わる変更があれば、版を上げるよう求めて書き込まない', t => {
+  const { perform, state } = fixture(t)
+  perform()
+  const { builds, writes } = state
+  state.head = newer
+  state.changed = ['devboard.json', 'src/index.ts']
+  assert.throws(() => perform({ commit: newer }), /版を上げてください: src\/index.ts/)
+  assert.equal(state.builds, builds)
+  assert.equal(state.writes, writes)
+})
+test('公開済みタグが対象コミットの祖先でなければ据え置かない', t => {
+  const { perform, state } = fixture(t)
+  state.tag = 'b'.repeat(40)
+  assert.throws(() => perform(), /祖先ではありません。版を上げてください/)
+  assert.equal(state.writes, 0)
+})
+test('配布物外とみなすのは配布にもビルドにも入らないパスだけ', () => {
+  for (const file of ['devboard.json', 'AGENTS.md', 'CLAUDE.md', '.github/workflows/pages.yml', 'scripts/release.mjs']) assert.ok(outsidePackage(file), file)
+  for (const file of ['package.json', 'package-lock.json', 'docs/releasing.md', 'DESIGN.md', 'CHANGELOG.md', 'src/index.ts', 'scripts/build.mjs', 'templates/AGENTS.md', 'catalog/main.tsx']) assert.ok(!outsidePackage(file), file)
 })
 const timeout = () => Object.assign(Error('dial tcp: i/o timeout'), { network: true })
 test('読み取りの通信が途切れても再試行して公開まで進む', t => {

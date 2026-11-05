@@ -10,6 +10,9 @@ const REPO = 'ymasaki/ignite'
 // ghの有効アカウントは他の作業で切り替わる。公開先は常にこのアカウントで操作する。
 const ACCOUNT = 'ymasaki'
 const base = `repos/${REPO}`
+// 配布物（package.jsonのfiles）にもそのビルド・検査にも入らないパス。これだけの変更は公開済みの版を据え置く。
+const OUTSIDE_PACKAGE = [/^devboard\.json$/, /^AGENTS\.md$/, /^CLAUDE\.md$/, /^\.github\//, /^scripts\/release(\.test)?\.mjs$/]
+export const outsidePackage = file => OUTSIDE_PACKAGE.some(pattern => pattern.test(file))
 const hash = data => createHash('sha256').update(data).digest('hex')
 const NETWORK = /i\/o timeout|dial tcp|connection reset|connection refused|TLS handshake timeout|no such host|unexpected EOF|network is unreachable/i
 const sleep = ms => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
@@ -51,8 +54,10 @@ export function buildPackage(root, commit, destination, run) {
 
 export function release({ root, commit: requested = process.env.DEVBOARD_COMMIT, prepareOnly = false, run = command, build = buildPackage, token = accountToken, wait = sleep }) {
   const git = (...args) => run('git', args, { cwd: root }).toString().trim()
-  const commit = git('rev-parse', 'HEAD')
-  assert(!requested || requested === commit, '対象コミットとHEADが一致しません')
+  const head = git('rev-parse', 'HEAD')
+  assert(!requested || requested === head, '対象コミットとHEADが一致しません')
+  // 配布物の由来のコミット。公開済みの版のあとに配布物外の変更だけが続いた場合は、公開済みのコミットのまま照合する。
+  let commit = head
   assert(!git('status', '--porcelain', '--untracked-files=all'), '未コミットの変更があります')
   const manifest = JSON.parse(fs.readFileSync(path.join(root, 'package.json')))
   const version = manifest.version
@@ -98,10 +103,10 @@ export function release({ root, commit: requested = process.env.DEVBOARD_COMMIT,
   // GitHubのmainを対象コミットまで早送りする。強制上書き・main以外の参照の送信はしない。
   const syncMain = () => {
     const remoteMain = api(`${base}/git/ref/heads/main`).object.sha
-    if (remoteMain === commit || isAncestor(commit, remoteMain)) return
-    assert(isAncestor(remoteMain, commit), 'GitHubのmainが対象コミットの祖先ではありません。分岐を確認してください')
+    if (remoteMain === head || isAncestor(head, remoteMain)) return
+    assert(isAncestor(remoteMain, head), 'GitHubのmainが対象コミットの祖先ではありません。分岐を確認してください')
     // 保存済みの別認証（キーチェーン等）を使わず、gh経由で同じトークンを渡す。
-    run('git', ['-c', 'credential.helper=', '-c', 'credential.helper=!gh auth git-credential', 'push', `https://github.com/${REPO}.git`, `${commit}:refs/heads/main`], { cwd: root, stdio: ['ignore', 'inherit', 'inherit'], env })
+    run('git', ['-c', 'credential.helper=', '-c', 'credential.helper=!gh auth git-credential', 'push', `https://github.com/${REPO}.git`, `${head}:refs/heads/main`], { cwd: root, stdio: ['ignore', 'inherit', 'inherit'], env })
   }
   const checkTag = (required = false) => {
     const found = tagCommit()
@@ -116,7 +121,16 @@ export function release({ root, commit: requested = process.env.DEVBOARD_COMMIT,
   try {
     if (!prepareOnly) {
       syncMain()
-      assert(api(`${base}/commits/${commit}`).sha === commit, '元コミットがGitHubに同期されていません')
+      assert(api(`${base}/commits/${head}`).sha === head, '元コミットがGitHubに同期されていません')
+      const published = tagCommit()
+      if (published && published !== head) {
+        assert(isAncestor(published, head), `${tag}のタグが対象コミットの祖先ではありません。版を上げてください`)
+        const changed = git('diff', '--name-only', published, head).split('\n').filter(Boolean)
+        const inside = changed.filter(file => !outsidePackage(file))
+        assert(!inside.length, `${tag}の公開後に配布物に関わる変更があります。版を上げてください: ${inside.slice(0, 5).join(', ')}`)
+        console.error(`${tag}は${published.slice(0, 7)}で公開済みで、その後の変更は配布物に含まれないため、版を据え置いて既存のReleaseを照合します`)
+        commit = published
+      }
       checkTag()
     }
     const directory = path.join(output, version)
