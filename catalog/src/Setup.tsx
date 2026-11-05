@@ -1,17 +1,15 @@
 import { Code, CodeBlock, KeyValues, Notice } from '@ymasaki/ignite'
 import { version } from '../../package.json'
-import { Case, Page, Spec } from './kit'
+import { Page, Spec } from './kit'
 
 // 採用の手順（正本は docs/adopting.md）。命令はそのまま写せる形で置き、説明は見出しとラベルに留める
 const TGZ = `ymasaki-ignite-${version}.tgz`
 
-const GET_VENDOR = `# 配布担当から受け取り、ハッシュを照合する
-$ shasum -a 256 ${TGZ}
-$ mkdir -p vendor && cp ${TGZ} vendor/
+const GET = `# GitHub Release から取り、ハッシュを照合する
+$ gh release download v${version} --repo github.com/ymasaki/ignite --dir ./ignite-download
+$ (cd ignite-download && shasum -a 256 -c SHA256SUMS)
+$ mkdir -p vendor && cp ignite-download/${TGZ} vendor/
 $ npm install --save-exact ./vendor/${TGZ} --ignore-scripts`
-const GET_NPMRC = `@ymasaki:registry=https://npm.pkg.github.com
-//npm.pkg.github.com/:_authToken=\${GITHUB_TOKEN}`
-const GET_REGISTRY = `$ npm install --save-exact @ymasaki/ignite@${version}`
 const INSTALL = `$ npm install react react-dom @tabler/icons-react
 $ npm install -D @playwright/test @axe-core/playwright
 $ npx playwright install chromium`
@@ -54,7 +52,7 @@ const VERIFY = `# ソースの検査（pre-commit では --staged）
 $ npx ignite check
 # 描いた画面の監査
 $ npm run ignite:audit`
-const UPGRADE = `# 次の版を vendor に置き、ハッシュを照合してから
+const UPGRADE = `# 次の版を Release から取り、照合してから
 $ npx ignite upgrade ./vendor/ymasaki-ignite-次の版.tgz
 # 決まりが版とそろっているか（CI 向け）
 $ npx ignite sync --check`
@@ -74,14 +72,11 @@ export function SetupPage({ target }: { target?: string | null }) {
         <Notice tone="info">詳しい手順は docs/adopting.md にある</Notice>
       </Spec>
       <Spec page={p} id="get">
-        <div className="cat-stack">
-          <Case label="vendor のアーカイブ（今の配布）" fill><CodeBlock title="アーカイブを入れる" language="shell" wrap code={GET_VENDOR} /></Case>
-          <Case label="GitHub Packages（使えるとき）" fill>
-            <CodeBlock title=".npmrc" wrap code={GET_NPMRC} />
-            <CodeBlock title="レジストリから入れる" language="shell" wrap code={GET_REGISTRY} />
-          </Case>
-        </div>
-        <Notice>トークンは Git やチャットに書かない</Notice>
+        <CodeBlock title="Release から入れる" language="shell" wrap code={GET} />
+        <KeyValues rows={[
+          ['添付', `${TGZ}・SHA256SUMS・COMMIT`],
+          ['コミット', 'vendor の tgz・package.json・lockfile'],
+        ]} />
       </Spec>
       <Spec page={p} id="install">
         <CodeBlock title="依存" language="shell" wrap code={INSTALL} />

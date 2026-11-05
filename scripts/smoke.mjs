@@ -63,6 +63,8 @@ try {
   fs.writeFileSync(path.join(app, 'package.json'), JSON.stringify({ name: 'smoke-app', private: true, type: 'module' }))
   fs.writeFileSync(path.join(app, 'AGENTS.md'), '# アプリの決まり\n\nアプリ固有の決まり\n')
   run('npm', ['install', '--no-audit', '--no-fund', `./vendor/${pack.filename}`, 'react', 'react-dom', '@tabler/icons-react', 'vite', '@vitejs/plugin-react', 'typescript', '@types/react', '@types/react-dom', '@playwright/test', '@axe-core/playwright'])
+  // 採用の手順（docs/adopting.md）どおり、入れた Playwright の版に合うブラウザを入れる。新しい版が出ても端末のブラウザとずれない
+  if (!skipAudit) run('npx', ['playwright', 'install', 'chromium'])
   const init = ignite('init', '--app')
   assert(init.status === 0, 'ignite init --app が通る', init.stdout + init.stderr)
   fs.cpSync(path.join(app, 'node_modules', name, 'templates/extensions'), app, { recursive: true })
