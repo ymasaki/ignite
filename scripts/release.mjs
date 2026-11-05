@@ -11,6 +11,8 @@ const REPO = 'ymasaki/ignite'
 const ACCOUNT = 'ymasaki'
 const base = `repos/${REPO}`
 const hash = data => createHash('sha256').update(data).digest('hex')
+const NETWORK = /i\/o timeout|dial tcp|connection reset|connection refused|TLS handshake timeout|no such host|unexpected EOF|network is unreachable/i
+const sleep = ms => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
 function assert(ok, message) { if (!ok) throw new Error(message) }
 export function command(cmd, args, options = {}) {
   const result = spawnSync(cmd, args, { maxBuffer: 32 * 1024 * 1024, ...options })
@@ -18,6 +20,8 @@ export function command(cmd, args, options = {}) {
   if (result.status !== 0) {
     const error = new Error(`${cmd} ${args.join(' ')} が失敗しました\n${result.stderr?.toString() || ''}`)
     error.notFound = /\(HTTP 404\)/.test(result.stderr?.toString() || '')
+    // HTTPの応答がない通信の失敗（接続のタイムアウト・切断・名前解決）だけを区別する。
+    error.network = !/\(HTTP \d{3}\)/.test(result.stderr?.toString() || '') && NETWORK.test(result.stderr?.toString() || '')
     throw error
   }
   return result.stdout || Buffer.alloc(0)
@@ -45,7 +49,7 @@ export function buildPackage(root, commit, destination, run) {
   } finally { fs.rmSync(work, { recursive: true, force: true }) }
 }
 
-export function release({ root, commit: requested = process.env.DEVBOARD_COMMIT, prepareOnly = false, run = command, build = buildPackage, token = accountToken }) {
+export function release({ root, commit: requested = process.env.DEVBOARD_COMMIT, prepareOnly = false, run = command, build = buildPackage, token = accountToken, wait = sleep }) {
   const git = (...args) => run('git', args, { cwd: root }).toString().trim()
   const commit = git('rev-parse', 'HEAD')
   assert(!requested || requested === commit, '対象コミットとHEADが一致しません')
@@ -66,7 +70,20 @@ export function release({ root, commit: requested = process.env.DEVBOARD_COMMIT,
   let env
   // GitHubへ触る呼び出しはすべて公開用アカウントのトークンで行う。
   const gh = args => run('gh', args, { env: (env ??= { ...process.env, GH_TOKEN: token() }) })
-  const api = (endpoint, args = []) => JSON.parse(gh(['api', '--hostname', 'github.com', endpoint, ...args]).toString())
+  // 読み取りだけは通信の失敗を2回まで待って再試行する。書き込みは二重にしないよう再試行せず、次回の実行で読み直す。
+  const fetchGh = args => {
+    for (let attempt = 0; ; attempt++) {
+      try { return gh(args) } catch (error) {
+        if (!error.network || attempt >= 2) throw error
+        console.error(`GitHubへの通信に失敗したため再試行します（${attempt + 1}/2）`)
+        wait(5000 * (attempt + 1))
+      }
+    }
+  }
+  const api = (endpoint, args = []) => {
+    const call = ['api', '--hostname', 'github.com', endpoint, ...args]
+    return JSON.parse((args.includes('--method') ? gh(call) : fetchGh(call)).toString())
+  }
   const privateRepo = () => assert(api(base).private === true, 'GitHubリポジトリがPrivateではありません')
   const tagCommit = () => {
     try { api(`${base}/git/ref/tags/${tag}`) } catch (error) {
@@ -143,7 +160,7 @@ export function release({ root, commit: requested = process.env.DEVBOARD_COMMIT,
       assert(new Set(items.map(a => a.name)).size === items.length, '添付名が重複しています')
       for (const asset of items) {
         assert(names.includes(asset.name), `想定外の添付があります: ${asset.name}`)
-        const data = gh(['api', '--hostname', 'github.com', `${base}/releases/assets/${asset.id}`, '-H', 'Accept: application/octet-stream'])
+        const data = fetchGh(['api', '--hostname', 'github.com', `${base}/releases/assets/${asset.id}`, '-H', 'Accept: application/octet-stream'])
         assert(hash(data) === verified.hashes[asset.name], `GitHubの添付が一致しません: ${asset.name}`)
       }
       if (complete) assert(items.length === names.length, 'GitHubの添付が不足しています')

@@ -87,7 +87,7 @@ function fixture(t) {
   }
   const build = (_root, _commit, stage) => { state.builds++; fs.writeFileSync(path.join(stage, filename), '固定tgz') }
   const token = () => { state.tokens = (state.tokens || 0) + 1; return 'ymasaki-token' }
-  const perform = options => release({ root, commit, run, build, token, ...options })
+  const perform = options => release({ root, commit, run, build, token, wait: () => { state.waits = (state.waits || 0) + 1 }, ...options })
   return { root, state, filename, perform, run }
 }
 
@@ -215,6 +215,40 @@ test('公開前にPrivateでなくなったらdraftのまま停止', t => {
   assert.throws(() => perform({ run: changing }), /Private/)
   assert.equal(state.remote.draft, true)
 })
+const timeout = () => Object.assign(Error('dial tcp: i/o timeout'), { network: true })
+test('読み取りの通信が途切れても再試行して公開まで進む', t => {
+  const { perform, state, run } = fixture(t)
+  let failures = 2
+  const flaky = (cmd, args, options) => {
+    if (cmd === 'gh' && args[3]?.endsWith('/git/ref/tags/v1.3.1') && failures-- > 0) throw timeout()
+    return run(cmd, args, options)
+  }
+  assert.match(perform({ run: flaky }), /v1.3.1$/)
+  assert.equal(state.waits, 2)
+})
+test('読み取りの通信が途切れ続けたら書き込まずに停止する', t => {
+  const { perform, state, run } = fixture(t)
+  let tries = 0
+  const down = (cmd, args, options) => {
+    if (cmd === 'gh' && args[3]?.endsWith('/git/ref/tags/v1.3.1')) { tries++; throw timeout() }
+    return run(cmd, args, options)
+  }
+  assert.throws(() => perform({ run: down }), /i\/o timeout/)
+  assert.equal(tries, 3)
+  assert.equal(state.writes, 0)
+  assert.equal(state.builds, 0)
+})
+test('書き込みの通信失敗は再試行しない', t => {
+  const { perform, state, run } = fixture(t)
+  let posts = 0
+  const lost = (cmd, args, options) => {
+    if (cmd === 'gh' && args.includes('POST')) { posts++; throw timeout() }
+    return run(cmd, args, options)
+  }
+  assert.throws(() => perform({ run: lost }), /i\/o timeout/)
+  assert.equal(posts, 1)
+  assert.equal(state.waits, undefined)
+})
 test('API失敗を不存在として新規作成しない', t => {
   const { perform, state, run } = fixture(t)
   const failure = (cmd, args, options) => {
@@ -265,4 +299,6 @@ test('固定コピーではarchive→依存復元→必須検査→packの順を
 test('実コマンドの404とその他の失敗を区別する', () => {
   assert.throws(() => command(process.execPath, ['-e', 'process.stderr.write("Not Found (HTTP 404)");process.exit(1)']), error => error.notFound === true)
   assert.throws(() => command(process.execPath, ['-e', 'process.stderr.write("HTTP 403");process.exit(1)']), error => error.notFound === false)
+  assert.throws(() => command(process.execPath, ['-e', 'process.stderr.write("Get \\"https://api.github.com/x\\": dial tcp 1.2.3.4:443: i/o timeout");process.exit(1)']), error => error.network === true)
+  assert.throws(() => command(process.execPath, ['-e', 'process.stderr.write("gh: Server Error (HTTP 502)");process.exit(1)']), error => error.network === false)
 })

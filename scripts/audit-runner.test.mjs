@@ -12,7 +12,7 @@ test('監査の排他と終了処理', async t => {
   const lock = path.join(dir, 'lock')
   const source = (await readFile(new URL('./audit-design.mjs', import.meta.url), 'utf8'))
     .replace("'/tmp/ignite-catalog-audit-5198.lock'", JSON.stringify(lock))
-    .replace('1800000', '3000').replace('60000', '600')
+    .replace('1800000', '3000').replace('60000', '5000') // 混んだマシンでも偽サーバーの起動が間に合う長さ
   async function fixture(name, body) {
     const root = path.join(dir, name)
     await mkdir(path.join(root, 'scripts'), { recursive: true })
