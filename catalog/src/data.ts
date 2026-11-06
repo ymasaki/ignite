@@ -29,3 +29,6 @@ export const UPDATES = [
 ] as const
 
 export const MONTHS = ['2026-05', '2026-06', '2026-07', '2026-08', '2026-09', '2026-10']
+
+// 月送りは新しい順。グラフ用の MONTHS は古い順を保つ。
+export const STEPPER_MONTHS = [...MONTHS].reverse()

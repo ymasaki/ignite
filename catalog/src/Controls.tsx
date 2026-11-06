@@ -1,7 +1,7 @@
 import { IconBookmark, IconCopy, IconDownload, IconFilter, IconPencil, IconPlus, IconRefresh, IconSearch, IconSettings, IconShare, IconTrash } from '@tabler/icons-react'
 import { Accordion, Button, CopyText, Crumbs, ExternalLink, IconButton, KeyValues, LinkButton, Menu, MonthStepper, Pagination, Popover, ProviderLogo, Segmented, Stepper, Steps, Tabs, toast } from '@ymasaki/ignite'
 import { useEffect, useState } from 'react'
-import { MONTHS } from './data'
+import { STEPPER_MONTHS, MONTHS } from './data'
 import { Case, Cases, Page, Spec } from './kit'
 
 const I = { size: 16, stroke: 1.8 }
@@ -82,7 +82,7 @@ export function NavigatePage({ target }: { target?: string | null }) {
       <Spec page={p} id="tabs"><Tabs label="表示の切り替え" value={tab} onChange={setTab} tabs={[{ value: 'a', label: '概要' }, { value: 'b', label: '履歴', count: 12 }, { value: 'c', label: 'メンバー', count: 4 }]} /></Spec>
       <Spec page={p} id="stepper">
         <Cases>
-          <Case label="対象の月"><MonthStepper value={month} months={MONTHS} onChange={setMonth} /></Case>
+          <Case label="対象の月"><MonthStepper value={month} months={STEPPER_MONTHS} onChange={setMonth} /></Case>
           <Case label="対象の週"><Stepper label="対象の週" prevLabel="前の週" nextLabel="次の週" value={week} onChange={setWeek} options={[{ value: 'w2', label: '第 2 週' }, { value: 'w1', label: '第 1 週' }]} /></Case>
         </Cases>
       </Spec>

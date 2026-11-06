@@ -1,7 +1,7 @@
 import { IconBell, IconChartBar, IconCheck, IconPencil, IconSearch, IconSettings, IconTrash, IconUsers } from '@tabler/icons-react'
 import { AnimatedList, Appear, Avatar, Button, Code, Collapse, CollapseInline, CopyText, EntityRow, Expandable, KeyValues, MonthStepper, Prose, RollingNumber, Skeleton, Stat, Switch } from '@ymasaki/ignite'
 import { useState } from 'react'
-import { MONTHS, PROJECTS } from './data'
+import { STEPPER_MONTHS, MONTHS, PROJECTS } from './data'
 import { Case, Cases, Page, Spec } from './kit'
 
 const Swatch = ({ name }: { name: string }) => (
@@ -119,7 +119,7 @@ export function MotionPage({ target }: { target?: string | null }) {
         <Cases>
           <Case label="数字"><RollingNumber value={MONTHS.indexOf(month) * 13 + 24} /></Case>
           <Case label="大きな数字"><Stat value={MONTHS.indexOf(month) * 13 + 24} unit="件" /></Case>
-          <Case label="対象の月を変える"><MonthStepper value={month} months={MONTHS} onChange={setMonth} /></Case>
+          <Case label="対象の月を変える"><MonthStepper value={month} months={STEPPER_MONTHS} onChange={setMonth} /></Case>
         </Cases>
       </Spec>
       <Spec page={p} id="appear">
