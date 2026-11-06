@@ -11,7 +11,7 @@ import { ColorPage, MotionPage, ShapePage, TypePage } from './Foundations'
 import { pageOf, PAGES } from './nav'
 import { OverviewPage } from './Overview'
 import { SetupPage } from './Setup'
-import { DashboardPage, DetailPanel, ListPage, LoginPage, SettingsPage } from './Screens'
+import { AboutPanel, DashboardPage, DetailPanel, ListPage, LoginPage, SettingsPage } from './Screens'
 
 // Ignite のロゴ（docs/logo/ignite-mark.svg と同じ形）。`.brand-mark` が `--pri` で塗るのでスキンに従う
 const LOGO = (
@@ -80,6 +80,8 @@ export function App() {
   const [theme, setThemeState] = useState(currentTheme)
   const headerTools = nav === 'header'
   const close = () => go({ open: null })
+  // 設定の画面では、行から開いたバージョン履歴・ライセンスを詳細パネルに出す
+  const about = nav === 'settings' && open ? <AboutPanel id={open} onClose={close} /> : null
   const View = PAGE_VIEWS[nav as keyof typeof PAGE_VIEWS]
   // ログインはアプリの枠の外に置く画面なので、カタログでも枠を出さない
   if (nav === 'login') return <LoginPage mark={LOGO} onBack={() => go({ nav: 'overview' })} />
@@ -99,13 +101,13 @@ export function App() {
       tools={headerTools ? <IconButton label="絞り込み" size="lg" onClick={() => toast('絞り込みを開きました')}><IconFilter size={18} stroke={1.8} /></IconButton> : undefined}
       actions={headerTools ? undefined : <ThemePicker theme={theme} onChange={setThemeState} />}
       aux={nav === 'dashboard' ? <DashboardPage.Band /> : undefined}
-      panel={{ open: !!open, onClose: close, id: open ?? undefined, peek: { title: 'プロジェクトの詳細' }, content: open ? <PanelContent id={open} onClose={close} go={(n) => go({ nav: n })} /> : null }}
+      panel={{ open: nav === 'settings' ? !!about : !!open, onClose: close, id: open ?? undefined, peek: { title: nav === 'settings' ? 'このアプリについて' : 'プロジェクトの詳細' }, content: nav === 'settings' ? about : open ? <PanelContent id={open} onClose={close} go={(n) => go({ nav: n })} /> : null }}
     >
       {nav === 'overview' && <OverviewPage theme={theme} onTheme={setThemeState} onOpen={(key) => go({ nav: key })} />}
       {View && <View key={nav} target={spec} />}
       {(nav === 'list' || headerTools) && <ListPage selected={open} onOpen={(id) => go({ open: id })} />}
       {nav === 'dashboard' && <DashboardPage />}
-      {nav === 'settings' && <SettingsPage />}
+      {nav === 'settings' && <SettingsPage detail={open} onOpen={(id) => go({ open: id })} />}
     </AppShell>
   )
 }

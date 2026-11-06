@@ -23,7 +23,6 @@ describe('部品の一覧（AGENTS.md「部品を足す・変えるときは一�
     Drawer: 'AppShell が重ねた詳細パネルとして描く（一覧の型を狭い幅で開くと見える）',
     Toaster: 'AppShell が置く',
     FitBar: '帯の幅に合わせて組むので、Stepper などの修飾の組み合わせとして使う',
-    ReleasePanel: 'アプリの版の履歴を受け取る',
   }
   it('部品は 1 つ以上ある', () => expect(parts.length).toBeGreaterThan(50))
   it.each(parts)('%s は DESIGN.md に書いてある', (p) => expect(design).toContain(p))

@@ -1,7 +1,8 @@
-import { IconChartLine, IconChecks, IconClock, IconListCheck, IconPencil, IconShare } from '@tabler/icons-react'
-import { AssistSettings, AuthScreen, Avatar, BarList, Board, Button, ChartCard, ChartGrid, Chip, DashboardScreen, Delta, EmptyState, EntityRow, Funnel, IconBox, IconButton, KeyValues, Kpi, KpiBand, LineChart, LinkButton, ListScreen, LoginForm, PanelBody, PanelFrame, PanelHeader, ProviderLogo, SearchField, Section, Segmented, SettingBody, SettingGroup, SettingKey, SettingRow, SettingsScreen, Sparkline, StackColumns, Stat, tabPanelProps, Tabs, Tag, ThemeSettings, TileMap, toast } from '@ymasaki/ignite'
+import { IconChartLine, IconChecks, IconLicense, IconClock, IconListCheck, IconPencil, IconShare } from '@tabler/icons-react'
+import { AssistSettings, AuthScreen, Avatar, BarList, Board, Button, ChartCard, ChartGrid, Chip, DashboardScreen, Delta, EmptyState, EntityRow, ExternalLink, Funnel, IconBox, IconButton, KeyValues, Kpi, KpiBand, LineChart, LinkButton, ListScreen, LoginForm, PanelBody, PanelFrame, PanelHeader, ProviderLogo, Prose, ReleasePanel, SearchField, Section, Segmented, SettingBody, SettingGroup, SettingKey, SettingRow, SettingsScreen, Sparkline, StackColumns, Stat, tabPanelProps, Tabs, Tag, ThemeSettings, TileMap, toast } from '@ymasaki/ignite'
 import { useRef, useState, type ReactNode } from 'react'
 import { VALUES } from './Charts'
+import { DEVELOPER, licenseDetail, licenseText, OSS_LICENSES, RELEASES, RELEASES_DETAIL, VERSION } from './about'
 import { MONTHS, PROJECTS, UPDATES } from './data'
 
 export function ListPage({ selected, onOpen }: { selected: string | null; onOpen: (id: string) => void }) {
@@ -130,16 +131,56 @@ export function LoginPage({ mark, onBack }: { mark: ReactNode; onBack: () => voi
   )
 }
 
-export function SettingsPage() {
+/** 設定の型。「このアプリについて」以下はカタログ自身の情報（バージョン履歴・開発者・ライセンス）。行を押すと右の詳細パネルに開く */
+export function SettingsPage({ detail, onOpen }: { detail: string | null; onOpen: (id: string) => void }) {
   return (
     <SettingsScreen>
       <ThemeSettings />
       <AssistSettings />
       <SettingGroup title="このアプリについて">
-        <SettingRow label="バージョン"><IconBox><IconChartLine size={16} stroke={1.8} /></IconBox></SettingRow>
-        <SettingRow label="検索へ移る"><SettingKey>F</SettingKey></SettingRow>
-        <SettingBody note="名前つきで届きます"><Tag>自由な中身</Tag></SettingBody>
+        <SettingRow label="バージョン" active={detail === RELEASES_DETAIL} onClick={() => onOpen(RELEASES_DETAIL)}><span className="num">{VERSION}</span></SettingRow>
+      </SettingGroup>
+      <SettingGroup title="ショートカットキー">
+        <SettingRow label="部品を探す"><SettingKey>F</SettingKey><SettingKey>⌘K</SettingKey></SettingRow>
+      </SettingGroup>
+      <SettingGroup title="開発者">
+        <SettingBody>
+          <EntityRow lead={<Avatar initial={DEVELOPER.initial} tone="c1" />} title={DEVELOPER.name} sub={<ExternalLink href={`https://github.com/${DEVELOPER.github}`}>{`github.com/${DEVELOPER.github}`}</ExternalLink>} />
+        </SettingBody>
+      </SettingGroup>
+      <SettingGroup title="オープンソース ライセンス">
+        {OSS_LICENSES.map((l) => <SettingRow key={l.key} label={l.name} note={l.use} active={detail === licenseDetail(l.key)} onClick={() => onOpen(licenseDetail(l.key))}>{l.license}</SettingRow>)}
       </SettingGroup>
     </SettingsScreen>
+  )
+}
+
+/** 設定の画面から開く詳細（バージョン履歴・ライセンスの全文）。id が当てはまらなければ null */
+export function AboutPanel({ id, onClose }: { id: string; onClose: () => void }) {
+  if (id === RELEASES_DETAIL) return <ReleasePanel releases={RELEASES} current={VERSION} onClose={onClose} />
+  const l = OSS_LICENSES.find((x) => licenseDetail(x.key) === id)
+  if (!l) return null
+  return (
+    <PanelFrame>
+      <PanelHeader
+        visual={<IconBox size="xl"><IconLicense size={28} stroke={1.5} /></IconBox>}
+        smallVisual={<IconBox><IconLicense size={16} stroke={1.7} /></IconBox>}
+        kicker="オープンソース"
+        title={l.name}
+        lines={<div className="prof-r">{l.use}</div>}
+        stickySub={`${l.license} License`}
+        onClose={onClose}
+      />
+      <PanelBody>
+        <Section title="基本情報">
+          <KeyValues rows={[
+            ['ライセンス', `${l.license} License`],
+            ['パッケージ', l.packages.join('、')],
+            ['配布元', <ExternalLink key="url" href={l.url}>{l.url.replace('https://', '')}</ExternalLink>],
+          ]} />
+        </Section>
+        <Section title="ライセンスの全文"><Prose>{licenseText(l)}</Prose></Section>
+      </PanelBody>
+    </PanelFrame>
   )
 }

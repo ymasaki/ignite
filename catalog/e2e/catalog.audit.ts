@@ -35,6 +35,8 @@ defineIgniteAudit({
     { name: '一覧の型（詳細）', path: '/?nav=list&open=p1' },
     { name: 'ダッシュボードの型', path: '/?nav=dashboard' },
     { name: '設定の型', path: '/?nav=settings' },
+    { name: '設定の型（バージョン履歴）', path: '/?nav=settings&open=releases' },
+    { name: '設定の型（ライセンス）', path: '/?nav=settings&open=license-react&mode=dark' },
     { name: 'ログインの型', path: '/?nav=login' },
     { name: 'ログインの型（入力エラー）', path: '/?nav=login', act: async (page) => { await page.getByRole('button', { name: 'ログインする' }).click(); await page.waitForTimeout(350) } },
     { name: 'ログインの型（失敗）', path: '/?nav=login&skin=blue', act: async (page) => { await page.getByRole('textbox', { name: 'メールアドレス' }).fill('a@example.com'); await page.getByRole('textbox', { name: 'パスワード' }).fill('secret'); await page.keyboard.press('Enter'); await page.getByRole('status').filter({ hasText: '違います' }).waitFor() } },
