@@ -83,8 +83,8 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
                   <span className="cat-hero-name">Ignite</span>
                 </div>
                 <div role="heading" aria-level={2}>
-                  <span className="cat-hero-t">React アプリの画面を</span>
-                  <span className="cat-hero-t em">同じ部品と決まりでそろえる</span>
+                  <span className="cat-hero-t">使いやすさと楽しさを、</span>
+                  <span className="cat-hero-t em">誰にでも</span>
                 </div>
                 <div className="cat-hero-p">
                   <span>ボタン・入力欄・表・グラフなど {PART_COUNT} の部品を React で使える。</span>
