@@ -125,7 +125,10 @@
 /* 左メニューの部品の見本（幅は左メニューと同じ。線と地は部品が持つ） */
 .cat-side{display:flex;flex-direction:column;width:236px;background:var(--panel)}
 .cat-fit-w{width:120px}
-.cat-rail{display:flex;flex-direction:column;width:40px;overflow:hidden}
+/* 畳んだ左メニューの列の見本。入る数は枠の高さで決まる（useFitCount）ので、はみ出しは隠さない（隠すと名前の吹き出しが切れる）。
+   吹き出しは本物の畳んだ左メニュー（shell.css の .side-min-done .side）と同じく右に出す */
+.cat-rail{display:flex;flex-direction:column;width:40px}
+@media (hover:hover){.cat-rail [data-tip]:is(:hover,:focus-visible)::after{top:50%;left:calc(100% + 10px);transform:translateY(-50%);animation-name:tipInRight}}
 .cat-rail.sm{height:102px}
 .cat-rail.md{height:170px}
 
