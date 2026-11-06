@@ -1,5 +1,5 @@
 import { IconBuilding, IconFilter, IconPalette } from '@tabler/icons-react'
-import { AppShell, Brand, currentTheme, IconBox, IconButton, Popover, SearchSuggest, Segmented, Select, setTheme, SettingsButton, SideNav, toast, useShell, withFade, type Mode, type Skin, type SuggestGroup } from '@ymasaki/ignite'
+import { AppShell, Brand, currentTheme, IconBox, IconButton, Popover, SearchSuggest, Segmented, Select, setTheme, SettingsButton, SideNav, toast, useShell, withFade, type Mode, type Skin, type SuggestGroup, type Theme } from '@ymasaki/ignite'
 import { useEffect, useState } from 'react'
 import { ChartsPage } from './Charts'
 import { CodePage } from './Code'
@@ -59,9 +59,8 @@ function PanelContent({ id, onClose, go }: { id: string; onClose: () => void; go
 }
 
 /** テーマをその場で試す。画面を移らずに、見ている部品の色が変わる */
-function ThemePicker() {
-  const [theme, set] = useState(currentTheme)
-  const change = (next: Partial<typeof theme>) => { const t = { ...theme, ...next }; withFade(() => setTheme(t)); set(t) }
+function ThemePicker({ theme, onChange }: { theme: Theme; onChange: (t: Theme) => void }) {
+  const change = (next: Partial<Theme>) => { const t = { ...currentTheme(), ...next }; withFade(() => setTheme(t)); onChange(t) }
   return (
     <Popover trigger={(open, toggle) => <IconButton size="lg" label="テーマを変える" tip="テーマ" aria-expanded={open} onClick={toggle}><IconPalette size={18} stroke={1.8} /></IconButton>}>
       <div className="cat-theme">
@@ -77,6 +76,8 @@ export function App() {
   const [collapsed, setCollapsed] = useState(false)
   const [find, setFind] = useState('')
   const [company, setCompany] = useState('all')
+  // テーマはヘッダーのパレットと概要の両方で選べるので、選択の表示をここで 1 つに持つ
+  const [theme, setThemeState] = useState(currentTheme)
   const headerTools = nav === 'header'
   const close = () => go({ open: null })
   const View = PAGE_VIEWS[nav as keyof typeof PAGE_VIEWS]
@@ -96,11 +97,11 @@ export function App() {
       titleAfter={headerTools ? <Select label="対象" size="lg" fit value={company} onChange={setCompany} options={[{ value: 'all', label: '対象', lead: <IconBuilding size={16} stroke={1.8} />, meta: '285名' }, { value: 'long', label: '長い名前の対象', meta: '123名' }]} /> : undefined}
       search={headerTools ? undefined : <div className="cat-search"><SearchSuggest label="部品を探す" placeholder="部品を探す" shortcut priority={1} value={find} onChange={setFind} groups={FIND} onSelect={(it) => { const [n, s] = it.key.split('/'); setFind(''); go({ nav: n, spec: s }) }} /></div>}
       tools={headerTools ? <IconButton label="絞り込み" size="lg" onClick={() => toast('絞り込みを開きました')}><IconFilter size={18} stroke={1.8} /></IconButton> : undefined}
-      actions={headerTools ? undefined : <ThemePicker />}
+      actions={headerTools ? undefined : <ThemePicker theme={theme} onChange={setThemeState} />}
       aux={nav === 'dashboard' ? <DashboardPage.Band /> : undefined}
       panel={{ open: !!open, onClose: close, id: open ?? undefined, peek: { title: 'プロジェクトの詳細' }, content: open ? <PanelContent id={open} onClose={close} go={(n) => go({ nav: n })} /> : null }}
     >
-      {nav === 'overview' && <OverviewPage onOpen={(key) => go({ nav: key })} />}
+      {nav === 'overview' && <OverviewPage theme={theme} onTheme={setThemeState} onOpen={(key) => go({ nav: key })} />}
       {View && <View key={nav} target={spec} />}
       {(nav === 'list' || headerTools) && <ListPage selected={open} onOpen={(id) => go({ open: id })} />}
       {nav === 'dashboard' && <DashboardPage />}
