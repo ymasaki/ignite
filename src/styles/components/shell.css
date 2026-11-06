@@ -122,6 +122,9 @@
   .side-min .nav button{max-width:40px}
   .side-set button{overflow:hidden;max-width:100%;transition:max-width .28s var(--ease-in-out)}
   .side-min .side-set button{max-width:40px}
+  /* 畳み終わったら、ボタンのはみ出しを許す（右に出す名前の吹き出しはボタンの ::after なので、overflow:hidden のままだと切れて見えない）。
+     文字はもう消えている（.side-min-done .side-t）ので、ボタンは伸びない */
+  .side-min-done .nav button,.side-min-done .side-set button{overflow:visible}
   /* 形で中身を入れ替える（DESIGN.md 5 章）: data-side="wide" は畳むあいだに文字と一緒にフェードで消し、畳み終わってから data-side="rail" をフェードで出す。
      広げるときは、幅が開きはじめてから wide をフェードで出す */
   .side [data-side="wide"]{transition:opacity .16s ease-out}

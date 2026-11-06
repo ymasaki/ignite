@@ -579,6 +579,28 @@ test('SideNav: 押すと選択中の地がその場で次の項目に付き、�
   expect(await color.evaluate((el) => getComputedStyle(el).backgroundColor)).not.toBe(soft)
 })
 
+test('SideNav: 畳んだ左メニューのアイコンにホバーすると、名前の吹き出しが右に切れずに出る', async ({ page }) => {
+  await open(page, 'color')
+  await page.getByRole('button', { name: 'メニューを折りたたむ' }).click()
+  await expect(page.locator('.app.side-min-done')).toHaveCount(1)
+  const nav = page.getByRole('navigation', { name: 'メインメニュー' })
+  for (const item of [nav.getByRole('button', { name: '色' }), page.getByRole('button', { name: '設定', exact: true })]) {
+    await item.hover()
+    await expect.poll(() => item.evaluate((el) => getComputedStyle(el, '::after').content)).toBe(`"${await item.getAttribute('aria-label')}"`)
+    // 吹き出しはボタンの右の外に描くので、ボタンから左メニューまでのどれもはみ出しを切り取らない
+    const clipped = await item.evaluate((el) => {
+      const side = el.closest('.side')!
+      const out: string[] = []
+      for (let n: Element | null = el; n && n !== side.parentElement; n = n.parentElement) {
+        const s = getComputedStyle(n)
+        if (s.overflowX !== 'visible' || s.overflowY !== 'visible') out.push(n.className || n.tagName)
+      }
+      return out
+    })
+    expect(clipped).toEqual([])
+  }
+})
+
 test('部品の検索: 選ぶとそのページの標本へ移り、目次で別の標本へ移れる', async ({ page }) => {
   await open(page, 'overview')
   await page.getByRole('combobox', { name: '部品を探す' }).fill('Pagination')
