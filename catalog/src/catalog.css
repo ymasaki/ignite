@@ -71,7 +71,8 @@
 /* 概要（LP の構成。段ごとに見出し → 中身。色は役割のトークンだけ） */
 .cat-lp{gap:0}
 .cat-hero{position:relative;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(360px,100%),1fr));gap:40px;align-items:center;padding:24px 0 48px;isolation:isolate}
-.cat-hero::before{content:"";position:absolute;z-index:-1;inset:-24px -24px 0;background:radial-gradient(60% 70% at 85% 30%,var(--pri-soft),transparent 70%),radial-gradient(40% 50% at 0% 0%,var(--pri-soft),transparent 70%);opacity:.9;pointer-events:none}
+/* バウンスで上端が面から離れても境界が見えないよう、背景だけを透明からつなぐ */
+.cat-hero::before{content:"";position:absolute;z-index:-1;inset:-24px -24px 0;background:radial-gradient(60% 70% at 85% 30%,var(--pri-soft),transparent 70%),radial-gradient(40% 50% at 0% 0%,var(--pri-soft),transparent 70%);mask-image:linear-gradient(to bottom,transparent,#000 48px);opacity:.9;pointer-events:none} /* design-ok: #000 は表示色ではなくマスクの濃淡 */
 .cat-hero-t{display:block;font-size:var(--fs-32);font-weight:700;line-height:1.35;color:var(--ink);word-break:auto-phrase}
 .cat-hero-t.em{color:var(--pri-ink)}
 .cat-hero-b{display:grid;gap:20px;min-width:0}
