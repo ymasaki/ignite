@@ -9,19 +9,27 @@ import { RollingNumber } from './Motion'
 
 /**
  * 「‹ 値 ⌄ ›」を 1 つの枠にまとめた前後の送り（対象の月・週など）。値を押すと一覧（Select）、‹ › で前後へ移る。
- * options は新しい順。display は枠に出す中身（省略時は選んだ項目の label）。meta は右端の補足。
+ * options は新しい順。display は枠に出す中身（省略時は選んだ項目の label の数字が回る表示）。meta は右端の補足。
  * hideMeta は狭いときに補足をなめらかに隠す（DESIGN.md 5 章。置き場所で決める。useFitStep）
  */
 export function Stepper<T extends string>({ label, prevLabel, nextLabel, value, options, onChange, display, hideMeta }: {
   label: string; prevLabel: string; nextLabel: string; value: T; options: SelectOption<T>[]; onChange: (v: T) => void; display?: ReactNode; hideMeta?: boolean
 }) {
   const i = options.findIndex((o) => o.value === value)
+  const current = options[i] ?? options[0]
+  // 値ではなく分割位置をキーにして、切り替え前後で同じ数字の帯を保つ。
+  // 先頭ゼロや安全な整数でない数字列は、数値変換で表記が変わるので原文を出す。
+  const content = display ?? current?.label.split(/([0-9]+)/).map((part, index) => (
+    /^[0-9]+$/.test(part) && !/^0[0-9]/.test(part) && Number.isSafeInteger(Number(part))
+      ? <RollingNumber key={index} value={Number(part)} />
+      : part
+  ))
   const older = i >= 0 ? options[i + 1]?.value : undefined
   const newer = i > 0 ? options[i - 1].value : undefined
   return (
     <div className={`stepper${hideMeta ? ' no-meta' : ''}`} role="group" aria-label={label}>
       <IconButton label={prevLabel} disabled={!older} onClick={() => older && onChange(older)}><IconChevronLeft size={16} stroke={1.8} /></IconButton>
-      <Select label={label} value={value} onChange={onChange} options={options} display={display} />
+      <Select label={label} value={value} onChange={onChange} options={options} display={content} />
       <IconButton label={nextLabel} disabled={!newer} onClick={() => newer && onChange(newer)}><IconChevronRight size={16} stroke={1.8} /></IconButton>
     </div>
   )

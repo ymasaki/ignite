@@ -83,7 +83,7 @@ export function NavigatePage({ target }: { target?: string | null }) {
       <Spec page={p} id="stepper">
         <Cases>
           <Case label="対象の月"><MonthStepper value={month} months={STEPPER_MONTHS} onChange={setMonth} /></Case>
-          <Case label="対象の週"><Stepper label="対象の週" prevLabel="前の週" nextLabel="次の週" value={week} onChange={setWeek} options={[{ value: 'w2', label: '第 2 週' }, { value: 'w1', label: '第 1 週' }]} /></Case>
+          <Case label="対象の週"><Stepper label="対象の週" prevLabel="前の週" nextLabel="次の週" value={week} onChange={setWeek} options={Array.from({ length: 12 }, (_, i) => ({ value: `w${12 - i}`, label: `第 ${12 - i} 週` }))} /></Case>
         </Cases>
       </Spec>
       <Spec page={p} id="pagination"><Pagination page={page} count={20} onChange={setPage} /></Spec>
