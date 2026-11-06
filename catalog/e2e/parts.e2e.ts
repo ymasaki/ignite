@@ -274,6 +274,31 @@ test('Menu: 開く矢印は文字の中央にそろい、開いている間は�
   await expect.poll(tip).toBe('none')
 })
 
+test('左メニューのつまみ: 広げても畳んでも、吹き出しが窓の外へはみ出さない', async ({ page }) => {
+  await open(page, 'actions')
+  const tipBox = (name: string) => page.getByRole('button', { name, exact: true }).evaluate((el) => {
+    const s = getComputedStyle(el, '::after')
+    const r = el.getBoundingClientRect()
+    // ::after は測れないので、置き場所（left は親からの距離）と幅から窓の中の左右を出す
+    const left = r.left + parseFloat(s.left) + (s.transform.startsWith('matrix') ? new DOMMatrix(s.transform).m41 : 0)
+    return { display: s.display, left, right: left + parseFloat(s.width) + parseFloat(s.paddingLeft) + parseFloat(s.paddingRight), vw: innerWidth }
+  })
+  for (const name of ['メニューを折りたたむ', 'メニューを広げる']) {
+    const handle = page.getByRole('button', { name, exact: true })
+    await handle.hover()
+    await expect.poll(async () => (await tipBox(name)).display).toBe('block')
+    await page.waitForTimeout(500)
+    const b = await tipBox(name)
+    expect(b.left).toBeGreaterThanOrEqual(0)
+    expect(b.right).toBeLessThanOrEqual(b.vw)
+    if (name === 'メニューを折りたたむ') {
+      await handle.click()
+      await expect(page.getByRole('button', { name: 'メニューを広げる', exact: true })).toBeVisible()
+      await page.waitForTimeout(500)
+    }
+  }
+})
+
 test('CopyText: 狭い入れ物でも値とコピーのアイコンが重ならない', async ({ page }) => {
   await open(page, 'actions')
   const ct = page.getByRole('button', { name: 'ignite 名前をコピー' })
