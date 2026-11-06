@@ -1,4 +1,4 @@
-import { IconBell, IconBoxMultiple, IconChartDonut, IconClick, IconCode, IconForms, IconHome, IconLayoutDashboard, IconLayoutList, IconLogin2, IconPalette, IconRocket, IconRoute, IconTable, IconTypography, IconUsers, IconWaveSine } from '@tabler/icons-react'
+import { IconBell, IconBoxMultiple, IconChartDonut, IconClick, IconCode, IconDevices, IconForms, IconHome, IconLayoutDashboard, IconLayoutList, IconLogin2, IconPalette, IconRocket, IconRoute, IconTable, IconTypography, IconUsers, IconWaveSine } from '@tabler/icons-react'
 import type { ReactNode } from 'react'
 
 // カタログの目録。左メニュー・ページの目次・部品の検索・概要の件数は、すべてここから作る
@@ -128,6 +128,10 @@ export const PAGES: PageDef[] = [
   { key: 'header', label: '検索欄のないヘッダー', group: '画面の型', icon: icon(IconLayoutList), specs: [] },
   { key: 'dashboard', label: 'ダッシュボード', group: '画面の型', icon: icon(IconLayoutDashboard), specs: [] },
   { key: 'login', label: 'ログイン', group: '画面の型', icon: icon(IconLogin2), specs: [] },
+  { key: 'responsive', label: 'レスポンシブ表示', group: '画面の型', icon: icon(IconDevices), specs: [
+    { id: 'window', title: '窓の幅' },
+    { id: 'phone', title: 'スマホの縦と横' },
+  ] },
 ]
 
 export const pageOf = (key: string) => PAGES.find((p) => p.key === key)

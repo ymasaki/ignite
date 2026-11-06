@@ -124,3 +124,19 @@
 .cat-rail{display:flex;flex-direction:column;width:40px;overflow:hidden}
 .cat-rail.sm{height:102px}
 .cat-rail.md{height:170px}
+
+/* レスポンシブ表示。決まった大きさの iframe を縮めて置き、右端のつまみで幅を変える */
+.cat-frame{flex:none;width:calc(var(--fw) * var(--fs) * 1px);height:calc(var(--fh) * var(--fs) * 1px);overflow:hidden}
+.cat-frame iframe{display:block;width:calc(var(--fw) * 1px);height:calc(var(--fh) * 1px);border:0;transform:scale(var(--fs));transform-origin:0 0;background:var(--bg)}
+.cat-resize{display:flex;min-width:0}
+.cat-resize[data-drag] iframe{pointer-events:none}
+.cat-resize > .cat-frame{border:1px solid var(--line-2);border-radius:8px 0 0 8px;box-sizing:content-box}
+.cat-resize-grip{flex:none;width:16px;border:1px solid var(--line-2);border-left:0;border-radius:0 8px 8px 0;background:var(--panel);cursor:ew-resize;touch-action:none;position:relative}
+.cat-resize-grip::after{content:"";position:absolute;inset:50% auto auto 50%;width:4px;height:32px;margin:-16px 0 0 -2px;border-radius:99px;background:var(--line-2)}
+.cat-resize-grip:hover{background:var(--hover)}
+.cat-resize-grip:active,.cat-resize-grip[data-on]{background:var(--hover-strong)}
+.cat-resize-grip:hover::after,.cat-resize-grip[data-on]::after{background:var(--pri)}
+.cat-resize-grip:focus-visible{outline:2px solid var(--pri);outline-offset:2px}
+.cat-resize-info{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px}
+.cat-resize-w{font-size:var(--fs-20);font-weight:700;color:var(--ink)}
+.cat-phone{border:10px solid var(--ink);border-radius:14px;overflow:hidden;background:var(--ink)}
