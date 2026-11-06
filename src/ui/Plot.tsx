@@ -375,10 +375,10 @@ export function RadarChart({ axes, series, max, unit = '', height = 260 }: { axe
 /**
  * 行と列の表の濃淡（曜日×時間帯の件数、週×曜日の活動など）。濃さは min〜max（省略時は値の範囲）で --chart-5 から --chart-1 へ。
  * null は値なし（薄い地）。values は行ごとの配列。showValues でセルに数を書く。square は正方形のセル（カレンダーの形）。
- * colEvery は列の名前を何列ごとに出すか。列が多ければ枠の中だけを横にスクロールする
+ * colEvery は列の名前を何列ごとに出すか。列が多ければ枠の中だけを横にスクロールする。corner は読み上げの表の左上の見出し（行の名前の列）
  */
-export function HeatMap({ rows, cols, values, unit = '', min, max, scale, showValues = false, square = false, colEvery = 1 }: {
-  rows: string[]; cols: string[]; values: (number | null)[][]; unit?: string; min?: number; max?: number; scale?: [string, string]; showValues?: boolean; square?: boolean; colEvery?: number
+export function HeatMap({ rows, cols, values, unit = '', min, max, scale, showValues = false, square = false, colEvery = 1, corner = '項目' }: {
+  rows: string[]; cols: string[]; values: (number | null)[][]; unit?: string; min?: number; max?: number; scale?: [string, string]; showValues?: boolean; square?: boolean; colEvery?: number; corner?: string
 }) {
   const nums = values.flat().filter((v): v is number => v != null && Number.isFinite(v))
   const lo = min ?? Math.min(0, ...nums), hi = max ?? Math.max(lo + 1e-9, ...nums)
@@ -406,7 +406,7 @@ export function HeatMap({ rows, cols, values, unit = '', min, max, scale, showVa
         </div>
       </div>
       {scale && <div className="tm-scale"><span className="num">{scale[0]}</span><i /><span className="num">{scale[1]}</span></div>}
-      <SrTable head={['', ...cols]} rows={rows.map((r, i) => [r, ...cols.map((_, j) => valueText(values[i]?.[j], unit))])} />
+      <SrTable head={[corner, ...cols]} rows={rows.map((r, i) => [r, ...cols.map((_, j) => valueText(values[i]?.[j], unit))])} />
     </div>
   )
 }
@@ -495,7 +495,8 @@ export function Gauge({ value, label, min = 0, max = 100, unit = '', target, dec
   const d = `M${pt(0, r).join(' ')}A${r} ${r} 0 0 1 ${pt(1, r).join(' ')}`
   const text = value === null ? '—' : value.toFixed(decimals)
   return (
-    <div className="gauge" role="meter" aria-label={label} aria-valuemin={min} aria-valuemax={max} aria-valuenow={value ?? undefined} aria-valuetext={value === null ? '値なし' : `${text}${unit}${target != null ? `（目標 ${clean(target)}${unit}）` : ''}`} style={{ width: W }}>
+    // 値がないときは meter にしない（meter は今の値が必須のため）。「値なし」と読ませる
+    <div className="gauge" {...(value === null ? { role: 'img', 'aria-label': `${label} 値なし` } : { role: 'meter', 'aria-label': label, 'aria-valuemin': min, 'aria-valuemax': max, 'aria-valuenow': value, 'aria-valuetext': `${text}${unit}${target != null ? `（目標 ${clean(target)}${unit}）` : ''}` })} style={{ width: W }}>
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
         <path className="gauge-track" d={d} strokeWidth={sw} />
         {value !== null && f(value) > 0 && <path className="gauge-fill" d={d} strokeWidth={sw} pathLength={100} strokeDasharray={`${f(value) * 100} 100`} />}
