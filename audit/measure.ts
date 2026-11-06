@@ -41,6 +41,16 @@ export function measure(page: Page, args: MeasureArgs): Promise<Measured[]> {
     }
     const parentWho = (el: Element) => (el.parentElement ? who(el.parentElement) + ' > ' : '') + who(el)
 
+    // 7・12 章: グラフの確認口は Tab で到達し、読み上げから隠さない。
+    // 円の SVG 区分はホバー専用で、対応する凡例から同じ値を確認する。
+    for (const el of document.querySelectorAll<HTMLElement | SVGElement>('[data-chart-tip]')) {
+      if (el instanceof SVGElement && !el.hasAttribute('tabindex')) continue
+      if (el.closest('[inert]')) continue
+      if (el.tabIndex < 0 || el.closest('[aria-hidden="true"]')) {
+        out.push({ rule: 'グラフの値の確認（7・12 章）', where: who(el), expected: 'Tab で到達でき、読み上げから隠れていない', actual: `tabIndex=${el.tabIndex}、aria-hidden=${!!el.closest('[aria-hidden="true"]')}` })
+      }
+    }
+
     // 5 章: 画面の段組み。ヘッダー → 最初の段が --shell-top、段と段が --shell-gap、左右が --shell-x、最後の段の下が --shell-bottom
     const main = document.querySelector('.mainwrap')
     const header = document.querySelector('header.top')

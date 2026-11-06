@@ -102,7 +102,8 @@ const BASE_EXCEPTIONS = [
   { match: /^文字の大きさ .*\.av\.xl .* 26px$/, why: 'avatar.css の design-ok: 72px の顔アイコンの頭文字' },
 ]
 // 8 章の例外（今選んでいて押しても変わらないもの・入れ物）
-const BASE_HOVER_SKIP = ['.seg button[aria-pressed="true"]', '[role="tab"][aria-selected="true"]', '[aria-current="page"]', '.erow.on', '.swatch[aria-pressed="true"]', '.mark-sw[aria-pressed="true"]', '.tm-tile[aria-pressed="true"]', '.cal-d.on', '.select-opt.on', '[role="region"]', '[role="group"]', '[role="tablist"]']
+// 図・メーター・円の凡例は値の確認口。押す操作はなく、吹き出しの操作を部品のE2Eで検証する。
+const BASE_HOVER_SKIP = ['[data-chart-tip][role="img"]', '[data-chart-tip][role="meter"]', '[data-chart-tip][role="listitem"]', '.seg button[aria-pressed="true"]', '[role="tab"][aria-selected="true"]', '[aria-current="page"]', '.erow.on', '.swatch[aria-pressed="true"]', '.mark-sw[aria-pressed="true"]', '.tm-tile[aria-pressed="true"]', '.cal-d.on', '.select-opt.on', '[role="region"]', '[role="group"]', '[role="tablist"]']
 // 測るあいだに消える部品（時間で消える知らせなど）を待ち続けず、飛ばす
 const GONE = { timeout: 1000 }
 const PIXEL = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64')

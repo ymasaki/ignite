@@ -41,6 +41,7 @@
 
 /* レーダー。主な系列は面、soft は淡い破線 */
 .plot-ring{fill:none}
+.radar-hit{fill:transparent}
 .plot-radar{fill:color-mix(in srgb,var(--chart-1) 18%,transparent);stroke:var(--chart-1);stroke-width:2;stroke-linejoin:round}
 .plot-radar.soft{fill:none;stroke:var(--chart-3);stroke-dasharray:4 3}
 .plot .line-key.soft{background:var(--chart-3)}
@@ -95,9 +96,3 @@
 .gauge-ends{display:flex;justify-content:space-between;width:100%;margin-top:4px;font-size:var(--fs-11);color:var(--ink-3)}
 
 @media (prefers-reduced-motion: reduce){.plot-bar{animation:none}.gauge-fill,.pie-s,.pie-legend li{transition:none}}
-
-/* 左右の端の帯の吹き出しは、帯の端にそろえて窓の外へ出さない */
-@media (hover:hover){
-  .plot-hits > span:first-child:hover::after{left:0;transform:none;animation-name:tipInEdge}
-  .plot-hits > span:last-child:hover::after{left:auto;right:0;transform:none;animation-name:tipInEdge}
-}

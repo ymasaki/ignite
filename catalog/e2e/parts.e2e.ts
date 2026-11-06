@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 
 // axe に見えない動きのある操作（DESIGN.md 12 章）。キーボードだけで使えること、フォーカスの行き先、日本語の入力の確定
@@ -903,6 +904,238 @@ test('レスポンシブ表示: つまみの ← → と区切りのボタンで
   await page.getByRole('button', { name: /^600/ }).click()
   await expect(page.getByText('引き出し（メニューのボタンで開く）')).toBeVisible()
 })
+
+// グラフの確認口は実際に Tab で到達し、読み上げ名と同じ値を吹き出しに出す。
+for (const [name, selector] of [
+  ['横棒', '.bl'], ['折れ線', '.line-hits > span'], ['積み上げ', '.sc-col'],
+  ['小さな推移線', '.spark'], ['ファネル', '.fn-step'], ['タイル', '.tm-tile'],
+  ['縦棒', '[data-spec="column"] .plot-hits > span'], ['円の凡例', '.pie-legend li'],
+  ['ゲージ', '.gauge'], ['滝', '[data-spec="waterfall"] .plot-hits > span'],
+  ['散布図', '.xy-pt'], ['レーダー', '.radar-l'], ['ヒートマップ', '.hm-c'],
+  ['箱ひげ', '[data-spec="box"] .plot-hits > span'],
+  ['複合グラフ', '[data-spec="combo"] .plot-hits > span'],
+  ['ヒストグラムのゼロ', '[data-spec="histogram"] .plot-hits > span'],
+  ['複数系列の縦棒', '[data-spec="column"] .cat-case:nth-child(2) .plot-hits > span'],
+  ['負の数の縦棒', '[data-spec="column"] .cat-case:nth-child(3) .plot-hits > span'],
+  ['バブル', '[data-spec="scatter"] .cat-case:nth-child(2) .xy-pt'],
+  ['カレンダーのヒートマップ', '[data-spec="heatmap"] .cat-case:nth-child(2) .hm-c'],
+]) {
+  test(`グラフ共通: ${name} のホバー・Tab・離脱・Esc`, async ({ page }) => {
+    await open(page, 'charts')
+    const item = page.locator(selector).first()
+    await item.scrollIntoViewIfNeeded()
+    const text = await item.evaluate(el => el.getAttribute('aria-labelledby')?.split(/\s+/).map(id => document.getElementById(id)?.textContent).join('　') || el.getAttribute('data-chart-tip'))
+    expect(text).toBeTruthy()
+    await item.hover()
+    const tip = page.getByRole('tooltip')
+    await expect(tip).toHaveText(text!)
+    await expect(tip).toBeVisible()
+    // 隠された祖先にフォーカスを置かない。
+    expect(await item.evaluate(el => !!el.closest('[aria-hidden="true"]'))).toBe(false)
+    await page.mouse.move(0, 0)
+    await expect(tip).toHaveCount(0)
+    // 一度対象へ移り、Shift+Tab→Tab で実際の順方向到達を確認する。
+    await item.focus()
+    await page.keyboard.press('Shift+Tab')
+    await page.keyboard.press('Tab')
+    await expect(item).toBeFocused()
+    await expect(item).toHaveAccessibleName(name === '横棒' ? text! : (await item.getAttribute('aria-label'))!)
+    await expect(tip).toHaveText(text!)
+    await page.keyboard.press('Escape')
+    await expect(tip).toHaveCount(0)
+    await page.keyboard.press('Tab')
+    await expect(item).not.toBeFocused()
+  })
+}
+
+test('グラフ共通: 円の区分・ドーナツ・値なしゲージ・選択を保つ', async ({ page }, testInfo) => {
+  await open(page, 'charts')
+  const pies = page.locator('.pie')
+  for (let i = 0; i < 2; i++) {
+    const pie = pies.nth(i), slice = pie.locator('.pie-s').first()
+    await pie.scrollIntoViewIfNeeded()
+    const fig = (await pie.locator('svg').boundingBox())!
+    await page.mouse.move(fig.x + fig.width * 0.85, fig.y + fig.height * 0.45)
+    await expect(page.getByRole('tooltip')).toContainText(i ? '完了' : '問い合わせ')
+    await expect(slice).toHaveClass(/on/)
+    if (i === 0) {
+      await expect(page.getByRole('tooltip')).toHaveCSS('opacity', '1')
+      await page.screenshot({ path: testInfo.outputPath('pie.png') })
+    }
+    await page.mouse.move(0, 0)
+    await expect(page.getByRole('tooltip')).toHaveCount(0)
+    await pie.locator('li').first().focus()
+    await expect(slice).toHaveClass(/on/)
+  }
+  const none = page.locator('.gauge').last()
+  await none.focus()
+  await expect(page.getByRole('tooltip')).toContainText('値なし')
+  await expect(none).toHaveAttribute('role', 'img')
+  const tile = page.locator('.tm-tile').first()
+  await tile.focus()
+  await page.keyboard.press('Enter')
+  await expect(tile).toHaveAttribute('aria-pressed', 'true')
+})
+
+test('グラフ共通: 窓の端とスクロール枠、Dialog の前面に出て Esc は吹き出しから閉じる', async ({ page }, testInfo) => {
+  await open(page, 'charts')
+  await page.getByRole('button', { name: '窓の中でグラフを確認' }).click()
+  const dialog = page.getByRole('dialog', { name: 'グラフの値の確認' })
+  const gauge = dialog.locator('.gauge')
+  await gauge.hover()
+  await expect(page.getByRole('tooltip')).toContainText('目標 80%')
+  await expect(page.getByRole('tooltip')).toHaveCSS('opacity', '1')
+  await page.screenshot({ path: testInfo.outputPath('gauge.png') })
+  await page.mouse.move(0, 0)
+  await gauge.focus()
+  await expect(page.getByRole('tooltip')).toContainText('範囲 0〜100%')
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('tooltip')).toHaveCount(0)
+  await expect(dialog).toBeVisible()
+  const cell = dialog.locator('.hm-c').last()
+  await cell.focus()
+  const tip = page.getByRole('tooltip')
+  await expect(tip).toBeVisible()
+  expect(await tip.evaluate(el => el.matches(':popover-open'))).toBe(true)
+  const rect = await tip.boundingBox()
+  expect(rect!.x).toBeGreaterThanOrEqual(8)
+  expect(rect!.x + rect!.width).toBeLessThanOrEqual(1272)
+  expect(rect!.y).toBeGreaterThanOrEqual(8)
+  expect(rect!.y + rect!.height).toBeLessThanOrEqual(792)
+  // top layer は実際の座標でも最前面にある。
+  expect(await tip.evaluate(el => {
+    const r = el.getBoundingClientRect()
+    return el.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2))
+  })).toBe(true)
+  await dialog.locator('.hm-scroll').evaluate(el => { el.style.width = '180px' })
+  await dialog.locator('.hm-scroll').evaluate(el => { el.scrollLeft = 30 })
+  await expect(tip).toHaveCount(0)
+  await dialog.locator('.pie-legend li').first().focus()
+  await expect(tip).toContainText('完了')
+  await page.keyboard.press('Escape')
+  await page.keyboard.press('Escape')
+  await expect(dialog).toHaveCount(0)
+})
+
+test('グラフ共通: 狭い窓の長い吹き出し・ダークモード・リサイズ・同時表示', async ({ page }) => {
+  await open(page, 'charts')
+  await page.setViewportSize({ width: 420, height: 700 })
+  await page.evaluate(() => { document.documentElement.dataset.mode = 'dark' })
+  const item = page.locator('.fn-step').last()
+  await item.scrollIntoViewIfNeeded()
+  // resize 通知とカタログの段組みの描き直しを済ませてからフォーカスする。
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))))
+  await item.focus()
+  const tip = page.getByRole('tooltip')
+  await expect(tip).toContainText('最初から')
+  await expect(tip).toBeVisible()
+  const r = await tip.boundingBox()
+  expect(r!.x).toBeGreaterThanOrEqual(8)
+  expect(r!.x + r!.width).toBeLessThanOrEqual(412)
+  await page.setViewportSize({ width: 430, height: 700 })
+  await expect(tip).toHaveCount(0)
+  const gauge = page.locator('.gauge').first()
+  await gauge.hover()
+  await expect(tip).toHaveCount(1)
+  await expect(tip).toContainText('目標')
+  await page.evaluate(() => { document.documentElement.dataset.tips = 'off' })
+  await expect(tip).not.toBeVisible()
+})
+
+test('グラフ共通: レーダーの点でも項目名と同じ内訳を出す', async ({ page }) => {
+  await open(page, 'charts')
+  const hit = page.locator('.radar-hit').first()
+  await hit.hover()
+  await expect(page.getByRole('tooltip')).toContainText('速さ')
+  await expect(page.getByRole('tooltip')).toContainText('今期 4')
+  await page.mouse.move(0, 0)
+  await page.locator('.radar-l').first().focus()
+  await expect(page.getByRole('tooltip')).toContainText('今期 4')
+})
+
+test('グラフ共通: 表示中の値の更新に追随し、対象の削除で閉じる', async ({ page }) => {
+  await open(page, 'charts')
+  const item = page.locator('.gauge').first()
+  await item.focus()
+  const tip = page.getByRole('tooltip')
+  await expect(tip).toContainText('72%')
+  await item.evaluate(el => el.setAttribute('data-chart-tip', '更新後 81%'))
+  await expect(tip).toHaveText('更新後 81%')
+  await item.evaluate(el => el.remove())
+  await expect(tip).toHaveCount(0)
+})
+
+test('グラフ共通: 点から余白を経由して外へ移動しても吹き出しが残らない', async ({ page }) => {
+  await open(page, 'charts')
+  const plot = page.locator('[data-spec="scatter"] .plot').first()
+  await plot.locator('.xy-pt').first().hover()
+  await expect(page.getByRole('tooltip')).toBeVisible()
+  const r = (await plot.boundingBox())!
+  await page.mouse.move(r.x + 10, r.y + 10)
+  await page.mouse.move(0, 0)
+  await expect(page.getByRole('tooltip')).toHaveCount(0)
+})
+
+test('グラフ共通: Esc 後のポインタ離脱で復活せず、次の Esc で窓が閉じる', async ({ page }) => {
+  await open(page, 'charts')
+  await page.getByRole('button', { name: '窓の中でグラフを確認' }).click()
+  const dialog = page.getByRole('dialog', { name: 'グラフの値の確認' })
+  const item = dialog.locator('.gauge')
+  await item.focus()
+  await item.hover()
+  await expect(page.getByRole('tooltip')).toBeVisible()
+  await page.keyboard.press('Escape')
+  await page.mouse.move(0, 0)
+  // 離脱の猶予時間を越えて復活しないことを確認する。
+  await page.waitForTimeout(200)
+  await expect(page.getByRole('tooltip')).toHaveCount(0)
+  await page.keyboard.press('Escape')
+  await expect(dialog).toHaveCount(0)
+})
+
+test('グラフ共通: 吹き出しが無効なら見えない対象で Esc を消費しない', async ({ page }) => {
+  await open(page, 'charts')
+  await page.getByRole('button', { name: '窓の中でグラフを確認' }).click()
+  const dialog = page.getByRole('dialog', { name: 'グラフの値の確認' })
+  await dialog.locator('.gauge').focus()
+  await page.evaluate(() => { document.documentElement.dataset.tips = 'off' })
+  await expect(page.getByRole('tooltip')).not.toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(dialog).toHaveCount(0)
+})
+
+test('グラフ共通: 円の別区分から離れるとフォーカス中の凡例と区分を再び強調する', async ({ page }) => {
+  await open(page, 'charts')
+  const pie = page.locator('.pie').first()
+  const first = pie.locator('li').first(), second = pie.locator('li').nth(1)
+  await first.focus()
+  await second.hover()
+  await expect(second).toHaveClass('on')
+  await page.mouse.move(0, 0)
+  await expect(first).toBeFocused()
+  await expect(first).toHaveClass('on')
+  await expect(pie.locator('.pie-s').first()).toHaveClass(/on/)
+  await expect(page.getByRole('tooltip')).toContainText('問い合わせ')
+})
+
+for (const nav of ['charts', 'dashboard']) {
+  test(`グラフ共通: ${nav} の値の確認口に適切な読み上げの役割がある`, async ({ page }) => {
+    await open(page, nav)
+    const result = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice']).analyze()
+    expect(result.violations).toEqual([])
+    for (const el of await page.locator('[data-chart-tip][tabindex="0"]').all()) {
+      const role = await el.getAttribute('role')
+      expect(['img', 'meter', 'listitem', 'button']).toContain(role)
+    }
+    if (nav === 'charts') {
+      await expect(page.locator('.tm-tile').first()).toHaveRole('button')
+      // 図の役割を落とした場合は、今回の違反を確実に検出する。
+      await page.locator('.line-hits > span').first().evaluate(el => el.removeAttribute('role'))
+      const broken = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice']).analyze()
+      expect(broken.violations.map(v => v.id)).toContain('aria-prohibited-attr')
+    }
+  })
+}
 
 for (const nav of ['navigate', 'motion']) {
   test(`MonthStepper: ${nav} で前後の月へ進み、一覧の両端で止まる`, async ({ page }, testInfo) => {

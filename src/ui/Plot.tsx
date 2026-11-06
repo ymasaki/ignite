@@ -1,6 +1,8 @@
 // グラフの部品（縦棒・円・散布図・レーダー・ヒートマップ・ゲージ・滝・箱ひげ）。Chart.tsx と同じく 1 色（--chart-1〜5 の濃淡）で描く。
 // 見た目は styles/components/plot.css。形で見せる値は、読み上げに要約の名前と見えない表（SrTable）で渡す
 
+import { ChartTooltip, chartTip } from './ChartTooltip'
+
 import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 
 import { SrTable, seriesSummary } from './Chart'
@@ -79,11 +81,11 @@ function XLabels({ labels, cx, y, W, current, gap = 56 }: { labels: string[]; cx
   return <>{labels.map((t, i) => (i % every === 0 || i === current) && <text key={i} className={`line-ax${i === current ? ' on' : ''}`} x={cx(i)} y={y} textAnchor="middle">{t}</text>)}</>
 }
 
-/** ホバーの帯（項目ごとに 1 本。data-tip は SVG の中では出せないので HTML で重ねる） */
+/** ホバーの帯（項目ごとに 1 本。操作する範囲を広げるため HTML で重ねる） */
 function Hits({ tips, box }: { tips: string[]; box: { left: number; top: number; width: number; height: number } }) {
   return (
-    <div className="plot-hits" style={box} aria-hidden="true">
-      {tips.map((t, i) => <span key={i} data-tip={t} />)}
+    <div className="plot-hits" style={box}>
+      {tips.map((t, i) => <span key={i} {...chartTip(t)} />)}
     </div>
   )
 }
@@ -143,6 +145,7 @@ export function ColumnChart({ labels, series, line, unit = '', lineUnit = '', hi
   // 折れ線を重ねるときは、棒を薄い段（--chart-3 から）にして線を見せる
   const tone = line ? 3 : 1
   return (
+    <ChartTooltip>
     <div className="plot" ref={ref}>
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={columnSummary(labels, ss, line, unit, lineUnit)}>
         <YGrid ticks={ticks} y={y} L={L} R={R} W={W} />
@@ -158,6 +161,7 @@ export function ColumnChart({ labels, series, line, unit = '', lineUnit = '', hi
       {showLegend && <Legend items={[...ss.map((s, k) => ({ label: s.label, tone: `chart-c${k + tone}` })), ...(line ? [{ label: line.label, tone: '', kind: 'line' as const }] : [])]} />}
       <SrTable head={['項目', ...ss.map((s) => s.label), ...(line ? [line.label] : [])]} rows={labels.map((l, i) => [l, ...ss.map((s) => valueText(s.values[i], unit)), ...(line ? [valueText(line.values[i], lineUnit)] : [])])} />
     </div>
+    </ChartTooltip>
   )
 }
 
@@ -184,6 +188,7 @@ export function Waterfall({ start, steps, total, unit = '', height = 220 }: { st
   const cx = (i: number) => L + band * (i + 0.5)
   const sign = (v: number) => (v > 0 ? `+${clean(v)}` : v < 0 ? `−${clean(-v)}` : '±0')
   return (
+    <ChartTooltip>
     <div className="plot" ref={ref}>
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${start.label} ${clean(start.value)}${unit}から${total ?? '最後'} ${clean(bars.at(-1)!.to)}${unit}`}>
         <YGrid ticks={ticks} y={y} L={L} R={R} W={W} />
@@ -199,6 +204,7 @@ export function Waterfall({ start, steps, total, unit = '', height = 220 }: { st
       <Hits box={{ left: L, top: T, width: W - L - R, height: H - T - B }} tips={bars.map((b) => `${b.label}　${b.kind === 'up' || b.kind === 'down' ? `${sign(b.to - b.from)}${unit}　累計 ` : ''}${clean(b.to)}${unit}`)} />
       <SrTable head={['項目', '増減', '累計']} rows={bars.map((b) => [b.label, b.kind === 'up' || b.kind === 'down' ? `${sign(b.to - b.from)}${unit}` : '—', `${clean(b.to)}${unit}`])} />
     </div>
+    </ChartTooltip>
   )
 }
 
@@ -252,6 +258,7 @@ export function BoxPlot({ items, unit = '', height = 220 }: { items: BoxItem[]; 
   const cx = (i: number) => L + band * (i + 0.5)
   const u = (v: number) => `${clean(v)}${unit}`
   return (
+    <ChartTooltip>
     <div className="plot" ref={ref}>
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={items.map((b) => `${b.label} 中央値 ${u(b.median)}`).join('、')}>
         <YGrid ticks={ticks} y={y} L={L} R={R} W={W} />
@@ -271,6 +278,7 @@ export function BoxPlot({ items, unit = '', height = 220 }: { items: BoxItem[]; 
       <Hits box={{ left: L, top: T, width: W - L - R, height: H - T - B }} tips={items.map((b) => `${b.label}　最小 ${u(b.min)}・25% ${u(b.q1)}・中央値 ${u(b.median)}・75% ${u(b.q3)}・最大 ${u(b.max)}${b.outliers?.length ? `・外れ値 ${b.outliers.length}件` : ''}`)} />
       <SrTable head={['区分', '最小', '第1四分位', '中央値', '第3四分位', '最大', '外れ値']} rows={items.map((b) => [b.label, u(b.min), u(b.q1), u(b.median), u(b.q3), u(b.max), b.outliers?.length ? b.outliers.map(u).join('・') : '—'])} />
     </div>
+    </ChartTooltip>
   )
 }
 
@@ -310,6 +318,7 @@ export function ScatterChart({ points, xLabel, yLabel, sizeLabel = '大きさ', 
   // 大きい点を先に描き、小さい点が隠れないようにする
   const order = points.map((p, i) => ({ p, i })).sort((a, b) => r(b.p) - r(a.p))
   return (
+    <ChartTooltip>
     <div className="plot" ref={ref}>
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${xLabel}と${yLabel}、${points.length}点`}>
         <YGrid ticks={yt} y={y} L={L} R={R} W={W} />
@@ -317,11 +326,12 @@ export function ScatterChart({ points, xLabel, yLabel, sizeLabel = '大きさ', 
         <text className="line-ax plot-axis-t" x={L - 6} y={11} textAnchor="start">{yLabel}{yUnit && `（${yUnit}）`}</text>
         <text className="line-ax plot-axis-t" x={W - R} y={H - 3} textAnchor="end">{xLabel}{xUnit && `（${xUnit}）`}</text>
       </svg>
-      <div className="xy-pts" aria-hidden="true">
-        {order.map(({ p, i }) => <i key={i} className={`xy-pt${p.muted ? ' muted' : ''}${bubble ? ' bubble' : ''}`} style={{ left: x(p.x), top: y(p.y), '--d': `${r(p) * 2}px` } as CSSProperties} data-tip={tip(p)} />)}
+      <div className="xy-pts">
+        {order.map(({ p, i }) => <i key={i} className={`xy-pt${p.muted ? ' muted' : ''}${bubble ? ' bubble' : ''}`} style={{ left: x(p.x), top: y(p.y), '--d': `${r(p) * 2}px` } as CSSProperties} {...chartTip(tip(p))} />)}
       </div>
       <SrTable head={['名前', xLabel, yLabel, ...(bubble ? [sizeLabel] : [])]} rows={points.map((p, i) => [p.label ?? String(i + 1), `${clean(p.x)}${xUnit}`, `${clean(p.y)}${yUnit}`, ...(bubble ? [valueText(p.size, sizeUnit)] : [])])} />
     </div>
+    </ChartTooltip>
   )
 }
 
@@ -347,6 +357,7 @@ export function RadarChart({ axes, series, max, unit = '', height = 260 }: { axe
   const poly = (vs: number[]) => axes.map((_, i) => at(i, vs[i] ?? 0).map((c) => c.toFixed(1)).join(',')).join(' ')
   const ordered = [...series.filter((s) => s.soft), ...series.filter((s) => !s.soft)]
   return (
+    <ChartTooltip>
     <div className="plot" ref={ref}>
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={series.map((s) => `${s.label} ${axes.map((a, i) => `${a} ${valueText(s.values[i], unit)}`).join('・')}`).join('、')}>
         {[0.25, 0.5, 0.75, 1].map((f) => <polygon key={f} className="line-grid plot-ring" points={poly(axes.map(() => top * f))} />)}
@@ -354,19 +365,24 @@ export function RadarChart({ axes, series, max, unit = '', height = 260 }: { axe
         <text className="line-ax" x={cx + 5} y={cy - R + 14}>{tick(top)}</text>
         {ordered.map((s) => <polygon key={s.label} className={`plot-radar${s.soft ? ' soft' : ''}`} points={poly(s.values)} />)}
         {ordered.filter((s) => !s.soft).map((s) => axes.map((_, i) => <circle key={`${s.label}-${i}`} className="line-dot" cx={at(i, s.values[i] ?? 0)[0]} cy={at(i, s.values[i] ?? 0)[1]} r={3} />))}
+        {/* 点の近くでも、項目名と同じ内訳を確認できる（キー操作は下の項目名から）。 */}
+        <g aria-hidden="true">
+          {series.map((s, k) => axes.map((a, i) => <circle key={`${k}-${i}`} className="radar-hit" cx={at(i, s.values[i] ?? 0)[0]} cy={at(i, s.values[i] ?? 0)[1]} r={10} data-chart-tip={[a, ...series.map((x) => `${series.length > 1 ? `${x.label} ` : ''}${valueText(x.values[i], unit)}`)].join('　')} />))}
+        </g>
       </svg>
-      <div className="radar-axes" aria-hidden="true">
+      <div className="radar-axes">
         {axes.map((a, i) => {
           const ang = (i / n) * Math.PI * 2, s = Math.sin(ang), c = Math.cos(ang)
           const side = Math.abs(s) < 0.2 ? 'mid' : s > 0 ? 'right' : 'left'
           return (
-            <span key={i} className={`radar-l ${side}`} style={{ left: cx + (R + 10) * s, top: cy - (R + 10) * c - (c < -0.2 ? -8 : c > 0.2 ? 8 : 0) }} data-tip={[a, ...series.map((x) => `${series.length > 1 ? `${x.label} ` : ''}${valueText(x.values[i], unit)}`)].join('　')}>{a}</span>
+            <span key={i} className={`radar-l ${side}`} style={{ left: cx + (R + 10) * s, top: cy - (R + 10) * c - (c < -0.2 ? -8 : c > 0.2 ? 8 : 0) }} {...chartTip([a, ...series.map((x) => `${series.length > 1 ? `${x.label} ` : ''}${valueText(x.values[i], unit)}`)].join('　'))}>{a}</span>
           )
         })}
       </div>
       {series.length > 1 && <Legend items={series.map((s) => ({ label: s.label, tone: s.soft ? 'soft' : '', kind: 'line' }))} />}
       <SrTable head={['項目', ...series.map((s) => s.label)]} rows={axes.map((a, i) => [a, ...series.map((s) => valueText(s.values[i], unit))])} />
     </div>
+    </ChartTooltip>
   )
 }
 
@@ -384,8 +400,9 @@ export function HeatMap({ rows, cols, values, unit = '', min, max, scale, showVa
   const lo = min ?? Math.min(0, ...nums), hi = max ?? Math.max(lo + 1e-9, ...nums)
   const ratio = (v: number) => Math.max(0, Math.min(1, (v - lo) / (hi - lo || 1)))
   return (
+    <ChartTooltip>
     <div className="heatmap">
-      <div className="hm-scroll" aria-hidden="true">
+      <div className="hm-scroll">
         <div className={`hm-grid${square ? ' square' : ''}`} style={{ gridTemplateColumns: `max-content repeat(${cols.length}, ${square ? 'minmax(14px, 24px)' : 'minmax(28px, 1fr)'})` }}>
           <span />
           {cols.map((c, j) => <span key={j} className="hm-col">{j % colEvery === 0 ? c : ''}</span>)}
@@ -396,7 +413,7 @@ export function HeatMap({ rows, cols, values, unit = '', min, max, scale, showVa
                 const v = values[i]?.[j]
                 const none = v == null || !Number.isFinite(v)
                 return (
-                  <span key={j} className={`hm-c${none ? ' none' : ''}${!none && ratio(v) > 0.55 ? ' dark' : ''}`} style={{ '--r': none ? 0 : ratio(v) } as CSSProperties} data-tip={`${r} ${c}　${valueText(v, unit)}`}>
+                  <span key={j} className={`hm-c${none ? ' none' : ''}${!none && ratio(v) > 0.55 ? ' dark' : ''}`} style={{ '--r': none ? 0 : ratio(v) } as CSSProperties} {...chartTip(`${r} ${c}　${valueText(v, unit)}`)}>
                     {showValues && !none && <span className="num">{clean(v)}</span>}
                   </span>
                 )
@@ -408,6 +425,7 @@ export function HeatMap({ rows, cols, values, unit = '', min, max, scale, showVa
       {scale && <div className="tm-scale"><span className="num">{scale[0]}</span><i /><span className="num">{scale[1]}</span></div>}
       <SrTable head={[corner, ...cols]} rows={rows.map((r, i) => [r, ...cols.map((_, j) => valueText(values[i]?.[j], unit))])} />
     </div>
+    </ChartTooltip>
   )
 }
 
@@ -448,6 +466,12 @@ function arcPath(cx: number, cy: number, r0: number, r1: number, a0: number, a1:
 export function PieChart({ items, donut = false, unit = '', center, centerLabel = '合計', rest = 'その他', size = 160 }: {
   items: PieItem[]; donut?: boolean; unit?: string; center?: ReactNode; centerLabel?: string; rest?: string; size?: number
 }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const restoreFocus = () => {
+    const legends = ref.current?.querySelectorAll('.pie-legend li')
+    const i = legends ? [...legends].indexOf(document.activeElement!) : -1
+    setOn(i < 0 ? null : i)
+  }
   const [on, setOn] = useState<number | null>(null)
   const slices = pieSlices(items, rest)
   const total = slices.reduce((a, s) => a + s.value, 0)
@@ -455,21 +479,22 @@ export function PieChart({ items, donut = false, unit = '', center, centerLabel 
   let a = 0
   const pct = (s: number) => `${clean(Math.round(s * 1000) / 10)}%`
   return (
-    <div className={`pie${on !== null ? ' focus' : ''}`} onMouseLeave={() => setOn(null)}>
+    <ChartTooltip>
+    <div ref={ref} className={`pie${on !== null ? ' focus' : ''}`} onMouseLeave={restoreFocus} onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setOn(null) }}>
       <div className="pie-fig" style={{ width: size, height: size }}>
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
           {!total && <circle className="pie-empty" cx={c} cy={c} r={r1 - (r1 - r0) / 2} strokeWidth={donut ? r1 - r0 : r1} />}
           {slices.map((s, i) => {
             const a0 = a
             a += s.share * Math.PI * 2
-            return <path key={i} className={`pie-s chart-f${s.tone}${on === i ? ' on' : ''}`} d={arcPath(c, c, r0, r1, a0, a)} onMouseEnter={() => setOn(i)} />
+            return <path key={i} className={`pie-s chart-f${s.tone}${on === i ? ' on' : ''}`} d={arcPath(c, c, r0, r1, a0, a)} data-chart-tip={`${s.label}　${clean(s.value)}${unit}　${pct(s.share)}`} onMouseEnter={() => setOn(i)} onMouseLeave={restoreFocus} />
           })}
         </svg>
         {donut && <span className="pie-c"><span className="num">{center ?? `${clean(total)}${unit}`}</span><small>{centerLabel}</small></span>}
       </div>
       <ul className="pie-legend">
         {slices.map((s, i) => (
-          <li key={i} className={on === i ? 'on' : ''} onMouseEnter={() => setOn(i)}>
+          <li key={i} className={on === i ? 'on' : ''} {...chartTip(`${s.label}　${clean(s.value)}${unit}　${pct(s.share)}`)} role="listitem" onFocus={() => setOn(i)} onMouseEnter={() => setOn(i)} onMouseLeave={restoreFocus}>
             <i className={`sc-key ${s.tone === 'm' ? 'chart-muted' : `chart-c${s.tone}`}`} />
             <span className="pie-l">{s.label}</span>
             <span className="pie-v num">{clean(s.value)}{unit}</span>
@@ -478,6 +503,7 @@ export function PieChart({ items, donut = false, unit = '', center, centerLabel 
         ))}
       </ul>
     </div>
+    </ChartTooltip>
   )
 }
 
@@ -495,8 +521,9 @@ export function Gauge({ value, label, min = 0, max = 100, unit = '', target, dec
   const d = `M${pt(0, r).join(' ')}A${r} ${r} 0 0 1 ${pt(1, r).join(' ')}`
   const text = value === null ? '—' : value.toFixed(decimals)
   return (
-    // 値がないときは meter にしない（meter は今の値が必須のため）。「値なし」と読ませる
-    <div className="gauge" {...(value === null ? { role: 'img', 'aria-label': `${label} 値なし` } : { role: 'meter', 'aria-label': label, 'aria-valuemin': min, 'aria-valuemax': max, 'aria-valuenow': value, 'aria-valuetext': `${text}${unit}${target != null ? `（目標 ${clean(target)}${unit}）` : ''}` })} style={{ width: W }}>
+    <ChartTooltip>
+    {/* 値がないときは meter にしない（meter は今の値が必須のため）。「値なし」と読ませる */}
+    <div className="gauge" {...chartTip(`${label}　${value === null ? '値なし' : `${text}${unit}`}　範囲 ${clean(min)}〜${clean(max)}${unit}${target != null ? `　目標 ${clean(target)}${unit}` : ''}`)} {...(value === null ? { role: 'img', 'aria-label': `${label} 値なし` } : { role: 'meter', 'aria-label': label, 'aria-valuemin': min, 'aria-valuemax': max, 'aria-valuenow': value, 'aria-valuetext': `${text}${unit}${target != null ? `（目標 ${clean(target)}${unit}）` : ''}` })} style={{ width: W }}>
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
         <path className="gauge-track" d={d} strokeWidth={sw} />
         {value !== null && f(value) > 0 && <path className="gauge-fill" d={d} strokeWidth={sw} pathLength={100} strokeDasharray={`${f(value) * 100} 100`} />}
@@ -505,5 +532,6 @@ export function Gauge({ value, label, min = 0, max = 100, unit = '', target, dec
       <span className="gauge-v num" aria-hidden="true">{text}{value !== null && unit && <small>{unit}</small>}</span>
       <span className="gauge-ends num" aria-hidden="true"><span>{clean(min)}</span><span>{clean(max)}</span></span>
     </div>
+    </ChartTooltip>
   )
 }

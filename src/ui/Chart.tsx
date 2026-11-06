@@ -1,5 +1,7 @@
 // グラフの部品（ダッシュボード）。1 色（--pri の濃淡）で描く。見た目は styles/components/chart.css。
 
+import { ChartTooltip, chartTip } from './ChartTooltip'
+
 import { useId, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 
 import { announce } from './A11y'
@@ -34,19 +36,22 @@ export interface BarItem {
 
 /** 横棒の一覧（区分ごとの割合・項目ごとの件数など）。棒の長さは max（省略時は最大値）に対する割合 */
 export function BarList({ items, max }: { items: BarItem[]; max?: number }) {
+  const id = useId()
   const top = max ?? Math.max(1, ...items.map((i) => i.value))
   return (
+    <ChartTooltip>
     <div className="barlist">
       {items.map((it, i) => (
-        <div className="bl" key={i} data-tip={`${typeof it.label === 'string' ? `${it.label}　` : ''}${it.text ?? it.value}`}>
-          <span className="bl-l">{it.label}</span>
+        <div className="bl" key={i} aria-labelledby={`${id}-${i}-label ${id}-${i}-value`} {...chartTip(`${typeof it.label === 'string' ? `${it.label}　` : ''}${it.text ?? it.value}`)}>
+          <span id={`${id}-${i}-label`} className="bl-l">{it.label}</span>
           <span className="bl-t">
             <span className={`bl-f ${it.muted ? 'muted' : ''}`} style={{ width: `${Math.min(100, (it.value / top) * 100)}%` }} />
           </span>
-          <span className="bl-v num">{it.text ?? it.value}</span>
+          <span id={`${id}-${i}-value`} className="bl-v num">{it.text ?? it.value}</span>
         </div>
       ))}
     </div>
+    </ChartTooltip>
   )
 }
 
@@ -94,6 +99,7 @@ export function LineChart({ series, height = 180, xLabels = [], fit = false, are
   // 日付の目盛りは 80px に 1 つまで
   const every = Math.max(1, Math.ceil(xLabels.length / Math.max(2, Math.floor(W / 80))))
   return (
+    <ChartTooltip>
     <div className="line" ref={ref}>
       {/* 読み上げには、期間・最初と最新の値・最小と最大をまとめた名前と、見えない表（点ごとの値。ホバーの帯の代わり）を渡す */}
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={lineSummary(series, xLabels, unit)}>
@@ -120,11 +126,11 @@ export function LineChart({ series, height = 180, xLabels = [], fit = false, are
         {area && series[0]?.values.length > 0 && <circle className="line-dot" cx={x(series[0].values.length - 1)} cy={y(series[0].values.at(-1)!)} r={4} />}
         {series.map((s, k) => s.values.length === 1 && !(area && k === 0) && <circle key={s.label} className={`line-dot ${s.soft ? 'soft' : ''}`} cx={x(0)} cy={y(s.values[0])} r={4} />)}
       </svg>
-      {/* ホバーで、その点の期間と値を出す（点ごとの縦の帯。data-tip は SVG の中では出せないので HTML で重ねる）。
+      {/* ホバーで、その点の期間と値を出す（点ごとの縦の帯。操作する範囲を広げるため HTML で重ねる）。
           帯はグラフの範囲に収める（両端の点の帯は半分の幅。点が 1 つなら範囲いっぱいの 1 本） */}
       <div className="line-hits" style={{ left: L, width: W - L - R, top: T, height: H - T - B }}>
         {Array.from({ length: points }, (_, i) => (
-          <span key={i} className={points > 1 && (i === 0 || i === points - 1) ? 'edge' : ''} data-tip={[xLabels[i], ...series.filter((s) => s.values[i] != null).map((s) => `${series.length > 1 ? `${s.label} ` : ''}${s.values[i]}${unit}`)].filter(Boolean).join('　')}>
+          <span key={i} className={points > 1 && (i === 0 || i === points - 1) ? 'edge' : ''} {...chartTip([xLabels[i], ...series.filter((s) => s.values[i] != null).map((s) => `${series.length > 1 ? `${s.label} ` : ''}${s.values[i]}${unit}`)].filter(Boolean).join('　'))}>
             {series.map((s) => s.values[i] != null && <i key={s.label} className={`line-pt${s.soft ? ' soft' : ''}`} style={{ top: y(s.values[i]!) - T }} aria-hidden="true" />)}
           </span>
         ))}
@@ -138,6 +144,7 @@ export function LineChart({ series, height = 180, xLabels = [], fit = false, are
       )}
       <SrTable head={['期間', ...series.map((s) => s.label)]} rows={lineRows(series, xLabels, unit)} />
     </div>
+    </ChartTooltip>
   )
 }
 
@@ -221,11 +228,12 @@ export function StackColumns({ labels, stacks, down, current, height = 180 }: { 
   const upMax = Math.max(1, ...totals), downMax = down ? Math.max(0, ...down.values) : 0
   const every = Math.max(1, Math.ceil(labels.length / 8))
   return (
+    <ChartTooltip>
     <div className="stackcols">
-      {/* 見える棒・期間・凡例は読み上げから外し、同じ値を見えない表で渡す（内訳はホバーでしか見えないため） */}
-      <div className="sc-cols" style={{ height }} aria-hidden="true">
+      {/* 列の名前は内訳を含める。期間・凡例は重複を避けて隠し、同じ値を見えない表でも渡す */}
+      <div className="sc-cols" style={{ height }}>
         {labels.map((l, i) => (
-          <div className={`sc-col${i === current ? ' on' : ''}`} key={i} data-tip={[l, ...stacks.map((s) => `${s.label} ${s.values[i] || 0}`), ...(down ? [`${down.label} ${down.values[i] || 0}`] : [])].join('　')}>
+          <div className={`sc-col${i === current ? ' on' : ''}`} key={i} {...chartTip([l, ...stacks.map((s) => `${s.label} ${s.values[i] || 0}`), ...(down ? [`${down.label} ${down.values[i] || 0}`] : [])].join('　'))}>
             <span className="sc-up" style={{ flexGrow: upMax }}>
               <span className="sc-stack" style={{ height: `${(totals[i] / upMax) * 100}%` }}>
                 <span className="sc-total num">{totals[i]}</span>
@@ -245,6 +253,7 @@ export function StackColumns({ labels, stacks, down, current, height = 180 }: { 
       </div>
       <SrTable head={['期間', ...stacks.map((s) => s.label), '合計', ...(down ? [down.label] : [])]} rows={stackRows(labels, stacks, down)} />
     </div>
+    </ChartTooltip>
   )
 }
 
@@ -255,10 +264,12 @@ export function Sparkline({ values, label, unit = '', height = 32 }: { values: (
   const x = (i: number) => (values.length > 1 ? (i / (values.length - 1)) * W : W / 2)
   const y = (v: number) => (max === min ? height / 2 : 3 + (1 - (v - min) / (max - min)) * (height - 6))
   return (
-    <svg className="spark" viewBox={`0 0 ${W} ${height}`} height={height} preserveAspectRatio="none" role="img" aria-label={`${label}、${seriesSummary(values, unit)}`}>
+    <ChartTooltip inline>
+    <svg {...chartTip(`${label}、${seriesSummary(values, unit)}`)} className="spark" viewBox={`0 0 ${W} ${height}`} height={height} preserveAspectRatio="none" role="img" aria-label={`${label}、${seriesSummary(values, unit)}`}>
       {pts.length > 1 && <path d={pts.map(([i, v], k) => `${k ? 'L' : 'M'}${x(i).toFixed(2)} ${y(v).toFixed(2)}`).join('')} />}
       {pts.length === 1 && <line className="spark-dot" x1={x(pts[0][0])} x2={x(pts[0][0])} y1={y(pts[0][1])} y2={y(pts[0][1])} />}
     </svg>
+    </ChartTooltip>
   )
 }
 
@@ -270,10 +281,11 @@ export function Funnel({ steps, unit = '', ofPrev, ofFirst, note }: { steps: { l
   const first = steps[0]?.value || 0
   const rate = (a: number, b: number) => (b ? `${Math.round((a / b) * 1000) / 10}%` : '—')
   return (
+    <ChartTooltip>
     <div className="funnel-wrap">
       <div className="funnel">
         {steps.map((st, i) => (
-          <div className="fn-step" key={i}>
+          <div className="fn-step" key={i} {...chartTip(`${st.label}　${st.value}${unit}${i ? `　${ofPrev} ${rate(st.value, steps[i - 1].value)}　${ofFirst} ${rate(st.value, first)}` : note ? `　${note}` : ''}`)}>
             <Stat label={st.label} value={st.value} unit={unit} />
             <span className="fn-col"><i className={`chart-c${Math.min(i + 1, 3)}`} style={{ height: `${first ? Math.min(100, (st.value / first) * 100) : 0}%` }} /></span>
             <span className="fn-rate num">{i === 0 ? note : <>{ofPrev} <b>{rate(st.value, steps[i - 1].value)}</b>・{ofFirst} {rate(st.value, first)}</>}</span>
@@ -281,6 +293,7 @@ export function Funnel({ steps, unit = '', ofPrev, ofFirst, note }: { steps: { l
         ))}
       </div>
     </div>
+    </ChartTooltip>
   )
 }
 
@@ -313,6 +326,7 @@ export function TileMap({ items, selected, onSelect, label, height = 360, scale 
   }, [])
   const tiles = W ? squarify(items, (t) => t.size, W, height) : []
   return (
+    <ChartTooltip>
     <div className="tilemap">
       <div className="tm-area" ref={ref} style={{ height }} role="group" aria-label={label}>
         {tiles.map(({ item: t, x, y, w, h }) => {
@@ -320,7 +334,7 @@ export function TileMap({ items, selected, onSelect, label, height = 360, scale 
           return (
             <button key={t.key} type="button" className={`tm-tile${size}${t.ratio !== null && t.ratio > 0.55 ? ' dark' : ''}${t.ratio === null ? ' none' : ''}`}
               style={{ left: x, top: y, width: w, height: h, '--r': t.ratio ?? 0 } as CSSProperties}
-              aria-pressed={selected === t.key} aria-label={tileName(t)} data-tip={`${t.label}　${t.value}${t.sub ? `　${t.sub}` : ''}`}
+              aria-pressed={selected === t.key} {...chartTip(`${t.label}　${t.value}${t.sub ? `　${t.sub}` : ''}`)} role="button"
               onClick={() => (onSelect?.(t.key), announce(`${tileName(t)} を選びました`))}>
               <span className="tm-l">{t.label}</span>
               <span className="tm-v num">{t.value}</span>
@@ -331,6 +345,7 @@ export function TileMap({ items, selected, onSelect, label, height = 360, scale 
       </div>
       {scale && <div className="tm-scale"><span className="num">{scale[0]}</span><i /><span className="num">{scale[1]}</span></div>}
     </div>
+    </ChartTooltip>
   )
 }
 

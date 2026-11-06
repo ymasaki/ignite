@@ -115,3 +115,13 @@ test('カレンダーの幅: 表と余白を越える外枠だけを検出する
   await page.locator('.datepicker').evaluate(el => el.classList.remove('datepicker'))
   expect(await widths()).toEqual([])
 })
+
+test('グラフの確認口を Tab から外す・読み上げから隠す違反を検出する', async ({ page }) => {
+  await page.setContent('<div data-chart-tip="受付 3件" tabindex="0" aria-label="受付 3件">3</div><svg aria-hidden="true"><path data-chart-tip="円の区分" /></svg>')
+  const graphFindings = async () => (await measure(page, args)).filter(f => f.rule.startsWith('グラフの値の確認'))
+  expect(await graphFindings()).toEqual([])
+  await page.locator('div').evaluate(el => el.tabIndex = -1)
+  expect(await graphFindings()).toHaveLength(1)
+  await page.locator('div').evaluate(el => { el.tabIndex = 0; el.setAttribute('aria-hidden', 'true') })
+  expect(await graphFindings()).toHaveLength(1)
+})

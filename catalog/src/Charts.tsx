@@ -1,5 +1,5 @@
 import { IconChecks, IconClock } from '@tabler/icons-react'
-import { BarList, BoxPlot, ColumnChart, Delta, Funnel, Gauge, HeatMap, Kpi, LineChart, PieChart, RadarChart, ScatterChart, Sparkline, StackColumns, Stat, TileMap, Waterfall, boxStats } from '@ymasaki/ignite'
+import { BarList, BoxPlot, ColumnChart, Button, Dialog, Notice, Delta, Funnel, Gauge, HeatMap, Kpi, LineChart, PieChart, RadarChart, ScatterChart, Sparkline, StackColumns, Stat, TileMap, Waterfall, boxStats } from '@ymasaki/ignite'
 import { useState } from 'react'
 import { MONTHS, PROJECTS } from './data'
 import { Case, Cases, Page, Spec } from './kit'
@@ -19,6 +19,7 @@ const BINS = ['0–1', '1–2', '2–3', '3–4', '4–5', '5–6', '6–7', '7�
 
 export function ChartsPage({ target }: { target?: string | null }) {
   const p = 'charts'
+  const [dialog, setDialog] = useState(false)
   const [tile, setTile] = useState<string | undefined>()
   const [kpi, setKpi] = useState(false)
   return (
@@ -37,7 +38,7 @@ export function ChartsPage({ target }: { target?: string | null }) {
         </Cases>
       </Spec>
       <Spec page={p} id="line"><LineChart unit="件" xLabels={AXIS} series={[{ label: '完了', values: VALUES }, { label: '前の年', values: VALUES.map((v) => v - 8), soft: true }]} /></Spec>
-      <Spec page={p} id="barlist"><BarList items={PROJECTS.map((x) => ({ label: x.owner, value: x.tasks }))} /></Spec>
+      <Spec page={p} id="barlist"><BarList items={PROJECTS.map((x) => ({ label: <span>{x.owner}</span>, value: x.tasks }))} /></Spec>
       <Spec page={p} id="stack"><StackColumns labels={AXIS} stacks={[{ label: '完了', values: VALUES }, { label: '進行中', values: VALUES.map((v) => v / 2 | 0) }]} current={5} /></Spec>
       <Spec page={p} id="funnel"><Funnel unit="件" ofPrev="前の段から" ofFirst="最初から" steps={[{ label: '受付', value: 120 }, { label: '着手', value: 84 }, { label: '完了', value: 52 }]} /></Spec>
       <Spec page={p} id="tile"><TileMap label="プロジェクトの規模と進み具合" height={220} selected={tile} onSelect={setTile} scale={['低い', '高い']} items={PROJECTS.map((x, i) => ({ key: x.id, label: x.name, size: x.tasks, ratio: 0.15 * i + 0.1, value: `${x.tasks}件` }))} /></Spec>
@@ -57,6 +58,13 @@ export function ChartsPage({ target }: { target?: string | null }) {
         </>
       </Spec>
       <Spec page={p} id="gauge">
+        <Notice tone="info">ホバー・Tab で値を確認、Esc で閉じる</Notice>
+        <Button onClick={() => setDialog(true)}>窓の中でグラフを確認</Button>
+        <Dialog open={dialog} onClose={() => setDialog(false)} title="グラフの値の確認">
+          <Gauge label="今月の達成率" value={72} unit="%" target={80} />
+          <HeatMap unit="件" rows={DAYS} cols={WEEKS} values={ACTIVITY} square />
+          <PieChart unit="件" items={[{ label: '完了', value: 52 }, { label: '進行中', value: 21 }]} />
+        </Dialog>
         <Cases cols={3}>
           <Case label="目標あり"><Gauge label="今月の達成率" value={72} unit="%" target={80} /></Case>
           <Case label="範囲"><Gauge label="容量" value={38.4} min={0} max={50} unit="GB" decimals={1} size={160} /></Case>
