@@ -67,8 +67,8 @@
 .combo .select-opt.on{background:var(--hover);outline:2px solid var(--focus);outline-offset:-2px}
 .combo-empty{padding:8px 12px;font-size:var(--fs-13);color:var(--ink-3)}
 
-/* カレンダー */
-.datepicker .popover-body{max-height:none;padding:var(--space-3)}
+/* カレンダー。Select の min-width:100% を外し、親の欄ではなく日付の表に幅を合わせる */
+.datepicker .popover-body{min-width:0;max-height:none;padding:var(--space-3)}
 .cal{display:grid;gap:var(--space-2)}
 .cal-head{display:flex;align-items:center;justify-content:space-between;gap:var(--space-2)}
 .cal-head b{font-size:var(--fs-14)}

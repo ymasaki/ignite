@@ -142,6 +142,15 @@ export function measure(page: Page, args: MeasureArgs): Promise<Measured[]> {
       }
       if (cut) out.push({ rule: '開いたパネルが切れない（5 章）', where: parentWho(el), expected: '全体が見える', actual: `${cut} に切られる ${Math.round(r.top)}〜${Math.round(r.bottom)}px` })
     }
+    // DatePicker の面は日付の表と余白の幅に収める（7 章）。親フォームの最小幅を受け継がない
+    for (const el of document.querySelectorAll('.datepicker .popover-body')) {
+      const table = el.querySelector('.cal table')
+      if (!table || !visible(el)) continue
+      const cs = getComputedStyle(el)
+      const expected = table.getBoundingClientRect().width + parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight) + parseFloat(cs.borderLeftWidth) + parseFloat(cs.borderRightWidth)
+      const actual = el.getBoundingClientRect().width
+      if (actual > expected + 1) out.push({ rule: 'カレンダーの幅（7 章）', where: parentWho(el), expected: `日付の表と余白 ${Math.round(expected)}px`, actual: `${Math.round(actual)}px` })
+    }
     for (const el of document.querySelectorAll(overflow)) {
       if (!visible(el) || el.closest('.kpis-measure')) continue
       const e = el as HTMLElement

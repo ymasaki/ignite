@@ -792,6 +792,34 @@ test('useFitCount: 枠が低くなると数え直し、入らない分を「+N�
   await expect(rail.getByRole('button', { name: /^ほか 4 件$/ })).toBeVisible()
 })
 
+test('DatePicker: 幅の広いフォームでも外枠を日付の表に合わせる', async ({ page }, info) => {
+  await open(page, 'forms')
+  await page.setViewportSize({ width: 1600, height: 1000 })
+  const opener = page.getByRole('button', { name: /^期限/ }).first()
+  await opener.click()
+  const body = page.locator('.datepicker .popover-body')
+  await expect(body).toBeVisible()
+  const sizes = await body.evaluate(el => {
+    const css = getComputedStyle(el)
+    return {
+      host: el.parentElement!.getBoundingClientRect().width,
+      panel: el.getBoundingClientRect().width,
+      content: el.querySelector('table')!.getBoundingClientRect().width,
+      edges: parseFloat(css.paddingLeft) + parseFloat(css.paddingRight) + parseFloat(css.borderLeftWidth) + parseFloat(css.borderRightWidth),
+    }
+  })
+  await body.screenshot({ path: info.outputPath('datepicker-wide.png') })
+  expect(sizes.host).toBeGreaterThan(400)
+  expect(Math.abs(sizes.panel - sizes.content - sizes.edges)).toBeLessThan(1)
+  await body.getByRole('button', { name: '選択を外す' }).click()
+  await expect(opener).toBeFocused()
+  await expect(opener).toContainText('日付を選ぶ')
+  await opener.click()
+  await body.getByRole('button', { name: '今日' }).click()
+  await expect(opener).toBeFocused()
+  await expect(opener).toContainText('10/30')
+})
+
 for (const [width, height] of [[320, 568], [568, 320], [844, 390]]) {
   test(`DatePicker: ${width}×${height} でも月の見出しと下端の操作が窓の中に見える`, async ({ page }) => {
     await open(page, 'forms')

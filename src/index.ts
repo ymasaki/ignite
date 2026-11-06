@@ -39,6 +39,7 @@ export { AuthScreen, LoginForm, ProviderLogo, type AuthProvider, type LoginValue
 export { MARK_NAMES, MarkPicker } from './ui/Mark'
 export { FormField } from './ui/Field'
 export { Checkbox, Combobox, NumberField, RadioGroup, Switch, type RadioOption } from './ui/Form'
+// カレンダーはフォームの幅に引き伸ばさず、日付の表に合う幅で開く。
 export { DatePicker } from './ui/DatePicker'
 export { ConfirmDialog, Dialog } from './ui/Dialog'
 export { Toaster, dismissToast, toast, type ToastOptions, type ToastTone } from './ui/Toast'

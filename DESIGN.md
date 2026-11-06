@@ -330,7 +330,7 @@
 | `Switch` | 同上 | 押すとすぐ効く入/切（設定の行など）。保存のボタンのある画面には置かない。つまみは `--ease-spring` |
 | `NumberField` | 同上 | 数の欄。↑↓ と − ＋ で増減（変えた直後だけ欄の数字を `RollingNumber` と同じように桁で回す。打ち込みの途中は回さない。回る数字は飾りで、読み上げは欄の値）、全角の数字も読む、欄を離れるときに `min`・`max` へ収める。`step` の桁で端数を出さない。`unit` は欄の右の単位。読めない文字は欄を離れると空に戻す |
 | `Combobox` | 同上 | 打って絞り込み、候補から 1 つを選ぶ。候補が 10 を超えるとき（少なければ `Select`）。候補の見た目は `Select` と同じ。変換の確定の Enter では選ばない。欄を空にして離れると選択を外す。候補は `SelectOption` |
-| `DatePicker` | `DatePicker.tsx`（計算は `calendar.ts`）/ `form.css` | 1 日を選ぶカレンダー。値は `2026-09-27` の文字列で、表記は 9 章の `fmtDate`。`min`・`max`、`clearable`（選択を外す）、`weekStart`（週の始まり、既定は日曜）。週末・祝日を色で塗り分けない。キーは ←→↑↓・Home・End・PageUp・PageDown（Shift で年） |
+| `DatePicker` | `DatePicker.tsx`（計算は `calendar.ts`）/ `form.css` | 1 日を選ぶカレンダー。開いた面は日付の表に合う幅に収め、フォームの幅には引き伸ばさない。値は `2026-09-27` の文字列で、表記は 9 章の `fmtDate`。`min`・`max`、`clearable`（選択を外す）、`weekStart`（週の始まり、既定は日曜）。週末・祝日を色で塗り分けない。キーは ←→↑↓・Home・End・PageUp・PageDown（Shift で年） |
 | `Select` | 同上 | 1 つを選ぶプルダウン。選択肢は `lead`（アイコン・ロゴ）と `meta`（件数など）を持てる。`fit` で幅が足りないとき `meta` → `lead` の順に隠す。ブラウザ標準の `<select>` は使わない。文字列・数値の補足（`meta`）はボタンの読み上げ名にも含める |
 | `Tabs` | 同上 | パネル内の表示の切り替え。`count` で件数。`fit` で置き場所の幅に等分する |
 | `Menu` | `Navigation.tsx` / `navigation.css` | ボタンから開く操作の一覧（値を選ぶなら `Select`）。ボタンは文字か `iconOnly`。項目は `icon`・`danger`（文字が `--danger`）・`disabled`・`separator`。↑↓・Home・End で移り、押せない項目は飛ばす。実行すると閉じて元のボタンへ戻る |

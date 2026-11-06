@@ -79,6 +79,7 @@ export function FormsPage({ target }: { target?: string | null }) {
       <Spec page={p} id="pick">
         <div className="cat-form two">
           <FormField label="拠点" hint="打って絞り込む"><Combobox value={city} onChange={setCity} options={CITIES} placeholder="拠点の名前" /></FormField>
+          {/* 幅の広いフォームでも、カレンダーの面は日付の表に合わせる。 */}
           <FormField label="期限"><DatePicker value={date} onChange={setDate} clearable min="2026-01-01" max="2027-12-31" today="2026-10-30" /></FormField>
         </div>
       </Spec>

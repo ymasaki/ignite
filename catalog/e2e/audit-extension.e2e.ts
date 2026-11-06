@@ -101,3 +101,17 @@ test('複数の枠はそれぞれの内容だけを受理する', async ({ page 
   expect(findings.filter((f) => f.where.includes('moving'))).toHaveLength(0)
   expect(findings.filter((f) => f.where.includes('mini'))).toHaveLength(2)
 })
+
+
+test('カレンダーの幅: 表と余白を越える外枠だけを検出する', async ({ page }) => {
+  await page.setContent(`<style>
+    .popover-body{box-sizing:border-box;width:278px;padding:12px;border:1px solid}
+    .cal table{width:252px}
+  </style><div class="datepicker"><div class="popover-body"><div class="cal"><table><tbody><tr><td>1</td></tr></tbody></table></div></div></div>`)
+  const widths = async () => (await measure(page, args)).filter(f => f.rule === 'カレンダーの幅（7 章）')
+  expect(await widths()).toEqual([])
+  await page.locator('.popover-body').evaluate(el => { (el as HTMLElement).style.minWidth = '600px' })
+  expect(await widths()).toHaveLength(1)
+  await page.locator('.datepicker').evaluate(el => el.classList.remove('datepicker'))
+  expect(await widths()).toEqual([])
+})
