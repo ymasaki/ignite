@@ -5,10 +5,10 @@
 .data-table th:first-child{text-align:left}
 .data-table.dense th,.data-table.dense td{padding:8px 10px}
 .data-table thead{background:var(--panel-2)}
-/* 行にポインタを載せると、その行の地を変える（色つきのセルの上にも重ねる）。先頭の行見出し（th）も含め、行を途切れずに塗る。
+/* 行にポインタを載せると、その行に半透明の層（--hover-layer）を重ねる。割合の色のセルは色と濃淡の順を残したまま少し沈む（不透明な灰色で塗ると割合が読めなくなる）。先頭の行見出し（th）も含め、行を途切れずに塗る。
    選んだ行は灰色を重ねず、選択中のホバーの地（--pri-soft-2）にする */
 @media (hover:hover){
-  .data-table tbody tr:hover > :is(th,td){background-image:linear-gradient(var(--hover-strong),var(--hover-strong))}
+  .data-table tbody tr:hover > :is(th,td){background-image:linear-gradient(var(--hover-layer),var(--hover-layer))}
   .data-table tbody tr.sel:hover > :is(th,td){background-image:none;background-color:var(--pri-soft-2)}
 }
 .data-table .heat-0{background:var(--panel)}

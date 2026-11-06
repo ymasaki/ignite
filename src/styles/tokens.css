@@ -12,6 +12,7 @@
   --panel-2:color-mix(in srgb,var(--pri) 1%,#fafafb); /* neutral/50。一段沈んだ地（表の見出し、ホバー） */
   --hover:color-mix(in srgb,var(--pri) 2%,#f5f5f6); /* 地のない部品（行・項目・アイコンのボタン）のホバーの地。白い地の上でわかり、重くならない濃さ（DESIGN.md 8 章「ホバー」） */
   --hover-strong:color-mix(in srgb,var(--pri) 2.5%,#f0f0f2); /* 沈んだ地（--panel-2）の上の項目のホバーの地（切り替え・タブの選んでいない項目）。--hover では地と見分けにくいため */
+  --hover-layer:color-mix(in srgb,color-mix(in srgb,var(--pri) 3%,#141428) 6%,transparent); /* 色のついた地の上にも重ねるホバーの半透明の層（表の行）。白い地の上では --hover-strong とほぼ同じ濃さになり、割合の色は残して少し沈める */
   /* 押している間（:active）の地。--hover の次の段（DESIGN.md 8 章「押している間」）。その上の --ink-3 が 4.5 を保てる濃さまで */
   --press:color-mix(in srgb,var(--pri) 2.5%,#eeeef0);
   --line:color-mix(in srgb,var(--pri) 2%,#e2e2e3);    /* border/subtle */

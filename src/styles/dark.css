@@ -10,6 +10,7 @@
   --panel-2:color-mix(in srgb,var(--pri) 2%,#2b2b30);
   --hover:color-mix(in srgb,var(--pri) 3%,#2f2f34);
   --hover-strong:color-mix(in srgb,var(--pri) 3%,#35353b);
+  --hover-layer:color-mix(in srgb,color-mix(in srgb,var(--pri) 3%,#ffffff) 8%,transparent); /* 暗い地では明るい層を重ねる（--panel の上で --hover-strong とほぼ同じ） */
   --press:color-mix(in srgb,var(--pri) 3.5%,#38383d);
   --line:color-mix(in srgb,var(--pri) 2.5%,#36363c);
   --line-2:color-mix(in srgb,var(--pri) 3%,#4a4a52);
