@@ -1,4 +1,4 @@
-import { IconAccessible, IconArrowRight, IconBell, IconPalette, IconRobot, IconRocket, IconShieldCheck, IconStack2 } from '@tabler/icons-react'
+import { IconAccessible, IconArrowRight, IconBell, IconBrandGithub, IconDevices, IconEyeCheck, IconLayout, IconRocket, IconSparkles } from '@tabler/icons-react'
 import { Board, Button, Checkbox, CodeBlock, EntityRow, IconBox, ProgressBar, Segmented, Stat, Steps, Switch, Tag, ThemeSettings, useScrollFocus, type Theme } from '@ymasaki/ignite'
 import { useRef, useState, type ReactNode } from 'react'
 import { version } from '../../package.json'
@@ -6,13 +6,14 @@ import { PAGES, PART_COUNT } from './nav'
 
 // カタログの入口。Ignite が何をしてくれるかを、本物の部品で見せる（見本の部品は押して試せる）
 const GROUPS = ['基礎', '部品', '画面の型']
+const REPO = 'https://github.com/ymasaki/ignite'
 const ico = (I: typeof IconBell) => <I size={18} stroke={1.8} />
 
 const PILLARS = [
-  { icon: ico(IconPalette), title: '1 色でまとめる', lines: ['主要色ひとつとトークンで、', 'ライトもダークも整う。'] },
-  { icon: ico(IconStack2), title: `${PART_COUNT} の部品`, lines: ['見た目もキー操作も、', 'どの画面でも同じに動く。'] },
-  { icon: ico(IconShieldCheck), title: '決まりを機械が守る', lines: ['ignite check と監査が、', '崩れをコミットの前に止める。'] },
-  { icon: ico(IconRobot), title: 'AI にも同じ決まりを', lines: ['決まりをアプリに置くので、', 'エージェントも迷わず組める。'] },
+  { icon: ico(IconLayout), title: 'シンプルでクリーン', lines: ['主要色ひとつと余白で、', '静かに整った画面に。'] },
+  { icon: ico(IconSparkles), title: '動きに遊び心', lines: ['開閉も数字の変化も、', 'なめらかに弾んで動く。'] },
+  { icon: ico(IconEyeCheck), title: '誰にでも見やすく', lines: ['コントラストも文字の大きさも、', '監査が毎回確かめる。'] },
+  { icon: ico(IconDevices), title: 'どの幅でも最適に', lines: ['スマホから広い画面まで、', '部品が幅に合わせて詰める。'] },
 ]
 
 const STEPS = [
@@ -78,16 +79,17 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
               <div className="cat-hero-b">
                 <div className="cat-row"><Tag variant="accent">デザインシステム v{version}</Tag></div>
                 <div role="heading" aria-level={2}>
-                  <span className="cat-hero-t">一度決めた美しさを、</span>
-                  <span className="cat-hero-t em">すべてのアプリへ。</span>
+                  <span className="cat-hero-t">使いやすさと楽しさを、</span>
+                  <span className="cat-hero-t em">誰にでも</span>
                 </div>
                 <div className="cat-hero-p">
-                  <span>部品・トークン・検査を、ひとつの決まりに。</span>
-                  <span>人も AI も、迷わず同じ画面を組める。</span>
+                  <span>シンプルでクリーンな見た目に、遊び心のある動きを。</span>
+                  <span>見やすさも、どの幅での使いやすさも、最初から。</span>
                 </div>
                 <div className="cat-row">
                   <Button variant="primary" icon={ico(IconRocket)} onClick={() => onOpen('setup')}>セットアップを始める</Button>
                   <Button icon={ico(IconArrowRight)} onClick={() => onOpen('actions')}>部品を見る</Button>
+                  <Button icon={ico(IconBrandGithub)} onClick={() => window.open(REPO, '_blank', 'noopener,noreferrer')}>GitHub</Button>
                 </div>
                 <div className="cat-hero-s">
                   <Stat label="部品" value={PART_COUNT} />
@@ -100,8 +102,8 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
             </section>
 
             <section className="cat-band">
-              <Lead eyebrow="なぜ Ignite か" title="そろえる手間を、決まりに任せる">
-                アプリごとに迷っていた見た目と操作を、一度だけ決める。
+              <Lead eyebrow="なぜ Ignite か" title="シンプルなのに、楽しい">
+                見た目は静かに、触れると楽しく。誰にでも、どの幅でも。
               </Lead>
               <div className="cat-pillars">
                 {PILLARS.map((p) => (
