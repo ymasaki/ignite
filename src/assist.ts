@@ -7,6 +7,8 @@
 //   data-underline="on"    押せる文字（名前・リンク）に下線を付ける              styles/assist.css
 //   data-keys="off"        1 文字のショートカット（F・[ など）を切る（音声入力の誤作動を防ぐ。WCAG 2.1.4）  shortcutsOn()
 
+import { startTips } from './ui/tip'
+
 export const MOTIONS = ['auto', 'reduce'] as const
 export const CONTRASTS = ['auto', 'more'] as const
 export const TEXT_SIZES = ['normal', 'large', 'larger'] as const
@@ -130,6 +132,8 @@ export function startAssist(env: AssistEnv = assistEnv()): Assist {
   for (const q of Object.values(QUERIES)) env.watch?.(q, () => applyAssist(currentAssist(env), env))
   // 入力欄からの focus() に :focus-visible が引き継がれても、枠は操作方法に合わせる（保存しない）。
   env.watchInput?.((pointer) => set(env.root, 'input', pointer && 'pointer'))
+  // 吹き出しを窓に収める（どのアプリも起動で startAssist を呼ぶので、ここで始める）
+  if (env.watchInput) startTips()
   return a
 }
 

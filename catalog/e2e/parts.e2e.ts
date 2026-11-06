@@ -274,14 +274,15 @@ test('Menu: 開く矢印は文字の中央にそろい、開いている間は�
   await expect.poll(tip).toBe('none')
 })
 
-test('左メニューのつまみ: 広げても畳んでも、吹き出しが窓の外へはみ出さない', async ({ page }) => {
+test('吹き出し: 窓の端ではみ出す分だけ寄せる（左メニューのつまみを広げても畳んでも、下に出て窓に収まる）', async ({ page }) => {
   await open(page, 'actions')
   const tipBox = (name: string) => page.getByRole('button', { name, exact: true }).evaluate((el) => {
     const s = getComputedStyle(el, '::after')
     const r = el.getBoundingClientRect()
-    // ::after は測れないので、置き場所（left は親からの距離）と幅から窓の中の左右を出す
-    const left = r.left + parseFloat(s.left) + (s.transform.startsWith('matrix') ? new DOMMatrix(s.transform).m41 : 0)
-    return { display: s.display, left, right: left + parseFloat(s.width) + parseFloat(s.paddingLeft) + parseFloat(s.paddingRight), vw: innerWidth }
+    // ::after は測れないので、置き場所（left は親からの距離）・出る動き（transform）・寄せ（translate）と幅から窓の中の位置を出す
+    const moved = s.transform.startsWith('matrix') ? new DOMMatrix(s.transform).m41 : 0
+    const left = r.left + el.clientLeft + parseFloat(s.left) + moved + (parseFloat(s.translate) || 0)
+    return { display: s.display, left, right: left + parseFloat(s.width) + parseFloat(s.paddingLeft) + parseFloat(s.paddingRight), top: r.top + parseFloat(s.top), handleBottom: r.bottom, vw: document.documentElement.clientWidth }
   })
   for (const name of ['メニューを折りたたむ', 'メニューを広げる']) {
     const handle = page.getByRole('button', { name, exact: true })
@@ -289,11 +290,13 @@ test('左メニューのつまみ: 広げても畳んでも、吹き出しが窓
     await expect.poll(async () => (await tipBox(name)).display).toBe('block')
     await page.waitForTimeout(500)
     const b = await tipBox(name)
-    expect(b.left).toBeGreaterThanOrEqual(0)
-    expect(b.right).toBeLessThanOrEqual(b.vw)
+    expect(b.left).toBeGreaterThanOrEqual(8 - 0.5)
+    expect(b.right).toBeLessThanOrEqual(b.vw - 8 + 0.5)
+    expect(b.top).toBeGreaterThan(b.handleBottom) // 向きは変えず、下に出す
     if (name === 'メニューを折りたたむ') {
       await handle.click()
       await expect(page.getByRole('button', { name: 'メニューを広げる', exact: true })).toBeVisible()
+      await page.mouse.move(640, 600)
       await page.waitForTimeout(500)
     }
   }

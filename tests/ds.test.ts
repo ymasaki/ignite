@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 // 部品の純粋な関数のテスト
 import { DEFAULT_ASSIST, applyAssist, assistChanged, currentAssist, parseAssist, sameAssist, setAssist, shortcutsOn, startAssist, type AssistEnv } from '../src/index'
-import { CONTRAST_TEXT_MORE, contrastRulesFor, releaseDays } from '../src/index'
+import { CONTRAST_TEXT_MORE, contrastRulesFor, releaseDays, tipShift } from '../src/index'
 import { lineRows, lineSummary, seriesSummary, stackRows, tileName } from '../src/ui/Chart'
 import { axisTicks, boxStats, columnSummary, pieSlices, waterfallBars } from '../src/ui/Plot'
 import { CONTRAST_RULES, CONTRAST_TEXT, CONTRAST_UI, contrastRatio, currentTheme, isMode, isSkin, fitAvatars, fitSlots, keepVisible, kpiVariants, pressOverlap, pickFitStep, pickTheme, pickWidestFit, setTheme, shellBreakpoints, shellLayout, squarify, startTheme, type ThemeEnv } from '../src/index'
@@ -419,4 +419,11 @@ describe('バージョン履歴の日付ごとのまとまり（releaseDays）',
     const days = releaseDays([r('0.3.0', '2026-10-02'), r('0.2.1', '2026-10-01'), r('0.2.0', '2026-10-01')])
     expect(days.map(([d, rs]) => [d, rs.map((x) => x.version)])).toEqual([['2026-10-02', ['0.3.0']], ['2026-10-01', ['0.2.1', '0.2.0']]])
   })
+})
+
+describe('吹き出しの寄せ方（tipShift）', () => {
+  it('窓に収まるなら寄せない', () => expect(tipShift(20, 200, 1280)).toBe(0))
+  it('左ではみ出すなら、左端を窓の端から 8px へ寄せる', () => expect(tipShift(-21, 147, 1280)).toBe(29))
+  it('右ではみ出すなら、右端を窓の端から 8px へ寄せる', () => expect(tipShift(1200, 1300, 1280)).toBe(-28))
+  it('窓より広いなら、読み始めが見えるよう左端をそろえる', () => expect(tipShift(100, 1500, 1280)).toBe(-92))
 })

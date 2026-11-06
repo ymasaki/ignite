@@ -161,8 +161,6 @@
   .side-handle:active{background:var(--press);scale:var(--press-scale)}
   .side-handle svg{transition:transform .28s var(--ease-in-out)}
   .side-min .side-handle{left:calc(var(--side-rail,64px) - 12px)}
-  /* つまみの吹き出しは右（本体の側）に出す。つまみは左メニューの外なので上の右出しが効かず、下の中央ぞろえのままだと畳んだとき窓の左へはみ出す */
-  .side-handle[data-tip]:is(:hover,:focus-visible)::after{top:50%;left:calc(100% + 8px);transform:translateY(-50%);animation-name:tipInRight}
   /* 左右の余白（--shell-x）はつまみの半分（12px）より狭くなるので、ヘッダーの左だけはつまみをよける */
   :where(.app:has(> .side-handle)) .ttl{margin-left:max(0px, calc(20px - var(--shell-x)))} /* よけるのは画面名だけ。2 段目に落ちた検索欄などは内容の段（--shell-x）にそろえる */
   .side-min .side-handle svg{transform:rotate(180deg)}

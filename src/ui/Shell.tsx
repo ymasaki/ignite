@@ -12,6 +12,7 @@ import { Toaster } from './Toast'
 import { Drawer, isTyping, type DrawerPeek } from './Controls'
 import { reducedMotion } from './Motion'
 import { SHELL_SIZES, shellLayout, type ShellSizes } from './shellLayout'
+import { startTips } from './tip'
 
 // 左メニューを畳む・広げる動きの長さ（shell.css の .app の grid-template-columns と合わせる）
 const SIDE_MS = 280
@@ -245,6 +246,7 @@ export function AppShell({ side, foot, collapse, title, titleAfter, search, tool
   }, [drawerOpen])
   // Esc で吹き出し（data-tip）を消し、マウスを動かす・フォーカスを移すと戻す（WCAG 1.4.13。見えている説明を閉じられるように）
   useEffect(() => {
+    startTips() // 窓からはみ出す吹き出しを寄せる（startAssist を呼ばないアプリでも効くように）
     const root = document.documentElement
     const off = (e: KeyboardEvent) => e.key === 'Escape' && (root.dataset.tips = 'off')
     const on = () => root.dataset.tips && delete root.dataset.tips

@@ -15,6 +15,7 @@ export { Board, Crumbs, DashboardScreen, EmptyState, KeyValues, ListScreen, Noti
 export { MonthStepper, Stepper } from './ui/Month'
 export { FitBar, fitSlots, pickFitStep, useFitCount, useFitStep } from './ui/Fit'
 export { AVATAR_GAP, AVATAR_OVERLAP, fitAvatars, keepVisible, pressOverlap } from './ui/avatarFit'
+export { TIP_MARGIN, fitTip, startTips, tipShift } from './ui/tip'
 export { SHELL_SIZES, shellBreakpoints, shellLayout, type PanelMode, type ShellLayout, type ShellSizes, type SideMode } from './ui/shellLayout'
 export { PanelBody, PanelFrame, PanelHeader } from './ui/Panel'
 export { ReleasePanel } from './ui/Releases'
