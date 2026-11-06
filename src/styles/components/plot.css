@@ -1,0 +1,103 @@
+/* グラフの部品（ui/Plot.tsx：縦棒・滝・箱ひげ・散布図・レーダー・ヒートマップ・円・ゲージ）。1 色（--chart-1〜5 の濃淡）。
+   目盛り・凡例・罫線は chart.css の .line-ax・.line-grid・.line-legend・.sc-key を使う */
+.plot{position:relative;min-width:0} /* position は重ねる帯・点と見えない表（.sr-only）の位置の基準 */
+.plot svg{display:block}
+.line-ax.on{font-weight:700;fill:var(--ink)}
+.plot-zero{stroke:var(--edge)}
+.plot-axis-t{font-family:var(--font)}
+
+/* SVG の塗り（区分の順に --chart-1 から。m は「その他」などの灰色） */
+.chart-f1{fill:var(--chart-1)}
+.chart-f2{fill:var(--chart-2)}
+.chart-f3{fill:var(--chart-3)}
+.chart-f4{fill:var(--chart-4)}
+.chart-f5{fill:var(--chart-5)}
+.chart-fm{fill:var(--line-2)}
+
+/* ホバーの帯（項目ごとに 1 本）。重なった帯を薄く塗る */
+.plot-hits{position:absolute;display:flex}
+.plot-hits > span{flex:1;border-radius:6px}
+.plot-hits > span:hover{background:var(--pri-soft);mix-blend-mode:multiply}
+.plot-hits > span:active{background:var(--pri-soft-2)}
+
+/* 縦棒・滝 */
+.plot-bar{transform-box:fill-box;transform-origin:bottom;animation:colGrow .6s var(--ease-spring) backwards}
+.plot-link{stroke:var(--ink-3);stroke-width:1;stroke-dasharray:3 3}
+.plot-v{font-family:var(--font-num);font-size:var(--fs-11);font-weight:700;fill:var(--ink-2)}
+
+/* 箱ひげ */
+.plot-whisker{stroke:var(--ink-3);stroke-width:1.5;stroke-linecap:round}
+.plot-box{fill:var(--chart-5);stroke:var(--chart-1);stroke-width:1.5}
+.plot-median{stroke:var(--chart-1);stroke-width:3;stroke-linecap:round}
+.plot-out{fill:var(--panel);stroke:var(--chart-1);stroke-width:1.5}
+
+/* 散布図。点は HTML で重ね（吹き出しを出すため）、半透明の 1 色で重なりを濃さで見せる */
+.xy-pts{position:absolute;inset:0;pointer-events:none}
+.xy-pt{position:absolute;width:var(--d);height:var(--d);margin:calc(var(--d) / -2) 0 0 calc(var(--d) / -2);border-radius:50%;
+  background:color-mix(in srgb,var(--chart-1) 60%,transparent);box-shadow:inset 0 0 0 1.5px var(--chart-1);pointer-events:auto}
+.xy-pt.bubble{background:color-mix(in srgb,var(--chart-1) 32%,transparent)}
+.xy-pt.muted{background:color-mix(in srgb,var(--line-2) 70%,transparent);box-shadow:inset 0 0 0 1.5px var(--ink-3)}
+.xy-pt:hover{z-index:1;background:var(--chart-1);box-shadow:0 0 0 2px var(--panel)}
+
+/* レーダー。主な系列は面、soft は淡い破線 */
+.plot-ring{fill:none}
+.plot-radar{fill:color-mix(in srgb,var(--chart-1) 18%,transparent);stroke:var(--chart-1);stroke-width:2;stroke-linejoin:round}
+.plot-radar.soft{fill:none;stroke:var(--chart-3);stroke-dasharray:4 3}
+.plot .line-key.soft{background:var(--chart-3)}
+.radar-axes{position:absolute;inset:0;pointer-events:none}
+.radar-l{position:absolute;max-width:9em;overflow:hidden;font-size:var(--fs-12);color:var(--ink-2);text-overflow:ellipsis;white-space:nowrap;pointer-events:auto}
+.radar-l.mid{transform:translate(-50%,-50%)}
+.radar-l.right{transform:translate(0,-50%)}
+.radar-l.left{transform:translate(-100%,-50%)}
+.radar-l:hover{color:var(--ink)}
+/* 名前を切り取る overflow で吹き出しが消えないよう、ホバー中は切り取らない */
+.radar-l:hover{overflow:visible}
+
+/* ヒートマップ。濃さは --r（0〜1）で --chart-1 と --chart-5 を混ぜる（TileMap と同じ） */
+.heatmap{position:relative;display:grid;gap:8px;min-width:0}
+.hm-scroll{overflow-x:auto;padding-bottom:2px}
+.hm-grid{display:grid;gap:3px;min-width:min-content}
+.hm-row{display:contents}
+.hm-rl{display:flex;align-items:center;padding-right:6px;font-size:var(--fs-11);color:var(--ink-3);white-space:nowrap}
+.hm-col{font-size:var(--fs-11);color:var(--ink-3);text-align:center;white-space:nowrap}
+.hm-c{--hm-bg:color-mix(in srgb,var(--chart-1) calc(var(--r) * 90%),var(--chart-5));display:grid;place-items:center;height:28px;border-radius:6px;
+  font-size:var(--fs-11);font-weight:700;color:var(--ink);background:var(--hm-bg)}
+.hm-c.dark{color:var(--on-pri)}
+.hm-c:not(.none){color:lch(from var(--hm-bg) calc((50 - l) * 100) 0 0)}
+.hm-c.none{background:var(--panel-2)}
+.hm-c:hover{box-shadow:inset 0 0 0 2px var(--ink-2)}
+.hm-grid.square .hm-c{height:auto;aspect-ratio:1}
+
+/* 円・ドーナツ。区分の間は地の色の線で分ける。ポインタを載せた区分のほかを薄くする */
+.pie{display:flex;flex-wrap:wrap;align-items:center;gap:16px 24px;min-width:0}
+.pie-fig{position:relative;flex:none}
+.pie-fig svg{display:block}
+.pie-s{stroke:var(--panel);stroke-width:2;stroke-linejoin:round;transition:opacity .15s}
+.pie-empty{fill:none;stroke:var(--panel-2)}
+.pie-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;pointer-events:none}
+.pie-c .num{font-size:var(--fs-20);font-weight:700;line-height:1.15;color:var(--ink)}
+.pie-c small{font-size:var(--fs-11);color:var(--ink-3)}
+.pie-legend{display:grid;gap:6px;flex:1 1 200px;min-width:0;margin:0;padding:0;list-style:none}
+.pie-legend li{display:grid;grid-template-columns:10px minmax(0,1fr) auto 3.5em;align-items:center;gap:8px;font-size:var(--fs-13);transition:opacity .15s}
+.pie-l{overflow:hidden;color:var(--ink-2);text-overflow:ellipsis;white-space:nowrap}
+.pie-v{text-align:right;color:var(--ink)}
+.pie-p{text-align:right;font-size:var(--fs-12);color:var(--ink-3)}
+.pie.focus .pie-s:not(.on),.pie.focus .pie-legend li:not(.on){opacity:.45}
+
+/* ゲージ。灰色の弧の上に値まで --chart-1 の弧、目標は濃い目盛り */
+.gauge{position:relative;display:grid;justify-items:center;max-width:100%}
+.gauge svg{display:block;max-width:100%;height:auto;overflow:visible}
+.gauge-track{fill:none;stroke:var(--line);stroke-linecap:round}
+.gauge-fill{fill:none;stroke:var(--chart-1);stroke-linecap:round;transition:stroke-dasharray .6s var(--ease-spring)}
+.gauge-target{stroke:var(--ink);stroke-width:2;stroke-linecap:round}
+.gauge-v{position:absolute;left:0;right:0;bottom:20px;display:flex;align-items:baseline;justify-content:center;gap:2px;font-size:var(--fs-24);font-weight:700;line-height:1.15;color:var(--ink)}
+.gauge-v small{font-size:var(--fs-13);color:var(--ink-2)}
+.gauge-ends{display:flex;justify-content:space-between;width:100%;margin-top:4px;font-size:var(--fs-11);color:var(--ink-3)}
+
+@media (prefers-reduced-motion: reduce){.plot-bar{animation:none}.gauge-fill,.pie-s,.pie-legend li{transition:none}}
+
+/* 左右の端の帯の吹き出しは、帯の端にそろえて窓の外へ出さない */
+@media (hover:hover){
+  .plot-hits > span:first-child:hover::after{left:0;transform:none;animation-name:tipInEdge}
+  .plot-hits > span:last-child:hover::after{left:auto;right:0;transform:none;animation-name:tipInEdge}
+}

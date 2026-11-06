@@ -174,7 +174,7 @@ export function stackRows(labels: string[], stacks: { values: number[] }[], down
  * 読み上げにだけ渡す表（.sr-only。グラフの値を目で見る代わりに、表の見出しで行と列を読み進められる）。1 列目は行の見出し。
  * 表は幅を中身より狭くできず、.sr-only の 1px でもはみ出して横に送れてしまうので、.sr-only の箱に入れて切り取る
  */
-function SrTable({ head, rows }: { head: string[]; rows: string[][] }) {
+export function SrTable({ head, rows }: { head: string[]; rows: string[][] }) {
   return (
     <div className="sr-only">
       <table>

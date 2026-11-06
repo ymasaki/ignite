@@ -1,6 +1,6 @@
 {
   "name": "@ymasaki/ignite",
-  "version": "1.6.5",
+  "version": "1.7.0",
   "description": "Web・デスクトップのアプリで同じ見た目と使い勝手をそろえるデザインシステム",
   "type": "module",
   "license": "UNLICENSED",

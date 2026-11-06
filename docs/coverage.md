@@ -52,6 +52,32 @@ Ignite に何があり、何が足りないかの記録。2026-10-30 に比べ�
 | コード表示 | Code snippet / — / — | 1 | あり（`Code`・`CodeBlock`） | 1.3.0 で追加 |
 | カルーセル・評価 | — / — / Carousel・Rating | 1 | **なし** | 対象外（業務の画面で使わない） |
 
+## グラフ（1.7.0）
+
+よくあるグラフの道具（[Chart.js](https://www.chartjs.org/docs/latest/charts/)・[Recharts](https://recharts.org/en-US/api)・[Apache ECharts](https://echarts.apache.org/en/option.html#series)）の種類と比べた。どれも 1 色の濃淡で描く。
+
+| 種類 | Ignite |
+|---|---|
+| 折れ線・面 | `LineChart`（`area`）・`Sparkline` |
+| 縦棒・系列を並べた縦棒 | `ColumnChart`（1.7.0） |
+| 横棒 | `BarList` |
+| 積み上げの棒 | `StackColumns` |
+| 棒と折れ線の複合 | `ColumnChart` の `line`（1.7.0） |
+| ヒストグラム | `ColumnChart` の `histogram`（1.7.0） |
+| 円・ドーナツ | `PieChart`（1.7.0） |
+| 散布図・バブル | `ScatterChart`（1.7.0） |
+| レーダー | `RadarChart`（1.7.0） |
+| ヒートマップ・カレンダー | `HeatMap`（1.7.0。カレンダーは `square`） |
+| ゲージ | `Gauge`（1.7.0） |
+| 滝（ウォーターフォール） | `Waterfall`（1.7.0） |
+| 箱ひげ | `BoxPlot`（1.7.0） |
+| ファネル | `Funnel` |
+| ツリーマップ | `TileMap` |
+| 鶏頭図（polar area）・放射状の棒 | 足さない（同じ値は `PieChart`・`BarList` のほうが比べやすい） |
+| ローソク足 | 足さない（株価など金融の画面で、業務アプリの範囲の外。上げ下げを色相で分ける慣習が 1 色の決まりと合わない） |
+| サンキー・サンバースト・ネットワーク図・平行座標・地図 | 足さない（配置の計算が大きく、使う画面が出てから。地図は地図の道具を使う） |
+| 拡大・範囲の選択・データの書き出し | 足さない（ダッシュボードの読み取り用で、操作は画面側の絞り込みで行う） |
+
 ## 部品の外側
 
 | 項目 | 主要システム | Ignite |

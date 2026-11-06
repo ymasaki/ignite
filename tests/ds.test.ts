@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { DEFAULT_ASSIST, applyAssist, assistChanged, currentAssist, parseAssist, sameAssist, setAssist, shortcutsOn, startAssist, type AssistEnv } from '../src/index'
 import { CONTRAST_TEXT_MORE, contrastRulesFor, releaseDays } from '../src/index'
 import { lineRows, lineSummary, seriesSummary, stackRows, tileName } from '../src/ui/Chart'
+import { axisTicks, boxStats, columnSummary, pieSlices, waterfallBars } from '../src/ui/Plot'
 import { CONTRAST_RULES, CONTRAST_TEXT, CONTRAST_UI, contrastRatio, currentTheme, isMode, isSkin, fitAvatars, fitSlots, keepVisible, kpiVariants, pressOverlap, pickFitStep, pickTheme, pickWidestFit, setTheme, shellBreakpoints, shellLayout, squarify, startTheme, type ThemeEnv } from '../src/index'
 
 const at = (width: number, o: { collapsed?: boolean; panelOpen?: boolean; keepSide?: boolean } = {}) =>
@@ -373,6 +374,42 @@ describe('グラフの読み上げ用の要約と見えない表（Chart.tsx）'
   it('タイルの名前は名前・値・補足（補足がなければ名前と値）', () => {
     expect(tileName({ label: 'X', value: '24%', sub: '34 / 140名' })).toBe('X 24% 34 / 140名')
     expect(tileName({ label: 'X', value: '—' })).toBe('X —')
+  })
+})
+
+describe('グラフの計算（Plot.tsx）', () => {
+  it('目盛りは値を覆う最小の範囲で、間隔は 1・2・5 × 10 の累乗', () => {
+    expect(axisTicks(0, 52)).toEqual([0, 20, 40, 60])
+    expect(axisTicks(0, 178)).toEqual([0, 50, 100, 150, 200])
+    expect(axisTicks(-4, 8)).toEqual([-5, 0, 5, 10])
+    expect(axisTicks(0.12, 0.87)).toEqual([0, 0.2, 0.4, 0.6, 0.8, 1])
+  })
+  it('値がすべて同じ・0 だけでも幅のある目盛りにする', () => {
+    expect(axisTicks(0, 0)).toEqual([0, 0.5, 1])
+    expect(axisTicks(30, 30)).toEqual([0, 10, 20, 30])
+    expect(axisTicks(-6, -6)).toEqual([-6, -4, -2, 0])
+  })
+  it('箱ひげの 5 つの数は線形補間の四分位で、1.5 倍の幅の外は外れ値', () => {
+    expect(boxStats([1, 2, 3, 4, 5])).toEqual({ min: 1, q1: 2, median: 3, q3: 4, max: 5, outliers: [] })
+    expect(boxStats([5, 1, 2, 3, 4, 100])).toEqual({ min: 1, q1: 2.25, median: 3.5, q3: 4.75, max: 5, outliers: [100] })
+    expect(boxStats([])).toBeNull()
+  })
+  it('円は 4 区分までを濃淡で塗り、残りと muted は灰色（0 は外す）', () => {
+    const s = pieSlices([{ label: 'a', value: 40 }, { label: 'b', value: 20 }, { label: 'c', value: 15 }, { label: 'd', value: 10 }, { label: 'e', value: 5 }, { label: 'f', value: 5 }, { label: 'なし', value: 5, muted: true }, { label: 'z', value: 0 }])
+    expect(s.map((x) => [x.label, x.value, x.tone])).toEqual([['a', 40, '1'], ['b', 20, '2'], ['c', 15, '3'], ['d', 10, '4'], ['なし', 5, 'm'], ['その他', 10, 'm']])
+    expect(s.reduce((a, x) => a + x.share, 0)).toBeCloseTo(1, 9)
+    expect(pieSlices([{ label: 'a', value: 0 }])).toEqual([])
+  })
+  it('滝の棒は前の累計から積み、合計は 0 から', () => {
+    expect(waterfallBars({ label: '月初', value: 120 }, [{ label: '新規', value: 46 }, { label: '完了', value: -58 }], '月末')).toEqual([
+      { label: '月初', from: 0, to: 120, kind: 'start' },
+      { label: '新規', from: 120, to: 166, kind: 'up' },
+      { label: '完了', from: 166, to: 108, kind: 'down' },
+      { label: '月末', from: 0, to: 108, kind: 'total' },
+    ])
+  })
+  it('縦棒の読み上げの名前は範囲と系列ごとの要約（重ねた折れ線は別の単位）', () => {
+    expect(columnSummary(['5月', '6月'], [{ label: '受付', values: [120, 132] }], { label: '期限内', values: [82, 85] }, '件', '%')).toBe('5月〜6月、受付 最初 120件、最新 132件（最小 120件・最大 132件）、期限内 最初 82%、最新 85%（最小 82%・最大 85%）')
   })
 })
 

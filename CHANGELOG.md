@@ -2,6 +2,22 @@
 
 採用アプリは `npx ignite upgrade` でこの内容を確かめて取り込む。形式は [docs/releasing.md](docs/releasing.md)。
 
+## 1.7.0（2026-11-06）
+
+### 追加
+
+- グラフの部品を 8 つ足した。どれも 1 色の濃淡で描き、読み上げには要約と見えない表（ゲージは `meter`、円は凡例）で値を渡す
+  - `ColumnChart`: 縦棒。系列を並べる（3 系列まで）・負の数・`histogram`（度数の分布）・`line`（右の目盛りで重ねる折れ線）
+  - `PieChart`: 円とドーナツ（`donut`）。4 区分までを濃淡で塗り、残りは「その他」の灰色にまとめる
+  - `Gauge`: 半円のゲージ（`target` で目標の目盛り）
+  - `Waterfall`: 増減の積み上げ（期首 → 増減 → 期末）
+  - `ScatterChart`: 散布図とバブル（`size`）
+  - `RadarChart`: レーダー（`soft` で比べる系列を淡い破線に）
+  - `HeatMap`: 行と列の濃淡（`square` でカレンダーの形）
+  - `BoxPlot`: 箱ひげ（値の並びから 5 つの数を求める `boxStats`）
+- 目盛りを決める `axisTicks`、型 `ColumnSeries`・`PieItem`・`ScatterPoint`・`RadarSeries`・`BoxItem` を足した
+- `DESIGN.md` 7 章に「グラフの選び方」の表を足した。カタログの「グラフと数字」に新しいグラフの例を載せた
+
 ## 1.6.5（2026-11-06）
 
 ### 修正

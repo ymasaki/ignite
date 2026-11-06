@@ -22,6 +22,7 @@ export { RELEASE_CATEGORIES, releaseDays, type Release, type ReleaseCategory, ty
 // AppShellは検索欄なしの範囲選択と道具を同じ段に収める。採用側で枠のCSSを上書きしない。
 export { AppShell, Brand, SIDE_ICON_SIZE, SideAccount, SideIconButton, SideNav, SideStatus, useShell, useShownMode, type NavItem, type ShellPanel, type ShellSideState } from './ui/Shell'
 export { BarList, ChartCard, ChartGrid, Funnel, LineChart, Sparkline, StackColumns, Stat, TileMap, type BarItem, type LineSeries, type TileItem } from './ui/Chart'
+export { BoxPlot, ColumnChart, Gauge, HeatMap, PieChart, RadarChart, ScatterChart, Waterfall, axisTicks, boxStats, type BoxItem, type ColumnSeries, type PieItem, type RadarSeries, type ScatterPoint } from './ui/Plot'
 export { squarify, type Tile } from './ui/squarify'
 export * from './format/date'
 export * from './format/search'
