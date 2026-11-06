@@ -2,6 +2,7 @@ import { IconAccessible, IconArrowRight, IconBell, IconBrandGithub, IconDevices,
 import { Board, Button, Checkbox, CodeBlock, EntityRow, IconBox, ProgressBar, Segmented, Stat, Steps, Switch, Tag, ThemeSettings, useScrollFocus, type Theme } from '@ymasaki/ignite'
 import { useRef, useState, type ReactNode } from 'react'
 import { version } from '../../package.json'
+import { LOGO } from './logo'
 import { PAGES, PART_COUNT } from './nav'
 
 // カタログの入口。Ignite が何をしてくれるかを、本物の部品で見せる（見本の部品は押して試せる）
@@ -10,10 +11,10 @@ const REPO = 'https://github.com/ymasaki/ignite'
 const ico = (I: typeof IconBell) => <I size={18} stroke={1.8} />
 
 const PILLARS = [
-  { icon: ico(IconLayout), title: 'シンプルでクリーン', lines: ['主要色ひとつと余白で、', '静かに整った画面に。'] },
-  { icon: ico(IconSparkles), title: '動きに遊び心', lines: ['開閉も数字の変化も、', 'なめらかに弾んで動く。'] },
-  { icon: ico(IconEyeCheck), title: '誰にでも見やすく', lines: ['コントラストも文字の大きさも、', '監査が毎回確かめる。'] },
-  { icon: ico(IconDevices), title: 'どの幅でも最適に', lines: ['スマホから広い画面まで、', '部品が幅に合わせて詰める。'] },
+  { icon: ico(IconLayout), title: '色は主要色だけ', lines: ['強調に使う色は主要色ひとつ。', 'ほかは灰色の濃さと余白で分ける。'] },
+  { icon: ico(IconSparkles), title: '開閉と数字に動き', lines: ['開閉や数字の変化に動きを付ける。', '動きを減らす設定にすると止まる。'] },
+  { icon: ico(IconEyeCheck), title: '見やすさを監査', lines: ['文字と背景のコントラストと', '文字の大きさを、画面ごとに測る。'] },
+  { icon: ico(IconDevices), title: 'スマホの幅にも対応', lines: ['画面が狭くなると、', '部品が余白と並びを詰める。'] },
 ]
 
 const STEPS = [
@@ -77,14 +78,17 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
           <div className="cat-main cat-lp">
             <section className="cat-hero">
               <div className="cat-hero-b">
-                <div className="cat-row"><Tag variant="accent">デザインシステム v{version}</Tag></div>
+                <div className="cat-hero-brand">
+                  {LOGO}
+                  <span className="cat-hero-name">Ignite</span>
+                </div>
                 <div role="heading" aria-level={2}>
-                  <span className="cat-hero-t">使いやすさと楽しさを、</span>
-                  <span className="cat-hero-t em">誰にでも</span>
+                  <span className="cat-hero-t">React アプリの画面を</span>
+                  <span className="cat-hero-t em">同じ部品と決まりでそろえる</span>
                 </div>
                 <div className="cat-hero-p">
-                  <span>シンプルでクリーンな見た目に、遊び心のある動きを。</span>
-                  <span>見やすさも、どの幅での使いやすさも、最初から。</span>
+                  <span>ボタン・入力欄・表・グラフなど {PART_COUNT} の部品を React で使える。</span>
+                  <span>決まりに沿っているかは、ignite check と監査で確かめる。</span>
                 </div>
                 <div className="cat-row">
                   <Button variant="primary" icon={ico(IconRocket)} onClick={() => onOpen('setup')}>セットアップを始める</Button>
@@ -102,8 +106,8 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
             </section>
 
             <section className="cat-band">
-              <Lead eyebrow="なぜ Ignite か" title="シンプルなのに、楽しい">
-                見た目は静かに、触れると楽しく。誰にでも、どの幅でも。
+              <Lead eyebrow="特徴" title="部品が持っている決まり">
+                部品を使えば、アプリの CSS で決めなくても次の点がそろう。
               </Lead>
               <div className="cat-pillars">
                 {PILLARS.map((p) => (
@@ -117,8 +121,8 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
             </section>
 
             <section className="cat-band cat-split">
-              <Lead eyebrow="テーマ" title="色を替えれば、全部が替わる">
-                選ぶとこのカタログ全体がその場で切り替わる。
+              <Lead eyebrow="テーマ" title="スキンと表示モードを切り替える">
+                選ぶと、このカタログ全体の色がすぐ変わる。
               </Lead>
               <div className="cat-stack">
                 <ThemeSettings value={theme} onChange={onTheme} />
@@ -128,7 +132,7 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
             </section>
 
             <section className="cat-band">
-              <Lead eyebrow="はじめかた" title="3 つの命令で、決まりが動き出す" />
+              <Lead eyebrow="はじめかた" title="取得から検査までの手順" />
               <div className="cat-steps">
                 {STEPS.map((s, i) => (
                   <div className="cat-step" key={s.title}>

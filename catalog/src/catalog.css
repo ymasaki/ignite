@@ -73,7 +73,10 @@
 .cat-hero{position:relative;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(360px,100%),1fr));gap:40px;align-items:center;padding:24px 0 48px;isolation:isolate}
 /* バウンスで上端が面から離れても境界が見えないよう、背景だけを透明からつなぐ */
 .cat-hero::before{content:"";position:absolute;z-index:-1;inset:-24px -24px 0;background:radial-gradient(60% 70% at 85% 30%,var(--pri-soft),transparent 70%),radial-gradient(40% 50% at 0% 0%,var(--pri-soft),transparent 70%);mask-image:linear-gradient(to bottom,transparent,#000 48px);opacity:.9;pointer-events:none} /* design-ok: #000 は表示色ではなくマスクの濃淡 */
-.cat-hero-t{display:block;font-size:var(--fs-32);font-weight:700;line-height:1.35;color:var(--ink);word-break:auto-phrase}
+.cat-hero-brand{display:flex;align-items:center;gap:16px}
+.cat-hero-brand .brand-mark{width:64px;height:64px}
+.cat-hero-name{font-size:var(--fs-32);font-weight:700;line-height:1.2;color:var(--ink)}
+.cat-hero-t{display:block;font-size:var(--fs-24);font-weight:700;line-height:1.35;color:var(--ink);word-break:auto-phrase}
 .cat-hero-t.em{color:var(--pri-ink)}
 .cat-hero-b{display:grid;gap:20px;min-width:0}
 .cat-hero-p{display:grid;font-size:var(--fs-14);line-height:1.8;color:var(--ink-2);word-break:auto-phrase}
@@ -113,7 +116,7 @@
 .cat-reading{margin-left:8px;font-size:var(--fs-12);font-weight:400;color:var(--ink-3)}
 .cat-search{width:280px;max-width:100%}
 @media (max-width:860px){.cat-search{width:100%}}
-@container (max-width:480px){.cat-hero-t{font-size:var(--fs-24)}}
+@container (max-width:480px){.cat-hero-t{font-size:var(--fs-20)}.cat-hero-brand .brand-mark{width:48px;height:48px}}
 .cat-face{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 24px;min-width:0}
 .cat-face-l{flex:0 0 120px;font-size:var(--fs-12);color:var(--ink-3)}
 .cat-face-v{font-size:var(--fs-24);font-weight:700}
