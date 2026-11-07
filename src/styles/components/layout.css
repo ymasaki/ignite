@@ -84,6 +84,9 @@
 .view{position:relative;flex:1;min-height:0}
 /* ダッシュボードの型（DashboardScreen）。段の間も外側の余白も --shell-* で決め、この中をスクロールする */
 .dash{display:flex;flex-direction:column;gap:var(--shell-gap);flex:1;min-height:0;overflow-y:auto;padding:var(--shell-top) var(--shell-x) var(--shell-bottom)}
+/* 送ったときは上端を --dash-fade（DashboardScreen が送った量を 0 → 28px で渡す）の幅でぼかし、カードを帯の下へ溶かして消す。
+   水平に断ち切ると角丸の枠が途中で切れて見えるため。送っていないときは 0 なので、最初の段の縁はぼけない */
+.dash{-webkit-mask-image:linear-gradient(to bottom,transparent,black var(--dash-fade,0px));mask-image:linear-gradient(to bottom,transparent,black var(--dash-fade,0px))} /* design-ok: マスクの濃淡（色ではない） */
 .shell-aux + .dash,.kpis-wrap + .dash{padding-top:0}
 /* 詳細パネルを持つ画面では .content の中に入る。外側の余白は .content が持つので二重にしない */
 .content > .dash{padding:0}

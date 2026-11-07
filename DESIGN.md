@@ -358,7 +358,7 @@
 | `Stepper` / `MonthStepper` | `Month.tsx` / `month.css` | 前後の送り（‹ 値 ⌄ ›。対象の週など。選択肢は新しい順、既定表示はラベル中の数字が回る。先頭ゼロや安全な整数の範囲外の数字列は原文を保つ。`display` で独自表示、`meta` は補足）/ 対象月の送り（`Stepper` に年月の数字が回る表示を載せたもの）。高さは入力欄と同じ 36px。`hideMeta` で補足（「今月」）をなめらかに隠す |
 | `useFitCount` / `fitSlots` | `Fit.tsx` | 枠に入る項目の数を実際の高さ・幅で数え（窓が変わると数え直す）、入らない分を「+N」に譲る数を決める |
 | `FitBar` / `useFitStep` / `pickFitStep` | `Fit.tsx` / `layout.css`（`.fit-measure`） | 詰める順番を宣言する帯。`steps`（詰めていない順の設定）と、設定から中身を描く関数を渡すと、置き場所に入る最初の設定で描く（写しを置いて測るのは部品）。`useFitStep` はその下の仕組み（段階ごとの写しを測り、入る最初の段階を返す） |
-| `Board` / `DashboardScreen` | `Layout.tsx` / `layout.css` | 内容の 1 枚の面 / ダッシュボードの型（中をスクロールする）。`AppShell` の `children` に置く。`panel` の有無によらず余白は同じ |
+| `Board` / `DashboardScreen` | `Layout.tsx` / `layout.css` | 内容の 1 枚の面 / ダッシュボードの型（中をスクロールする。送ると上端を送った量に合わせて最大 28px ぼかし、カードを KPI の帯の下で断ち切らずに溶かして消す）。`AppShell` の `children` に置く。`panel` の有無によらず余白は同じ |
 | `ListScreen` / `ScreenBar` | `Layout.tsx` / `layout.css` | 一覧の画面の型（`Board` の中に置く） / 内容の枠の上の絞り込みの帯（余白と間は `--bar-*` で窓に合わせて詰める。詰める順番は中に `FitBar` を置く。画面ごとに帯を作らない） |
 | `Section` / `SubHeading` / `KeyValues` / `Prose` / `Crumbs` | 同上 | まとまりの見出し（下に薄い青の線、`count` で件数。既定は `h3`、画面の直下に置くときは `level={2}`）/ まとまりの中の小見出し（線なし）/ 「ラベル：値」の 2 列 / 人が書いた本文 / パンくず（`name` は読み上げ名。`.crumbs.inline` は文中に 1 行で置く。`current` で今いる場所を最後に押せない形で添える。設定の画面から開いた画面（管理設定など）の上に置き、元の画面へ戻れるようにする）。まとまりを横に並べるときは `.section-cols`（間の線は `--section-divider`）、小見出しの左の余白は置き場所で `--subhead-pl`。見出しの使い分けは下の「見出しの段」 |
 | `Notice` / `EmptyState` | 同上 | 普段と違う状態の知らせ（既定は `--warn` の帯、`tone` で `danger`・`ok`・`info`。`warn` 以外はアイコンが付く。`info` は主要色にせず灰色（赤のスキンで危険の知らせと見分けられなくなるため）。1 文 32 字まで）/ 該当なし（`title` ありは画面いっぱいの案内） |

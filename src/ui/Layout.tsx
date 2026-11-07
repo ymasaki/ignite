@@ -1,7 +1,7 @@
 // 区切り・見出し・項目の一覧・空の状態・パンくず。見た目は styles/components/layout.css。
 
 import { IconAlertCircle, IconCircleCheck, IconInfoCircle } from '@tabler/icons-react'
-import { Fragment, type ReactNode } from 'react'
+import { Fragment, useEffect, useRef, type ReactNode } from 'react'
 
 const NOTICE_ICONS = { danger: IconAlertCircle, ok: IconCircleCheck, info: IconInfoCircle }
 
@@ -26,9 +26,29 @@ export function Board({ children }: { children: ReactNode }) {
   return <section className="board"><div className="view">{children}</div></section>
 }
 
-/** ダッシュボードの型。AppShell の aux に KPI の帯を、ここに ChartGrid を置く（この中をスクロールする） */
+/** スクロールの上端をぼかす幅の上限（px）。styles/components/layout.css の .dash と合わせる */
+const DASH_FADE = 28
+
+/**
+ * ダッシュボードの型。AppShell の aux に KPI の帯を、ここに ChartGrid を置く（この中をスクロールする）。
+ * 送った量（上限 DASH_FADE）を --dash-fade で CSS に渡し、上端をその幅でぼかす。カードの角丸の枠が帯の下で
+ * 水平に断ち切られて見えないように、帯の下へ溶けて消える形にする（送っていないときは 0 なので縁はぼけない）
+ */
 export function DashboardScreen({ children }: { children: ReactNode }) {
-  return <div className="dash">{children}</div>
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const sync = () => el.style.setProperty('--dash-fade', `${Math.min(el.scrollTop, DASH_FADE)}px`)
+    sync()
+    el.addEventListener('scroll', sync, { passive: true })
+    return () => el.removeEventListener('scroll', sync)
+  }, [])
+  return (
+    <div className="dash" ref={ref}>
+      {children}
+    </div>
+  )
 }
 
 /**
