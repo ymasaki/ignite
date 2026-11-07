@@ -15,7 +15,7 @@ run() {
   return "$rc"
 }
 
-run harness '実行基盤の検査' node --test scripts/test-entry.test.mjs scripts/audit-cache.test.mjs scripts/audit-runner.test.mjs scripts/serve-catalog.test.mjs scripts/release.test.mjs
+run harness '実行基盤の検査' node --test scripts/test-entry.test.mjs scripts/health.test.mjs scripts/audit-cache.test.mjs scripts/audit-runner.test.mjs scripts/serve-catalog.test.mjs scripts/release.test.mjs
 run types '型の検査' npx tsc --noEmit
 run unit '単体テスト' npx vitest run --dir tests --maxWorkers=2
 run build '配布物のビルド' node scripts/build.mjs

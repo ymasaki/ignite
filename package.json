@@ -1,6 +1,6 @@
 {
   "name": "@ymasaki/ignite",
-  "version": "1.8.4",
+  "version": "1.8.5",
   "description": "Web・デスクトップのアプリで同じ見た目と使い勝手をそろえるデザインシステム",
   "type": "module",
   "license": "UNLICENSED",
@@ -29,7 +29,10 @@
     "catalog": "vite catalog",
     "check:design": "node dist/cli.js check",
     "audit:design": "node scripts/audit-design.mjs",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "health:analysis": "node scripts/health/analysis.mjs",
+    "health:coverage": "node scripts/health/coverage.mjs",
+    "health:benchmarks": "node scripts/health/benchmarks.mjs"
   },
   "peerDependencies": {
     "@axe-core/playwright": "^4.13.0",
@@ -49,12 +52,17 @@
     "@types/node": "^22.0.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
+    "@typescript-eslint/parser": "8.46.3",
     "@vitejs/plugin-react": "^5.0.0",
-    "esbuild": "^0.28.0",
+    "@vitest/coverage-v8": "5.0.5",
+    "esbuild": "0.28.2",
+    "eslint": "9.39.5",
+    "eslint-plugin-sonarjs": "4.2.2",
+    "jscpd": "5.4.2",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
-    "typescript": "^5.7.0",
+    "typescript": "5.9.3",
     "vite": "^8.0.11",
-    "vitest": "^5.0.2"
+    "vitest": "5.0.5"
   }
 }

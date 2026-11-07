@@ -18,5 +18,10 @@
     "branch": "release",
     "command": "node scripts/release.mjs",
     "note": "固定コミットを検査し、tgz・SHA256・COMMITをPrivate GitHub Releaseへ配布する"
+  },
+  "health": {
+    "analysis": "npm run health:analysis",
+    "coverage": "npm run health:coverage",
+    "benchmarks": "npm run health:benchmarks"
   }
 }
