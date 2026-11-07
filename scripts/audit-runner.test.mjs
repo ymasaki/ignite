@@ -13,6 +13,7 @@ test('監査の排他と終了処理', async t => {
   const source = (await readFile(new URL('./audit-design.mjs', import.meta.url), 'utf8'))
     .replace("'/tmp/ignite-catalog-audit-5198.lock'", JSON.stringify(lock))
     .replace('1800000', '3000').replace('10800000', '8000').replace('60000', '5000') // 混んだマシンでも偽サーバーの起動が間に合う長さ
+    .replace('60 * 1000', '1000') // 待機中の知らせの間隔
   async function fixture(name, body) {
     const root = path.join(dir, name)
     await mkdir(path.join(root, 'scripts'), { recursive: true })
@@ -237,6 +238,8 @@ process.kill = (pid, signal) => {
       const result = await finishWithin(child)
       assert.equal(result.code, 0, result.output)
       assert.match(result.output, /順番が来た/)
+      // 待っている間も出力が続く（出力が止まると呼び出し元に固まったと見なされる）
+      assert.match(result.output, /\[audit\] 待機中: \d+秒（ロックの所有: queued-\d+）/)
       await gone()
     })
     await t.test('所有者が入れ替わり続けても全体の上限で打ち切る', async () => {

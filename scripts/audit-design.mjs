@@ -49,6 +49,11 @@ async function acquire() {
   let deadline = Date.now() + holdLimit
   let holder
   let reported = false
+  // 待っている間も一定の間隔で出力する。何も出さないと、呼び出し元（DevBoard の取り込み前の確認など）が
+  // 固まったと見なして止めてしまうため。
+  const heartbeat = 60 * 1000
+  const waitStart = Date.now()
+  let lastBeat = waitStart
   while (!interrupted) {
     if (await tryAcquire()) return
     let owner
@@ -71,6 +76,10 @@ async function acquire() {
     if (Date.now() >= deadline) throw new Error(`同じ監査が監査ロックを30分を超えて保持しています: ${lock} (${JSON.stringify(owner)})`)
     if (Date.now() >= totalDeadline) throw new Error(`監査ロック待機が全体で3時間を超えました: ${lock} (${JSON.stringify(owner)})`)
     if (!reported) { console.log(`[audit] 他の監査を待機: ${lock}`); reported = true }
+    else if (Date.now() - lastBeat >= heartbeat) {
+      lastBeat = Date.now()
+      console.log(`[audit] 待機中: ${Math.round((lastBeat - waitStart) / 1000)}秒（ロックの所有: ${owner?.root ?? '不明'}）`)
+    }
     await delay(200)
   }
   throw new Error('監査を中断しました')
