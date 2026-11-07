@@ -178,3 +178,6 @@
 .cat-resize-info{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px}
 .cat-resize-w{font-size:var(--fs-20);font-weight:700;color:var(--ink)}
 .cat-phone{border:10px solid var(--ink);border-radius:14px;overflow:hidden;background:var(--ink)}
+/* キャンバスの見本（Diagram.tsx）。面の中の枠として線で囲む */
+.cat-canvas{overflow:hidden;border:1px solid var(--line);border-radius:12px}
+.cat-board{display:grid;grid-template-columns:repeat(6,200px);gap:24px}

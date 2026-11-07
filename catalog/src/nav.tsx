@@ -1,4 +1,4 @@
-import { IconBell, IconBoxMultiple, IconChartDonut, IconClick, IconCode, IconDevices, IconForms, IconHome, IconLayoutDashboard, IconLayoutList, IconLogin2, IconPalette, IconRocket, IconRoute, IconTable, IconTypography, IconUsers, IconWaveSine } from '@tabler/icons-react'
+import { IconBell, IconBoxMultiple, IconChartDonut, IconClick, IconCode, IconDevices, IconForms, IconHome, IconLayoutDashboard, IconLayoutList, IconLogin2, IconPalette, IconRocket, IconRoute, IconSitemap, IconTable, IconTypography, IconUsers, IconWaveSine } from '@tabler/icons-react'
 import type { ReactNode } from 'react'
 
 // カタログの目録。左メニュー・ページの目次・部品の検索・概要の件数は、すべてここから作る
@@ -133,6 +133,11 @@ export const PAGES: PageDef[] = [
     { id: 'radar', title: 'レーダー', parts: ['RadarChart'] },
     { id: 'heatmap', title: 'ヒートマップ', parts: ['HeatMap'] },
     { id: 'box', title: '箱ひげ', parts: ['BoxPlot'] },
+  ] },
+  { key: 'diagram', label: 'キャンバスとツリー', group: '部品', icon: icon(IconSitemap), specs: [
+    { id: 'tree', title: 'ツリー', parts: ['Canvas', 'TreeChart'] },
+    { id: 'free', title: '自由な配置', parts: ['Canvas'] },
+    { id: 'nodes', title: 'ツリーの節', parts: ['TreeCard', 'TreePill'] },
   ] },
   { key: 'list', label: '一覧と詳細', group: '画面の型', icon: icon(IconLayoutList), specs: [] },
   { key: 'header', label: '検索欄のないヘッダー', group: '画面の型', icon: icon(IconLayoutList), specs: [] },

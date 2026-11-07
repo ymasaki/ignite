@@ -20,6 +20,8 @@
 @import './components/kpi.css';
 @import './components/chart.css';
 @import './components/plot.css';
+@import './components/canvas.css';
+@import './components/tree.css';
 @import './components/shell.css';
 @import './components/table.css';
 @import './components/settings.css';

@@ -1,0 +1,93 @@
+/* 線でつないだツリー（ui/Tree.tsx の TreeChart）と節（TreeCard・TreePill）。Canvas の中に置く */
+
+/* ---------- 線と列 ---------- */
+.tree{display:flex;flex-direction:column;align-items:center}
+/* 根のカードは中身の幅で、狭すぎず広すぎず */
+.tree > .tree-node > .tree-card{width:auto;min-width:280px;max-width:420px}
+.tree-stem{width:1.5px;height:22px;background:var(--edge)}
+.tree-cols{position:relative;display:flex;align-items:flex-start;gap:14px;padding-top:22px}
+.tree-col{position:relative;display:flex;flex-direction:column;align-items:stretch;width:var(--tree-col-w,220px)}
+/* 子をさらに列に並べる節（丸い節の下に列など）は、列の幅いっぱいに広げて中央に置く */
+.tree-col.wide{width:auto;align-items:center}
+/* 上の横線（両端の列は中央まで）と、列への縦線 */
+.tree-col::before{content:"";position:absolute;top:-22px;left:-7px;right:-7px;border-top:1.5px solid var(--edge)}
+.tree-col:first-child::before{left:50%}
+.tree-col:last-child::before{right:50%}
+.tree-col:only-child::before{display:none}
+.tree-col::after{content:"";position:absolute;top:-22px;left:50%;height:22px;border-left:1.5px solid var(--edge)}
+
+/* 縦に積む子。線は節ごとに描き、最後の節では横線の位置で止める（Canvas のミニマップの rail の線と合わせる） */
+.tree-stack{display:flex;flex-direction:column;gap:8px;margin-left:12px;padding:10px 0 0 12px}
+.tree-stack .tree-stack{margin-left:8px}
+.tree-item{position:relative}
+.tree-item::before{content:"";position:absolute;left:-13px;top:22px;width:12px;border-top:1.5px solid var(--edge)}
+.tree-item::after{content:"";position:absolute;left:-13px;top:-10px;bottom:0;border-left:1.5px solid var(--edge)}
+.tree-item:last-child::after{bottom:auto;height:32px}
+
+/* ---------- 節のカード（TreeCard） ---------- */
+.tree-card{position:relative;display:flex;flex-direction:column;gap:6px;width:100%;padding:10px 12px;text-align:left;cursor:pointer;
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;transition:box-shadow .12s,border-color .12s,opacity .24s ease-out}
+.tree-card.has-toggle{padding-right:32px}
+.tree-card:hover{box-shadow:var(--shadow-hover)}
+/* カード全体を押せる面（枠も含める）。中身はクリックを素通しし、中のボタン・リンクだけ上で受ける */
+.tree-card .tc-hit{position:absolute;inset:-2px;border-radius:inherit}
+.tree-card .tc-hit:focus-visible{outline-offset:2px}
+.tree-card > :not(.tc-hit){pointer-events:none}
+/* 中の操作は詳細度を下げて書く（開閉のボタンなど、部品の中で位置を決める操作を上書きしないように） */
+:where(.tree-card) :where(button,a,[role="button"]):not(.tc-hit){position:relative;z-index:1;pointer-events:auto}
+/* 押している間は影を沈め、地も沈める。中のボタンを押しているときはカードを押している見た目にしない */
+.tree-card:active:where(:not(:has(:is(button,a,[role="button"]):not(.tc-hit):active))){background:var(--hover);box-shadow:var(--shadow-1);transition-duration:0s}
+.tree-card:has(:is(button,a,[role="button"]):not(.tc-hit):hover){box-shadow:none}
+.tree-card .tc-top{display:flex;align-items:flex-start;gap:8px;min-width:0}
+.tree-card .tc-lead{display:inline-flex;flex:none;margin-top:1px;color:var(--ink-3)}
+.tree-card .tc-titles{display:flex;flex-direction:column;min-width:0}
+.tree-card .tc-label{font-size:var(--fs-11);line-height:1.3;color:var(--ink-3)}
+.tree-card .tc-title{display:-webkit-box;overflow:hidden;font-size:var(--fs-13);font-weight:700;line-height:1.35;overflow-wrap:anywhere;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.tree-card .tc-row{display:flex;align-items:center;gap:6px;min-width:0;font-size:var(--fs-12);color:var(--ink-2)}
+.tree-card .tc-sub{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tree-card .tc-meta{display:inline-flex;align-items:center;gap:4px;margin-left:auto;color:var(--ink-3);white-space:nowrap}
+.tree-card .tc-more{font-size:var(--fs-11);color:var(--ink-3)}
+
+/* 大きさ */
+.tree-card.s-md{padding-block:12px}
+.tree-card.s-md .tc-title{font-size:var(--fs-14)}
+.tree-card.s-lg{gap:8px;padding:12px 16px;border-width:1.5px}
+.tree-card.s-lg.has-toggle{padding-right:36px}
+.tree-card.s-lg .tc-title{font-size:var(--fs-16)}
+
+/* 枠の強さ（1 が最上位。上位ほど濃い・太い）。地は塗らない（DESIGN.md 1 章「1 色でまとめる」） */
+.tree-card.lv-1{border:1.5px solid var(--ink-2)}
+.tree-card.lv-1 .tc-lead{color:var(--ink)}
+.tree-card.lv-2{border-color:var(--ink-3)}
+.tree-card.lv-2 .tc-lead{color:var(--ink-2)}
+.tree-card.lv-4{border-color:var(--line-2)}
+.tree-card.dashed{border:1px dashed var(--ink-3)}
+
+/* 状態: on = 選んでいる / dim = ほかを強調しているときの薄い表示 */
+.tree-card.on{border-color:var(--pri);box-shadow:0 0 0 3px var(--pri-ring)}
+.tree-card.dim,.tree-pill.dim{opacity:.35}
+.tree-card.dim:hover,.tree-pill.dim:hover{opacity:.8}
+
+/* 開閉のボタン */
+.tree-card .tc-toggle{position:absolute;right:8px;top:8px;z-index:1;pointer-events:auto;display:grid;place-items:center;width:24px;height:24px;border-radius:6px;color:var(--ink-3);transition:var(--press-back)}
+.tree-card .tc-toggle:hover{background:var(--hover);color:var(--ink)}
+.tree-card .tc-toggle:active{background:var(--press);scale:var(--press-scale)}
+.tree-card .tc-toggle svg{transition:transform .15s}
+.tree-card .tc-toggle.open svg{transform:rotate(180deg)}
+
+/* 縮小表示（Canvas の倍率 40% 未満）では名前だけを大きく */
+.canvas-stage.lod .tree-card .tc-row,.canvas-stage.lod .tree-card .tc-more{display:none}
+.canvas-stage.lod .tree-card .tc-title{font-size:var(--fs-20)}
+
+/* ---------- 丸い節（TreePill）。枠はツリーの線と同じ色 ---------- */
+.tree-pill{position:relative;z-index:1;display:inline-flex;align-items:center;gap:8px;max-width:100%;height:36px;padding:4px 12px 4px 4px;
+  background:var(--panel);border:1px solid var(--edge);border-radius:99px;text-align:left;color:var(--ink);transition:opacity .24s ease-out,background .16s,border-color .16s}
+.tree-pill:not(:has(.tp-lead)){padding-left:12px}
+.tree-pill .tp-lead{display:inline-flex;flex:none}
+.tree-pill .tp-text{display:flex;flex-direction:column;min-width:0;line-height:1.25}
+.tree-pill .tp-label{overflow:hidden;font-size:var(--fs-11);color:var(--ink-3);text-overflow:ellipsis;white-space:nowrap}
+.tree-pill .tp-title{overflow:hidden;font-size:var(--fs-13);font-weight:700;text-overflow:ellipsis;white-space:nowrap}
+button.tree-pill{cursor:pointer}
+button.tree-pill:hover,.tree-pill.on{background:var(--pri-soft);border-color:var(--pri);color:var(--pri-ink)}
+button.tree-pill:hover .tp-label,.tree-pill.on .tp-label{color:var(--pri-ink)}
+button.tree-pill:active{background:var(--pri-press);color:var(--pri-ink-2)}

@@ -1197,3 +1197,63 @@ test('Stepper: 週の数字が前後の移動と一覧選択で回り、桁が�
   await expect(week.locator('.roll-sr')).toHaveText('8')
   expect(await digit.evaluate(el => el.getAnimations().length)).toBe(0)
 })
+
+test('Canvas: ドラッグで動き、ドラッグのあとのクリックは中身に届かず、ボタンで拡大縮小する', async ({ page }) => {
+  await open(page, 'diagram')
+  const canvas = page.getByRole('region', { name: 'カタログの目録' })
+  const stage = canvas.locator('.canvas-stage')
+  const pos = () => stage.evaluate((el) => new DOMMatrixReadOnly(getComputedStyle(el).transform).e)
+  const card = canvas.getByRole('button', { name: 'Ignite カタログ', exact: true })
+  const box = (await card.boundingBox())!
+  const before = await pos()
+  // 節の上から押してドラッグする（4px を超えたらドラッグ）
+  await page.mouse.move(box.x + 20, box.y + 20)
+  await page.mouse.down()
+  await page.mouse.move(box.x + 60, box.y + 40, { steps: 5 })
+  await page.mouse.move(box.x + 140, box.y + 60, { steps: 5 })
+  await page.mouse.up()
+  expect(await pos()).toBeCloseTo(before + 120, 0)
+  // ドラッグのあとのクリックでは選ばない
+  await expect(card).not.toHaveAttribute('aria-current', 'true')
+  // 押すだけなら選ぶ
+  await card.click()
+  await expect(card).toHaveAttribute('aria-current', 'true')
+
+  await canvas.getByRole('button', { name: '拡大' }).click()
+  await expect(canvas.getByRole('button', { name: /^倍率 110%/ })).toBeVisible()
+  await canvas.getByRole('button', { name: '縮小' }).click()
+  await canvas.getByRole('button', { name: '縮小' }).click()
+  await expect(canvas.getByRole('button', { name: /^倍率 90%/ })).toBeVisible()
+  await canvas.getByRole('button', { name: /^倍率/ }).click()
+  await expect(canvas.getByRole('button', { name: /^倍率 100%/ })).toBeVisible()
+  // ⌘ / Ctrl ＋ホイールで縮小する
+  const c = (await canvas.boundingBox())!
+  await page.mouse.move(c.x + c.width / 2, c.y + c.height / 2)
+  await page.keyboard.down('Control')
+  await page.mouse.wheel(0, 100)
+  await page.keyboard.up('Control')
+  await expect.poll(() => stage.evaluate((el) => new DOMMatrixReadOnly(getComputedStyle(el).transform).a)).toBeLessThan(1)
+})
+
+test('TreeChart: 開閉のボタンで縦に積んだ子を出し入れし、Tab で外の節へ移ると見える位置へ動く', async ({ page }) => {
+  await open(page, 'diagram')
+  const canvas = page.getByRole('region', { name: 'カタログの目録' })
+  const toggle = canvas.getByRole('button', { name: 'コード、標本 7 件の下を開く', exact: true })
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false')
+  await toggle.click()
+  const opened = canvas.getByRole('button', { name: 'コード、標本 7 件の下を閉じる', exact: true })
+  await expect(opened).toHaveAttribute('aria-expanded', 'true')
+  await expect(canvas.getByRole('button', { name: 'JSON', exact: true })).toBeVisible()
+  await opened.click()
+  await expect(canvas.getByRole('button', { name: 'JSON', exact: true })).toHaveCount(0)
+
+  // 右端の外にある節へ Tab で移ると、表示領域の中まで動く
+  const last = canvas.getByRole('button', { name: 'レスポンシブ表示、標本 2 件', exact: true })
+  const view = (await canvas.boundingBox())!
+  expect((await last.boundingBox())!.x).toBeGreaterThan(view.x + view.width)
+  await last.focus()
+  await page.keyboard.press('Shift+Tab')
+  await page.keyboard.press('Tab')
+  await expect(last).toBeFocused()
+  await expect.poll(async () => { const b = (await last.boundingBox())!; return b.x + b.width <= view.x + view.width && b.x >= view.x }).toBe(true)
+})
