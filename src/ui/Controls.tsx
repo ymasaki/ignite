@@ -313,6 +313,13 @@ function clipRect(el: HTMLElement) {
   return r
 }
 
+/** 開くアニメーション（popIn の translate）で一時的にずれた分を除いた、面の落ち着いた位置。ずれたまま測ると、アニメーションが終わってから切れる */
+function settledRect(el: HTMLElement) {
+  const r = el.getBoundingClientRect()
+  const { m41, m42 } = new DOMMatrix(getComputedStyle(el).transform)
+  return { top: r.top - m42, bottom: r.bottom - m42, left: r.left - m41, right: r.right - m41 }
+}
+
 /**
  * 開いた面が下・右で切れるなら、反対側に開く（反対側のほうが広いときだけ）。Popover・Combobox で共通。
  * float なら、上下どちらにも入らないとき窓の中央に重ねる（高さが足りない分は中でスクロール。低い画面のカレンダーなど）。
@@ -329,10 +336,10 @@ export function usePlaced(ref: { current: HTMLElement | null }, open: boolean, f
       const h = host.getBoundingClientRect()
       // 一覧の高さの上限。開く側の空きに収める（低い画面で一覧が切れないように。30px は入力欄との間 6・端との間 8・面の余白と枠 16）
       el.style.setProperty('--pop-room', `${Math.max(120, Math.max(h.top - clip.top, clip.bottom - h.bottom) - 30)}px`)
-      const r = el.getBoundingClientRect()
+      const r = settledRect(el)
       if (r.bottom > clip.bottom && h.top - clip.top > clip.bottom - h.bottom) el.classList.add('up')
       if (r.left < clip.left || r.right > clip.right) el.classList.add('flip')
-      const placed = el.getBoundingClientRect()
+      const placed = settledRect(el)
       if (float && (placed.top < clip.top - 1 || placed.bottom > clip.bottom + 1)) {
         el.classList.remove('up', 'flip')
         el.classList.add('float')
