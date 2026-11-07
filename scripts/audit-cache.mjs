@@ -69,28 +69,41 @@ export async function hasNestedDependencies(root) {
   }
   return walk(root)
 }
+// 他プロジェクト用の版は入力にしない。実際に使う版のバイナリ・描画資源はすべて照合する。
+export async function browserFiles(executable, manifest) {
+  let browser = executable
+  while (!/^chromium-\d+$/.test(path.basename(browser))) {
+    const parent = path.dirname(browser)
+    if (parent === browser) throw new Error('ブラウザの配置を特定できません')
+    browser = parent
+  }
+  const chromium = manifest.browsers.find(item => item.name === 'chromium')
+  const headless = manifest.browsers.find(item => item.name === 'chromium-headless-shell')
+  const ffmpeg = manifest.browsers.find(item => item.name === 'ffmpeg')
+  if (!chromium || !headless || !ffmpeg || chromium.revision !== headless.revision ||
+      JSON.stringify(chromium.revisionOverrides ?? {}) !== JSON.stringify(headless.revisionOverrides ?? {}) ||
+      Object.keys(ffmpeg.revisionOverrides ?? {}).length) throw new Error('ブラウザの版の対応を特定できません')
+  const revision = path.basename(browser).slice('chromium-'.length)
+  if (![chromium.revision, ...Object.values(chromium.revisionOverrides ?? {})].includes(revision)) throw new Error('ブラウザの版が一致しません')
+  const directory = path.dirname(browser)
+  const names = [path.basename(browser), `chromium_headless_shell-${revision}`, `ffmpeg-${ffmpeg.revision}`]
+  const files = []
+  for (const name of names) files.push([name, await treeFiles(path.join(directory, name), true)])
+  return files
+}
 export async function auditRuntime(root) {
   if (process.platform !== 'darwin') throw new Error('実行環境の照合はmacOSのみ対応')
   // Viteが作る中間物は入力にしない。開始前・子群停止確認後に消し、古い中間物を使わせない。
   for (const name of ['.vite', '.vite-temp']) await fs.rm(path.join(root, 'node_modules', name), { recursive: true, force: true })
   const dependencies = await treeFiles(path.join(root, 'node_modules'), true)
   const { chromium } = await import(pathToFileURL(path.join(root, 'node_modules/playwright-core/index.mjs')).href)
-  let browser = chromium.executablePath()
-  while (!/^chromium-\d+$/.test(path.basename(browser))) {
-    const parent = path.dirname(browser)
-    if (parent === browser) throw new Error('ブラウザの配置を特定できません')
-    browser = parent
-  }
-  const browsers = []
-  const directory = path.dirname(browser)
-  const names = (await fs.readdir(directory)).filter(name => /^(chromium|chromium_headless_shell|ffmpeg)-\d+$/.test(name)).sort()
-  if (!names.some(name => name.startsWith('chromium_headless_shell-'))) throw new Error('headlessブラウザがありません')
-  for (const name of names) browsers.push([name, await treeFiles(path.join(directory, name), true)])
+  const manifest = JSON.parse(await fs.readFile(path.join(root, 'node_modules/playwright-core/browsers.json'), 'utf8'))
+  const browsers = await browserFiles(chromium.executablePath(), manifest)
   const fonts = JSON.parse(execFileSync('/usr/sbin/system_profiler', ['SPFontsDataType', '-json'], { encoding: 'utf8', timeout: 30000, maxBuffer: 20 * 1024 * 1024 })).SPFontsDataType
   if (!Array.isArray(fonts) || !fonts.length || fonts.some(font => !path.isAbsolute(font.path))) throw new Error('書体を照合できません')
   const fontFiles = []
   for (const file of [...new Set(fonts.map(font => font.path))].sort()) fontFiles.push([file, await fileHash(file)])
-  return [process.version, await fileHash(process.execPath), os.release(), os.version(), os.arch(), os.hostname(), dependencies, browsers, fonts, fontFiles]
+  return { host: [process.version, await fileHash(process.execPath), os.release(), os.version(), os.arch(), os.hostname()], dependencies, browsers, fonts, fontFiles }
 }
 export async function auditInput(root, env = process.env, inspectRuntime = auditRuntime) {
   try {
@@ -103,7 +116,10 @@ export async function auditInput(root, env = process.env, inspectRuntime = audit
     const conditions = await inspectRuntime(root)
     if (git(root, ['status', '--porcelain', '--untracked-files=all']) || git(root, ['rev-parse', 'HEAD^{tree}']) !== tree) return null
     const store = path.join(git(root, ['rev-parse', '--path-format=absolute', '--git-common-dir']), 'devboard/ignite-audit-cache-v1')
-    return { key: digest(JSON.stringify([1, tree, environment(root, env), conditions])), store }
+    const environmentHash = digest(JSON.stringify(environment(root, env)))
+    const parts = Array.isArray(conditions) ? { runtime: conditions } : conditions
+    const fingerprints = { source: tree, environment: environmentHash, ...Object.fromEntries(Object.entries(parts).map(([name, value]) => [name, digest(JSON.stringify(value))])) }
+    return { key: digest(JSON.stringify([1, fingerprints])), store, fingerprints }
   } catch { return null }
 }
 
@@ -182,7 +198,13 @@ export async function openAuditCache(root, args, interrupted, options = {}) {
       async publish() {
         let temporary
         try {
-          if (!full || interrupted() || (await snapshot())?.key !== input.key) return
+          if (!full || interrupted()) return
+          const current = await snapshot()
+          if (current?.key !== input.key) {
+            const changed = Object.keys(input.fingerprints ?? {}).filter(name => input.fingerprints[name] !== current?.fingerprints?.[name])
+            console.log(`[audit-cache] ${changed.join('・') || '入力または実行条件'}が変わったため成功を保存しません`)
+            return
+          }
           temporary = await fs.mkdtemp(path.join(input.store, '.audit-save-'))
           await fs.cp(output, path.join(temporary, 'output'), { recursive: true })
           const files = await treeFiles(path.join(temporary, 'output'))

@@ -5,7 +5,7 @@ import fs from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { execFileSync, spawn, spawnSync } from 'node:child_process'
-import { auditInput, openAuditCache, treeFiles } from './audit-cache.mjs'
+import { auditInput, openAuditCache, treeFiles, browserFiles } from './audit-cache.mjs'
 
 const options = (store, extra = {}) => ({ snapshot: async () => ({ key: 'input', store }), ...extra })
 async function report(root, text = '成功') {
@@ -250,4 +250,26 @@ test('1秒を超える入力競合は待機し、先行の終了後に進み、�
     assert.equal(spawnSync('/usr/bin/lockf', ['-s', '-k', '-t', '0', path.join(dir, 'input.lock'), '/usr/bin/true']).status, 75)
     holder2.child.kill('SIGKILL'); await holder2.done
   } finally { for (const child of children) if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL'); await fs.rm(dir, { recursive: true, force: true }) }
+})
+
+
+test('使用しないブラウザの追加は入力を変えず、使用する描画資源の変更は検出する', async () => {
+  const dir = await fs.mkdtemp(path.join(tmpdir(), 'ignite-browser-input-'))
+  const manifest = { browsers: [
+    { name: 'chromium', revision: '10' }, { name: 'chromium-headless-shell', revision: '10' }, { name: 'ffmpeg', revision: '20' },
+  ] }
+  const executable = path.join(dir, 'chromium-10/bin/chrome')
+  try {
+    for (const name of ['chromium-10', 'chromium_headless_shell-10', 'ffmpeg-20']) {
+      await fs.mkdir(path.join(dir, name, 'bin'), { recursive: true })
+      await fs.writeFile(path.join(dir, name, 'bin/chrome'), name)
+    }
+    const before = await browserFiles(executable, manifest)
+    await fs.mkdir(path.join(dir, 'chromium-99'))
+    await fs.writeFile(path.join(dir, 'chromium-99/unrelated'), '他プロジェクトの版')
+    assert.deepEqual(await browserFiles(executable, manifest), before)
+    await fs.writeFile(path.join(dir, 'chromium_headless_shell-10/resource'), '描画資源の変更')
+    assert.notDeepEqual(await browserFiles(executable, manifest), before)
+    await assert.rejects(browserFiles(executable, { browsers: [...manifest.browsers.slice(0, 1), { name: 'chromium-headless-shell', revision: '11' }, manifest.browsers[2]] }))
+  } finally { await fs.rm(dir, { recursive: true, force: true }) }
 })
