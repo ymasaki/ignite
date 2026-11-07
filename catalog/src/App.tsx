@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { ChartsPage } from './Charts'
 import { CodePage } from './Code'
 import { ActionsPage, NavigatePage } from './Controls'
-import { DiagramPage } from './Diagram'
 import { DataPage, MarksPage } from './Display'
 import { FeedbackPage } from './Feedback'
 import { FormsPage } from './Forms'
@@ -19,7 +18,7 @@ import { AboutPanel, DashboardPage, DetailPanel, ListPage, LoginPage, SettingsPa
 const NAV = PAGES.map(({ key, label, icon, group }) => ({ key, label, icon, group }))
 // 部品の検索の候補。部品の名前のほかに、標本の見出しとページの名前でも探せる（かな・カタカナの違いは部品が吸収する）
 const FIND: SuggestGroup[] = ['基礎', '部品'].map((group) => ({ key: group, label: group, items: PAGES.filter((p) => p.group === group).flatMap((p) => p.specs.flatMap((s) => (s.parts?.length ? s.parts : [s.title]).map((name) => ({ key: `${p.key}/${s.id}/${name}`, title: name, text: `${s.title} ${p.label}`, sub: name === s.title || s.title === p.label ? p.label : `${p.label} · ${s.title}`, lead: <IconBox>{p.icon}</IconBox> })))) }))
-const PAGE_VIEWS = { setup: SetupPage, color: ColorPage, type: TypePage, shape: ShapePage, motion: MotionPage, actions: ActionsPage, navigate: NavigatePage, forms: FormsPage, feedback: FeedbackPage, marks: MarksPage, data: DataPage, code: CodePage, charts: ChartsPage, diagram: DiagramPage, responsive: ResponsivePage }
+const PAGE_VIEWS = { setup: SetupPage, color: ColorPage, type: TypePage, shape: ShapePage, motion: MotionPage, actions: ActionsPage, navigate: NavigatePage, forms: FormsPage, feedback: FeedbackPage, marks: MarksPage, data: DataPage, code: CodePage, charts: ChartsPage, responsive: ResponsivePage }
 
 const read = () => {
   const p = new URLSearchParams(location.search)

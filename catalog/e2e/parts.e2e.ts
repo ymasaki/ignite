@@ -1199,8 +1199,9 @@ test('Stepper: 週の数字が前後の移動と一覧選択で回り、桁が�
 })
 
 test('Canvas: ドラッグで動き、ドラッグのあとのクリックは中身に届かず、ボタンで拡大縮小する', async ({ page }) => {
-  await open(page, 'diagram')
+  await open(page, 'charts')
   const canvas = page.getByRole('region', { name: 'カタログの目録' })
+  await canvas.scrollIntoViewIfNeeded()
   const stage = canvas.locator('.canvas-stage')
   const pos = () => stage.evaluate((el) => new DOMMatrixReadOnly(getComputedStyle(el).transform).e)
   const card = canvas.getByRole('button', { name: 'Ignite カタログ', exact: true })
@@ -1236,8 +1237,9 @@ test('Canvas: ドラッグで動き、ドラッグのあとのクリックは中
 })
 
 test('TreeChart: 開閉のボタンで縦に積んだ子を出し入れし、Tab で外の節へ移ると見える位置へ動く', async ({ page }) => {
-  await open(page, 'diagram')
+  await open(page, 'charts')
   const canvas = page.getByRole('region', { name: 'カタログの目録' })
+  await canvas.scrollIntoViewIfNeeded()
   const toggle = canvas.getByRole('button', { name: 'コード、標本 7 件の下を開く', exact: true })
   await expect(toggle).toHaveAttribute('aria-expanded', 'false')
   await toggle.click()

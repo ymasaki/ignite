@@ -2,6 +2,7 @@ import { IconChecks, IconClock } from '@tabler/icons-react'
 import { BarList, BoxPlot, ColumnChart, Button, Dialog, Notice, Delta, Funnel, Gauge, HeatMap, Kpi, LineChart, PieChart, RadarChart, ScatterChart, Sparkline, StackColumns, Stat, TileMap, Waterfall, boxStats } from '@ymasaki/ignite'
 import { useState } from 'react'
 import { MONTHS, PROJECTS } from './data'
+import { DiagramSpecs } from './Diagram'
 import { Case, Cases, Page, Spec } from './kit'
 
 export const VALUES = [32, 38, 41, 37, 45, 52]
@@ -86,6 +87,7 @@ export function ChartsPage({ target }: { target?: string | null }) {
         </>
       </Spec>
       <Spec page={p} id="box"><BoxPlot unit="秒" items={[{ label: '受付', ...boxStats(DURATIONS)! }, { label: '確認', ...boxStats(DURATIONS.map((v) => v * 0.7 + 0.5))! }, { label: '返信', ...boxStats(DURATIONS.map((v) => v * 1.3))! }]} /></Spec>
+      <DiagramSpecs page={p} />
     </Page>
   )
 }

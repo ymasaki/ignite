@@ -1,7 +1,7 @@
 import { IconFolder, IconLayoutGrid, IconListDetails } from '@tabler/icons-react'
 import { Avatar, Button, Canvas, IconBox, TreeCard, TreeChart, TreePill, type CanvasApi, type TreeItem } from '@ymasaki/ignite'
 import { useRef, useState } from 'react'
-import { Case, Cases, Page, Spec } from './kit'
+import { Case, Cases, Spec } from './kit'
 import { PAGES } from './nav'
 
 // 見本のツリー: このカタログの目録（区分 → ページ → 標本）。区分は丸い節で、その下にページを列に並べ、標本は縦に積む
@@ -80,11 +80,11 @@ function CatalogTree() {
 // 自由な配置の見本: ツリーでない中身でも、data-node を付けた要素はミニマップに出る
 const BOARD = Array.from({ length: 24 }, (_, i) => ({ id: `b${i + 1}`, title: `ボード ${i + 1}`, count: (i * 7) % 12 }))
 
-export function DiagramPage({ target }: { target?: string | null }) {
-  const p = 'diagram'
+/** 「グラフと数字」のページの末尾に置くキャンバスとツリーの見本（左メニューを伸ばさないよう、図の部品の仲間として同じページに置く） */
+export function DiagramSpecs({ page: p }: { page: string }) {
   const [sel, setSel] = useState<string | null>(null)
   return (
-    <Page page={p} target={target}>
+    <>
       <Spec page={p} id="tree"><CatalogTree /></Spec>
       <Spec page={p} id="free">
         <div className="cat-canvas">
@@ -112,6 +112,6 @@ export function DiagramPage({ target }: { target?: string | null }) {
           <Case label="丸い節・アイコン"><TreePill label="区分" title="共通" lead={<IconBox><IconFolder size={14} stroke={1.8} /></IconBox>} /></Case>
         </Cases>
       </Spec>
-    </Page>
+    </>
   )
 }
