@@ -1,4 +1,5 @@
 import { test } from 'node:test'
+import { pathToFileURL } from 'node:url'
 import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -212,7 +213,9 @@ process.kill = (pid, signal) => { if(pid < 0 && signal === 'SIGTERM') throw Obje
 
 test('1秒を超える入力競合は待機し、先行の終了後に進み、待機中の中断も受け付ける', async () => {
   const dir = await fs.mkdtemp(path.join(tmpdir(), 'ignite-cache-wait-'))
-  const module = new URL('./audit-cache.mjs', import.meta.url).href
+  const copied = path.join(dir, 'cache-under-test.mjs')
+  await fs.writeFile(copied, (await fs.readFile(new URL('./audit-cache.mjs', import.meta.url), 'utf8')).replace('const heartbeat = 60 * 1000', 'const heartbeat = 200'))
+  const module = pathToFileURL(copied).href
   const children = []
   async function run(hold = false) {
     const child = spawn(process.execPath, ['--input-type=module', '-e', `
@@ -236,7 +239,7 @@ test('1秒を超える入力競合は待機し、先行の終了後に進み、�
   }
   try {
     const holder = await run(true); await holder.saw('acquired')
-    const waiter = await run(); await waiter.saw('同一入力の監査を待機')
+    const waiter = await run(); await waiter.saw('同一入力の監査を待機'); await waiter.saw('[audit-cache] 待機中:')
     assert.equal(waiter.child.exitCode, null)
     holder.child.kill('SIGKILL'); await holder.done
     const result = await waiter.done; assert.equal(result.code, 0, result.output); assert.match(result.output, /acquired/)

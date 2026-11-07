@@ -110,6 +110,9 @@ export async function auditInput(root, env = process.env, inspectRuntime = audit
 async function acquire(file, interrupted) {
   const fd = openSync(file, 'a')
   const deadline = Date.now() + 10800000
+  const started = performance.now()
+  const heartbeat = 60 * 1000
+  let lastBeat = started
   let reported = false
   try {
     while (!interrupted()) {
@@ -118,11 +121,16 @@ async function acquire(file, interrupted) {
       if (result.status === 0) return fd
       if (result.error || result.status !== 75) throw new Error('監査結果の入力ロックを取得できません')
       if (!reported) { console.log('[audit-cache] 同一入力の監査を待機'); reported = true }
+      else if (performance.now() - lastBeat >= heartbeat) {
+        lastBeat = performance.now()
+        console.log(`[audit-cache] 待機中: ${Math.round((lastBeat - started) / 1000)}秒（同一入力の監査）`)
+      }
       if (Date.now() >= deadline) throw new Error('監査結果の入力ロック待機が3時間を超えました')
       await delay(10)
     }
     throw new Error('監査を中断しました')
   } catch (error) { closeSync(fd); throw error }
+  finally { console.log(`harness-metric: stage=audit-input-lock seconds=${((performance.now() - started) / 1000).toFixed(3)}`) }
 }
 export async function openAuditCache(root, args, interrupted, options = {}) {
   const env = options.env ?? process.env
