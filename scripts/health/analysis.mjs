@@ -108,7 +108,7 @@ export async function addDuplicates(files, cwd = root) {
     fs.writeFileSync(config, '{}')
     execFileSync(process.execPath, [path.join(root, 'node_modules/jscpd/run-jscpd.js'),
       ...files.map((file) => file.path), '--config', config, '--min-lines', '10', '--min-tokens', '1',
-      '--mode', 'weak', '--threshold', '100', '--reporters', 'json', '--output', dir,
+      '--mode', 'weak', '--cross-formats', 'js-ts', '--threshold', '100', '--reporters', 'json', '--output', dir,
       '--no-gitignore', '--silent', '--no-colors', '--no-tips',
     ], { cwd, stdio: 'inherit' })
     const report = JSON.parse(fs.readFileSync(path.join(dir, 'jscpd-report.json'), 'utf8'))

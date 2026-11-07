@@ -68,7 +68,7 @@ test('10 行以上のコピーを両方のファイルへ載せる', async () =>
   await temporary(async (dir) => {
     const text = ['export function copied(value: number) {',
       ...Array.from({ length: 12 }, (_, i) => `  value += ${i};`), '  return value;', '}'].join('\n')
-    const files = ['a.ts', 'b.ts'].map((file) => {
+    const files = ['a.ts', 'b.tsx'].map((file) => {
       fs.writeFileSync(path.join(dir, file), text)
       return analyzeText(file, text)
     })
