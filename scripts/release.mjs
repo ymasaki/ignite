@@ -14,12 +14,14 @@ const base = `repos/${REPO}`
 const OUTSIDE_PACKAGE = [/^devboard\.json$/, /^AGENTS\.md$/, /^CLAUDE\.md$/, /^\.github\//, /^scripts\/release(\.test)?\.mjs$/]
 export const outsidePackage = file => OUTSIDE_PACKAGE.some(pattern => pattern.test(file))
 const hash = data => createHash('sha256').update(data).digest('hex')
-const NETWORK = /i\/o timeout|dial tcp|connection reset|connection refused|TLS handshake timeout|no such host|unexpected EOF|network is unreachable/i
+const NETWORK = /i\/o timeout|dial tcp|connection reset|connection refused|TLS handshake timeout|no such host|unexpected EOF|network is unreachable|failed to connect to|could not connect to server|couldn't connect to server|could not resolve host|operation timed out|connection timed out/i
 const sleep = ms => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
 function assert(ok, message) { if (!ok) throw new Error(message) }
-export function command(cmd, args, options = {}) {
+// teeStderr: 失敗の判定に標準エラーを受け取りつつ、画面にもそのまま出す。
+export function command(cmd, args, { teeStderr = false, ...options } = {}) {
   const result = spawnSync(cmd, args, { maxBuffer: 32 * 1024 * 1024, ...options })
   if (result.error) throw result.error
+  if (teeStderr && result.stderr?.length) process.stderr.write(result.stderr)
   if (result.status !== 0) {
     const error = new Error(`${cmd} ${args.join(' ')} が失敗しました\n${result.stderr?.toString() || ''}`)
     error.notFound = /\(HTTP 404\)/.test(result.stderr?.toString() || '')
@@ -75,7 +77,7 @@ export function release({ root, commit: requested = process.env.DEVBOARD_COMMIT,
   let env
   // GitHubへ触る呼び出しはすべて公開用アカウントのトークンで行う。
   const gh = args => run('gh', args, { env: (env ??= { ...process.env, GH_TOKEN: token() }) })
-  // 読み取りだけは通信の失敗を2回まで待って再試行する。書き込みは二重にしないよう再試行せず、次回の実行で読み直す。
+  // 読み取りは通信の失敗を2回まで待って再試行する。Releaseへの書き込みは二重にしないよう再試行せず、次回の実行で読み直す（mainの送信はsyncMainを参照）。
   const fetchGh = args => {
     for (let attempt = 0; ; attempt++) {
       try { return gh(args) } catch (error) {
@@ -101,12 +103,23 @@ export function release({ root, commit: requested = process.env.DEVBOARD_COMMIT,
     try { git('merge-base', '--is-ancestor', older, newer); return true } catch { return false }
   }
   // GitHubのmainを対象コミットまで早送りする。強制上書き・main以外の参照の送信はしない。
+  // 接続できずに失敗した送信だけ、mainを読み直してから2回まで送り直す。
+  // 同じコミットへの早送りなので、届いていた場合は読み直しで止まり、二重にはならない。
   const syncMain = () => {
-    const remoteMain = api(`${base}/git/ref/heads/main`).object.sha
-    if (remoteMain === head || isAncestor(head, remoteMain)) return
-    assert(isAncestor(remoteMain, head), 'GitHubのmainが対象コミットの祖先ではありません。分岐を確認してください')
-    // 保存済みの別認証（キーチェーン等）を使わず、gh経由で同じトークンを渡す。
-    run('git', ['-c', 'credential.helper=', '-c', 'credential.helper=!gh auth git-credential', 'push', `https://github.com/${REPO}.git`, `${head}:refs/heads/main`], { cwd: root, stdio: ['ignore', 'inherit', 'inherit'], env })
+    for (let attempt = 0; ; attempt++) {
+      const remoteMain = api(`${base}/git/ref/heads/main`).object.sha
+      if (remoteMain === head || isAncestor(head, remoteMain)) return
+      assert(isAncestor(remoteMain, head), 'GitHubのmainが対象コミットの祖先ではありません。分岐を確認してください')
+      try {
+        // 保存済みの別認証（キーチェーン等）を使わず、gh経由で同じトークンを渡す。
+        run('git', ['-c', 'credential.helper=', '-c', 'credential.helper=!gh auth git-credential', 'push', `https://github.com/${REPO}.git`, `${head}:refs/heads/main`], { cwd: root, stdio: ['ignore', 'inherit', 'pipe'], teeStderr: true, env })
+        return
+      } catch (error) {
+        if (!error.network || attempt >= 2) throw error
+        console.error(`GitHubへの送信が通信の失敗で止まったため、mainを読み直して再試行します（${attempt + 1}/2）`)
+        wait(5000 * (attempt + 1))
+      }
+    }
   }
   const checkTag = (required = false) => {
     const found = tagCommit()

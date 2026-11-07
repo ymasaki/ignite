@@ -273,6 +273,55 @@ test('書き込みの通信失敗は再試行しない', t => {
   assert.equal(posts, 1)
   assert.equal(state.waits, undefined)
 })
+// 今回の公開で実際に出た、接続できずに終わったpushのエラー
+const unreachable = () => Object.assign(Error("fatal: unable to access 'https://github.com/ymasaki/ignite.git/': Failed to connect to github.com:443 after 75011 ms: Could not connect to server"), { network: true })
+test('接続できずにpushが失敗しても、mainを読み直して送り直し公開まで進む', t => {
+  const { perform, state, run } = fixture(t)
+  state.main = older
+  let failures = 1
+  const flaky = (cmd, args, options) => {
+    if (cmd === 'git' && args.includes('push') && failures-- > 0) { state.pushes.push(['失敗']); throw unreachable() }
+    return run(cmd, args, options)
+  }
+  assert.match(perform({ run: flaky }), /v1.3.1$/)
+  assert.equal(state.pushes.length, 2)
+  assert.equal(state.main, commit)
+  assert.equal(state.waits, 1)
+})
+test('pushが届いて応答だけ失われたら、読み直して二重に送らない', t => {
+  const { perform, state, run } = fixture(t)
+  state.main = older
+  let lose = true
+  const lost = (cmd, args, options) => {
+    const result = run(cmd, args, options)
+    if (cmd === 'git' && args.includes('push') && lose) { lose = false; throw unreachable() }
+    return result
+  }
+  assert.match(perform({ run: lost }), /v1.3.1$/)
+  assert.equal(state.pushes.length, 1)
+})
+test('接続できない状態が続けば、pushを3回で止めて配布を始めない', t => {
+  const { perform, state, run } = fixture(t)
+  state.main = older
+  let tries = 0
+  const down = (cmd, args, options) => {
+    if (cmd === 'git' && args.includes('push')) { tries++; throw unreachable() }
+    return run(cmd, args, options)
+  }
+  assert.throws(() => perform({ run: down }), /Could not connect to server/)
+  assert.equal(tries, 3)
+  assert.equal(state.main, older)
+  assert.equal(state.writes, 0)
+  assert.equal(state.builds, 0)
+})
+test('通信以外のpush失敗は再試行しない', t => {
+  const { perform, state } = fixture(t)
+  state.main = older
+  state.failPush = true
+  assert.throws(() => perform(), /push失敗/)
+  assert.equal(state.pushes.length, 1)
+  assert.equal(state.waits, undefined)
+})
 test('API失敗を不存在として新規作成しない', t => {
   const { perform, state, run } = fixture(t)
   const failure = (cmd, args, options) => {
@@ -325,4 +374,6 @@ test('実コマンドの404とその他の失敗を区別する', () => {
   assert.throws(() => command(process.execPath, ['-e', 'process.stderr.write("HTTP 403");process.exit(1)']), error => error.notFound === false)
   assert.throws(() => command(process.execPath, ['-e', 'process.stderr.write("Get \\"https://api.github.com/x\\": dial tcp 1.2.3.4:443: i/o timeout");process.exit(1)']), error => error.network === true)
   assert.throws(() => command(process.execPath, ['-e', 'process.stderr.write("gh: Server Error (HTTP 502)");process.exit(1)']), error => error.network === false)
+  assert.throws(() => command(process.execPath, ['-e', 'process.stderr.write("fatal: unable to access \'https://github.com/x.git/\': Failed to connect to github.com:443 after 75011 ms: Could not connect to server");process.exit(128)'], { stdio: ['ignore', 'inherit', 'pipe'], teeStderr: true }), error => error.network === true)
+  assert.throws(() => command(process.execPath, ['-e', 'process.stderr.write("remote: Permission denied. fatal: The requested URL returned error: 403");process.exit(128)'], { stdio: ['ignore', 'inherit', 'pipe'], teeStderr: true }), error => error.network === false)
 })
