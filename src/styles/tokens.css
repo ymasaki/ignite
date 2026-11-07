@@ -89,9 +89,9 @@
      左右は窓を狭めると最初に詰める余白で、左メニューを畳む区切り（986px 未満）より前に下限の 8px になる
      （区切りとパネルの幅は下限の 8px で計算している。ui/shellLayout.ts の SHELL_SIZES.gutter。1180px より広いと主役が数 px 狭くなるだけ） */
   --shell-x:clamp(8px, calc(8px + (100vw - 1180px) * 4 / 260), 12px);    /* 左右: 幅 1180 → 1440px で 8 → 12 */
-  --shell-top:clamp(6px, calc(6px + (100vh - 500px) * 2 / 300), 8px);     /* ヘッダーから最初の段: 高さ 500 → 800px で 6 → 8 */
+  --shell-top:clamp(2px, calc(2px + (100vh - 500px) * 2 / 300), 4px);     /* ヘッダーから最初の段: 高さ 500 → 800px で 2 → 4（ヘッダーの下 --shell-head-bottom と足して 6 → 10 で、下の余白と同じくらいに見える） */
   --shell-gap:min(clamp(8px, calc(8px + (100vw - 860px) * 2 / 580), 10px), clamp(6px, calc(6px + (100vh - 500px) * 4 / 300), 10px));       /* 段と段の間: 幅 860 → 1440px で 8 → 10、高さ 500 → 800px で 6 → 10 */
-  --shell-bottom:clamp(8px, calc(8px + (100vh - 500px) * 4 / 300), 12px); /* 最後の段の下: 高さ 500 → 800px で 8 → 12（左右・左メニューとの間と同じ 12px で止める） */
+  --shell-bottom:clamp(6px, calc(6px + (100vh - 500px) * 2 / 300), 8px); /* 最後の段の下: 高さ 500 → 800px で 6 → 8（左右の余白 8 → 12 より広くしない） */
   /* ヘッダーの余白（同じく区切りで段を付けない）。幅はスマホ（375px）から左メニューを畳む前（1180px）までで、縦は高さ 500 → 800px で詰める */
   --shell-head-top:min(clamp(10px, calc(10px + (100vw - 375px) * 2 / 805), 12px), clamp(6px, calc(6px + (100vh - 500px) * 6 / 300), 12px)); /* 上: 10 → 12、低い画面は 6 まで */
   --shell-head-bottom:min(clamp(4px, calc(4px + (100vw - 860px) * 2 / 320), 6px), clamp(0px, calc((100vh - 500px) * 6 / 300), 6px));       /* 下: 幅 860 → 1180px で 4 → 6、低い画面は 0 まで */
@@ -128,9 +128,9 @@
 
 /* 外側の余白を長さとして登録する（vw・vh を含む式を、各要素で計算済みの px として読めるように。監査・JS が値を測る） */
 @property --shell-x{syntax:'<length>';inherits:true;initial-value:12px}
-@property --shell-top{syntax:'<length>';inherits:true;initial-value:8px}
+@property --shell-top{syntax:'<length>';inherits:true;initial-value:4px}
 @property --shell-gap{syntax:'<length>';inherits:true;initial-value:10px}
-@property --shell-bottom{syntax:'<length>';inherits:true;initial-value:12px}
+@property --shell-bottom{syntax:'<length>';inherits:true;initial-value:8px}
 @property --shell-head-top{syntax:'<length>';inherits:true;initial-value:12px}
 @property --shell-head-bottom{syntax:'<length>';inherits:true;initial-value:6px}
 @property --shell-head-gap{syntax:'<length>';inherits:true;initial-value:16px}
