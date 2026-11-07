@@ -151,7 +151,7 @@ npm run ignite:audit
 
 ## 更新を確定する
 
-更新前に作業をコミットし、更新後は `package.json` とロックファイル、同期された規約・スキルを一緒にコミットします。CI や別の端末では `npm ci` で同じ版を再現します（取得の認証設定も必要です）。
+更新前に作業をコミットします。更新後は採用アプリの既存の型検査・本番ビルド・`npm run ignite:check`・`npm run ignite:audit` をすべて通してから、`package.json` とロックファイル、同期された規約・スキルを一緒にコミットして確定します。`ignite upgrade` は型検査と本番ビルドを実行しません。CI や別の端末では `npm ci` で同じ版を再現します（取得の認証設定も必要です）。
 
 `ignite upgrade` の検査が失敗しても、パッケージと規約は更新済みです。表示された変更履歴に沿ってアプリを修正し、`npm run ignite:check` と `npm run ignite:audit` を通します。自動では元に戻りません。
 
