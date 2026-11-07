@@ -57,17 +57,36 @@ function environment(root, env) {
   return Object.entries(env).filter(([name]) => !omit.has(name)).sort(([a], [b]) => a.localeCompare(b))
     .map(([name, value]) => [name, String(value) === root ? '<ROOT>' : String(value).replaceAll(root + path.sep, '<ROOT>/')])
 }
-export async function hasNestedDependencies(root) {
-  async function walk(dir) {
+// 出力先は相対パス全体で限定する。同じ名前のディレクトリが入力配下にあっても除外しない。
+const GENERATED_DIRECTORIES = new Set([
+  'dist', 'test-results', 'test-results-audit', 'playwright-report', 'releases', 'catalog-dist',
+  'catalog/test-results-audit', 'catalog/playwright-report',
+])
+export async function hasUnsupportedInputs(root, tracked) {
+  async function walk(dir, generated = false) {
     for (const item of await fs.readdir(dir, { withFileTypes: true })) {
       if (dir === root && (item.name === 'node_modules' || item.name === '.git')) continue
+      const file = path.join(dir, item.name)
+      const relative = path.relative(root, file).split(path.sep).join('/')
       if (item.name === 'node_modules') return true
-      if (item.isSymbolicLink()) throw new Error('入力領域のリンクは再利用対象外')
-      if (item.isDirectory() && await walk(path.join(dir, item.name))) return true
+      if (item.isSymbolicLink()) return true
+      if (item.isDirectory()) {
+        if (await walk(file, generated || GENERATED_DIRECTORIES.has(relative))) return true
+      } else if (!item.isFile() || (!generated && !tracked.has(relative))) return true
     }
     return false
   }
   return walk(root)
+}
+async function sourceTree(root) {
+  if (git(root, ['status', '--porcelain', '--untracked-files=all'])) return null
+  const entries = git(root, ['ls-files', '-v', '-z']).split('\0').filter(Boolean)
+  // 小文字はassume-unchanged、S/sはskip-worktree。実体を隠せるindex設定では再利用しない。
+  if (entries.some(entry => /^[a-zS] /.test(entry))) return null
+  const tracked = new Set(entries.map(entry => entry.slice(2)))
+  if (await hasUnsupportedInputs(root, tracked)) return null
+  if (git(root, ['ls-files', '--stage', '-z']).split('\0').some(entry => /^(120000|160000) /.test(entry))) return null
+  return git(root, ['rev-parse', 'HEAD^{tree}'])
 }
 // 他プロジェクト用の版は入力にしない。実際に使う版のバイナリ・描画資源はすべて照合する。
 export async function browserFiles(executable, manifest) {
@@ -109,12 +128,10 @@ export async function auditInput(root, env = process.env, inspectRuntime = audit
   try {
     root = await fs.realpath(root)
     if (await fs.realpath(git(root, ['rev-parse', '--show-toplevel'])) !== root) return null
-    if (git(root, ['status', '--porcelain', '--untracked-files=all'])) return null
-    if (await hasNestedDependencies(root)) return null
-    if (/^(120000|160000) /m.test(git(root, ['ls-files', '--stage']))) return null
-    const tree = git(root, ['rev-parse', 'HEAD^{tree}'])
+    const tree = await sourceTree(root)
+    if (!tree) return null
     const conditions = await inspectRuntime(root)
-    if (git(root, ['status', '--porcelain', '--untracked-files=all']) || git(root, ['rev-parse', 'HEAD^{tree}']) !== tree) return null
+    if (await sourceTree(root) !== tree) return null
     const store = path.join(git(root, ['rev-parse', '--path-format=absolute', '--git-common-dir']), 'devboard/ignite-audit-cache-v1')
     const environmentHash = digest(JSON.stringify(environment(root, env)))
     const parts = Array.isArray(conditions) ? { runtime: conditions } : conditions
