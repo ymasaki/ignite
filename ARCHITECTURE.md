@@ -53,7 +53,7 @@ Ignite 自身を変更するときの案内。デザインの規約は [DESIGN.m
 | 初期化・同期・更新 | `tests/cli.test.ts` と `npm run smoke` |
 | 画面の測定・前後処理 | `tests/audit.test.ts`、`catalog/e2e/audit-extension.e2e.ts`、カタログ監査 |
 | 監査の実行・配信・公開処理 | `node --test scripts/test-entry.test.mjs scripts/health.test.mjs scripts/audit-cache.test.mjs scripts/audit-runner.test.mjs scripts/serve-catalog.test.mjs scripts/release.test.mjs` |
-| コード品質の計測 | `scripts/health.mjs` が解析・行カバレッジ・計算の速さを測る。対象と実行方法は [README のコード品質](README.md#devboard-のコード品質)を正本とし、`scripts/health.test.mjs` で出力と失敗時の扱いを確認する |
+| コード品質の計測 | `scripts/health/` の各コマンドが解析・行カバレッジ・計算の速さを測る。対象と実行方法は [README のコード品質](README.md#devboard-のコード品質)を正本とし、`scripts/health.test.mjs` で出力と失敗時の扱いを確認する |
 | パッケージ・ひな形・ビルド | `npm run smoke`。実際に pack して、空環境への導入・同期・模擬次版への更新を確かめる |
 
 一括確認は、スクリプトのテスト → 型 → 単体テスト → ビルド → 静的検査 → Chromium の準備 → カタログ監査 → smoke の順に実行する。単体テストは最大2 workerで実行し、各工程の時間・終了値と監査のロック待ち時間を出す。カタログ監査だけは同じ保存済み入力・環境での成功を24時間まで再利用できる。条件と強制再測定は [カタログ監査](docs/catalog-audit.md#同じ成功結果の再利用)を参照する。単体・型・ビルド・smoke は毎回実行する。カタログだけではパッケージのビルドや配布後の動作は確かめられない。
