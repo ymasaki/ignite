@@ -72,97 +72,44 @@
 .cat-lp{gap:0}
 .cat-hero{position:relative;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(360px,100%),1fr));gap:40px;align-items:center;padding:24px 0 48px;isolation:isolate}
 /* バウンスで上端が面から離れても境界が見えないよう、背景は上端を透明からつなぐ */
-/* 背景は炎に見立てて 2 層で動かす。
-   ::before は火の照り返し。色の塊の中心と大きさを登録した変数で漂わせ、明るさを不規則に揺らす。
-   ::after は炎。下端の火床の帯が揺らめき、そこから縦長の舌が立ちのぼって、上がるほど細く淡くなって消える。舌は左右にも揺れる。
-   塊はグラデーションの中で動くので、面の外へはみ出さない（横スクロールを出さない）。
-   周期を互いに割り切れない長さにして、同じ動きの繰り返しを目立たせない。
-   炎の色は --pri の色相を黄色の側へ回して作るので、スキンとダークに従う */
-@property --hero-ax{syntax:"<percentage>";inherits:false;initial-value:85%}
-@property --hero-ay{syntax:"<percentage>";inherits:false;initial-value:30%}
-@property --hero-as{syntax:"<percentage>";inherits:false;initial-value:60%}
-@property --hero-bx{syntax:"<percentage>";inherits:false;initial-value:0%}
-@property --hero-by{syntax:"<percentage>";inherits:false;initial-value:0%}
-@property --hero-bs{syntax:"<percentage>";inherits:false;initial-value:40%}
-@property --hero-cx{syntax:"<percentage>";inherits:false;initial-value:50%}
-@property --hero-cy{syntax:"<percentage>";inherits:false;initial-value:15%}
-@property --hero-f1{syntax:"<percentage>";inherits:false;initial-value:115%}
-@property --hero-f2{syntax:"<percentage>";inherits:false;initial-value:115%}
-@property --hero-f3{syntax:"<percentage>";inherits:false;initial-value:115%}
-@property --hero-f4{syntax:"<percentage>";inherits:false;initial-value:115%}
-@property --hero-f5{syntax:"<percentage>";inherits:false;initial-value:115%}
-@property --hero-f6{syntax:"<percentage>";inherits:false;initial-value:115%}
-@property --hero-s1{syntax:"<percentage>";inherits:false;initial-value:0%}
-@property --hero-s2{syntax:"<percentage>";inherits:false;initial-value:0%}
-@property --hero-s3{syntax:"<percentage>";inherits:false;initial-value:0%}
-@property --hero-s4{syntax:"<percentage>";inherits:false;initial-value:0%}
-@property --hero-s5{syntax:"<percentage>";inherits:false;initial-value:0%}
-@property --hero-s6{syntax:"<percentage>";inherits:false;initial-value:0%}
-@property --hero-base{syntax:"<percentage>";inherits:false;initial-value:24%}
-.cat-hero::before{content:"";position:absolute;z-index:-1;inset:-24px -24px 0;background:
-  radial-gradient(var(--hero-as) calc(var(--hero-as) + 10%) at var(--hero-ax) var(--hero-ay),var(--pri-soft),transparent 70%),
-  radial-gradient(var(--hero-bs) calc(var(--hero-bs) + 10%) at var(--hero-bx) var(--hero-by),var(--pri-soft),transparent 70%),
-  radial-gradient(36% 55% at var(--hero-cx) var(--hero-cy),color-mix(in srgb,var(--pri-soft-2) 80%,transparent),transparent 70%);
-  mask-image:linear-gradient(to bottom,transparent,#000 48px);opacity:.9;pointer-events:none} /* design-ok: #000 は表示色ではなくマスクの濃淡 */
+.cat-hero::before{content:"";position:absolute;z-index:-1;inset:-24px -24px 0;background:radial-gradient(60% 70% at 85% 30%,var(--pri-soft),transparent 70%),radial-gradient(40% 50% at 0% 0%,var(--pri-soft),transparent 70%);mask-image:linear-gradient(to bottom,transparent,#000 48px);opacity:.9;pointer-events:none} /* design-ok: #000 は表示色ではなくマスクの濃淡 */
+/* 背景は熱を帯びた炎の色の面。赤・橙・黄の大きな面をぼかして重ね、ゆっくり途切れずにうねらせる。
+   往復（alternate）で動かすので、周期の頭で面が急に現れることがない。周期は互いに割り切れない長さにして繰り返しを目立たせない。
+   面は器（overflow:hidden）の中で動くので、面の外へはみ出さない（横スクロールを出さない）。
+   色は --pri の色相を黄色の側へ回して作るので、スキンとダークに従う。視差効果を減らす設定では出さず、上の静止した背景だけにする */
+.cat-hero-fx{display:none}
 @media (prefers-reduced-motion:no-preference){
-  .cat-hero::before{animation:cat-haze-a 19s ease-in-out infinite alternate,cat-haze-b 23s ease-in-out infinite alternate,cat-haze-c 29s ease-in-out infinite alternate,cat-glow 4.3s ease-in-out infinite}
-  /* 炎の舌。高さ（--hero-fN）から幅・縦の長さ・濃さを決めるので、上がるほど細く淡くなる */
-  .cat-hero::after{content:"";position:absolute;z-index:-1;inset:-24px -24px 0;pointer-events:none;
+  .cat-hero::before{display:none}
+  .cat-hero-fx{display:block;position:absolute;z-index:-1;inset:-24px -24px 0;overflow:hidden;pointer-events:none;
     --flame-a:oklch(from var(--pri) l c calc(h + 18));
-    --flame-b:oklch(from var(--pri) l c calc(h + 34));
-    background:
-      radial-gradient(calc(var(--hero-f1) * .07 + 2%) calc(var(--hero-f1) * .45 + 10%) at calc(8% + var(--hero-s1)) var(--hero-f1),color-mix(in srgb,var(--flame-a) calc(var(--hero-f1) * .3 - 6%),transparent),transparent 70%),
-      radial-gradient(calc(var(--hero-f2) * .07 + 2%) calc(var(--hero-f2) * .45 + 10%) at calc(24% + var(--hero-s2)) var(--hero-f2),color-mix(in srgb,var(--flame-b) calc(var(--hero-f2) * .3 - 6%),transparent),transparent 70%),
-      radial-gradient(calc(var(--hero-f3) * .07 + 2%) calc(var(--hero-f3) * .45 + 10%) at calc(41% + var(--hero-s3)) var(--hero-f3),color-mix(in srgb,var(--flame-a) calc(var(--hero-f3) * .3 - 6%),transparent),transparent 70%),
-      radial-gradient(calc(var(--hero-f4) * .07 + 2%) calc(var(--hero-f4) * .45 + 10%) at calc(58% + var(--hero-s4)) var(--hero-f4),color-mix(in srgb,var(--flame-b) calc(var(--hero-f4) * .3 - 6%),transparent),transparent 70%),
-      radial-gradient(calc(var(--hero-f5) * .07 + 2%) calc(var(--hero-f5) * .45 + 10%) at calc(75% + var(--hero-s5)) var(--hero-f5),color-mix(in srgb,var(--flame-a) calc(var(--hero-f5) * .3 - 6%),transparent),transparent 70%),
-      radial-gradient(calc(var(--hero-f6) * .07 + 2%) calc(var(--hero-f6) * .45 + 10%) at calc(92% + var(--hero-s6)) var(--hero-f6),color-mix(in srgb,var(--flame-b) calc(var(--hero-f6) * .3 - 6%),transparent),transparent 70%),
-      radial-gradient(75% 32% at 50% 96%,color-mix(in srgb,var(--flame-a) var(--hero-base),transparent),transparent 70%);
+    --flame-b:oklch(from var(--pri) calc(l + .1) c calc(h + 40));
+    --flame-c:oklch(from var(--pri) .92 .14 calc(h + 70));
     /* 上端はバウンス対策で、下端は次の段との境目を見せないよう、どちらも透明からつなぐ */
-    mask-image:linear-gradient(to bottom,transparent,#000 48px,#000 82%,transparent); /* design-ok: #000 は表示色ではなくマスクの濃淡 */
-    animation:
-      cat-rise-1 6.1s ease-in infinite,cat-rise-2 7.3s ease-in infinite -2.4s,cat-rise-3 5.7s ease-in infinite -4.1s,cat-rise-4 6.9s ease-in infinite -1.2s,cat-rise-5 6.4s ease-in infinite -3.3s,cat-rise-6 7.7s ease-in infinite -5.6s,
-      cat-sway-1 1.7s ease-in-out infinite alternate,cat-sway-2 2.3s ease-in-out infinite alternate,cat-sway-3 1.9s ease-in-out infinite alternate,cat-sway-4 2.6s ease-in-out infinite alternate,cat-sway-5 2.1s ease-in-out infinite alternate,cat-sway-6 1.8s ease-in-out infinite alternate,
-      cat-base 3.1s ease-in-out infinite}
+    mask-image:linear-gradient(to bottom,transparent,#000 48px,#000 70%,transparent)} /* design-ok: #000 は表示色ではなくマスクの濃淡 */
+  .cat-hero-fx>span{position:absolute;border-radius:50%;filter:blur(60px);opacity:.55;mix-blend-mode:multiply}
+  .cat-hero-fx>span:nth-child(1){width:55%;height:70%;left:-5%;top:45%;background:var(--pri);animation:cat-heat-1 11s ease-in-out infinite alternate}
+  .cat-hero-fx>span:nth-child(2){width:45%;height:60%;left:30%;top:50%;background:var(--flame-b);animation:cat-heat-2 9s ease-in-out infinite alternate}
+  .cat-hero-fx>span:nth-child(3){width:50%;height:65%;left:60%;top:35%;background:var(--flame-a);animation:cat-heat-3 13s ease-in-out infinite alternate}
+  .cat-hero-fx>span:nth-child(4){width:35%;height:45%;left:40%;top:10%;background:var(--flame-c);opacity:.7;animation:cat-heat-4 7s ease-in-out infinite alternate}
+  /* 暗い地では掛け合わせると沈むので、光として足す。黄色は暗い地で薄めると濁るので控えめにする */
+  [data-mode="dark"] .cat-hero-fx>span{mix-blend-mode:screen;opacity:.6}
+  [data-mode="dark"] .cat-hero-fx>span:nth-child(4){opacity:.25}
 }
-@keyframes cat-haze-a{
-  0%{--hero-ax:85%;--hero-ay:30%;--hero-as:60%}
-  35%{--hero-ax:70%;--hero-ay:55%;--hero-as:52%}
-  70%{--hero-ax:92%;--hero-ay:70%;--hero-as:66%}
-  100%{--hero-ax:78%;--hero-ay:15%;--hero-as:56%}
-}
-@keyframes cat-haze-b{
-  0%{--hero-bx:0%;--hero-by:0%;--hero-bs:40%}
-  40%{--hero-bx:18%;--hero-by:25%;--hero-bs:48%}
-  100%{--hero-bx:6%;--hero-by:60%;--hero-bs:36%}
-}
-@keyframes cat-haze-c{
-  0%{--hero-cx:50%;--hero-cy:15%}
-  50%{--hero-cx:35%;--hero-cy:65%}
-  100%{--hero-cx:62%;--hero-cy:35%}
-}
-/* 火の照り返しの明るさ。間隔をそろえず、ちらつきに見せる */
-@keyframes cat-glow{0%,100%{opacity:.9}18%{opacity:.72}31%{opacity:1}52%{opacity:.8}67%{opacity:.95}84%{opacity:.76}}
-@keyframes cat-rise-1{from{--hero-f1:115%}to{--hero-f1:28%}}
-@keyframes cat-rise-2{from{--hero-f2:115%}to{--hero-f2:28%}}
-@keyframes cat-rise-3{from{--hero-f3:115%}to{--hero-f3:28%}}
-@keyframes cat-rise-4{from{--hero-f4:115%}to{--hero-f4:28%}}
-@keyframes cat-rise-5{from{--hero-f5:115%}to{--hero-f5:28%}}
-@keyframes cat-rise-6{from{--hero-f6:115%}to{--hero-f6:28%}}
-@keyframes cat-sway-1{from{--hero-s1:-3%}to{--hero-s1:3%}}
-@keyframes cat-sway-2{from{--hero-s2:2.5%}to{--hero-s2:-2.5%}}
-@keyframes cat-sway-3{from{--hero-s3:-3.5%}to{--hero-s3:2%}}
-@keyframes cat-sway-4{from{--hero-s4:3%}to{--hero-s4:-3%}}
-@keyframes cat-sway-5{from{--hero-s5:-2.5%}to{--hero-s5:3%}}
-@keyframes cat-sway-6{from{--hero-s6:3%}to{--hero-s6:-2%}}
-/* 火床。下端の帯の濃さを揺らす */
-@keyframes cat-base{0%,100%{--hero-base:24%}23%{--hero-base:17%}41%{--hero-base:28%}63%{--hero-base:19%}82%{--hero-base:26%}}
+@keyframes cat-heat-1{to{transform:translate(25%,-20%) scale(1.15) rotate(20deg)}}
+@keyframes cat-heat-2{to{transform:translate(-30%,-25%) scale(.85) rotate(-25deg)}}
+@keyframes cat-heat-3{to{transform:translate(-20%,15%) scale(1.2) rotate(15deg)}}
+@keyframes cat-heat-4{to{transform:translate(35%,40%) scale(1.3)}}
 .cat-hero-brand{display:flex;align-items:center;gap:16px}
 .cat-hero-brand .brand-mark{width:64px;height:64px}
 .cat-hero-name{font-size:var(--fs-32);font-weight:700;line-height:1.2;color:var(--ink)}
 .cat-hero-t{display:block;font-size:var(--fs-24);font-weight:700;line-height:1.35;color:var(--ink);word-break:auto-phrase}
 .cat-hero-t.em{color:var(--pri-ink)}
-.cat-hero-b{display:grid;gap:20px;min-width:0}
+.cat-hero-b{position:relative;display:grid;gap:20px;min-width:0}
+/* 炎の色が濃いところでも文字が読めるよう、文字の列の背後にだけ地の色のベールを敷く。縁はぼかして、周りの炎は鮮やかなまま残す */
+@media (prefers-reduced-motion:no-preference){
+  .cat-hero-b::before{content:"";position:absolute;z-index:-1;inset:-16px -24px;pointer-events:none;border-radius:14px;filter:blur(20px);
+    background:color-mix(in srgb,var(--panel) 92%,transparent)}
+}
 .cat-hero-p{display:grid;font-size:var(--fs-14);line-height:1.8;color:var(--ink-2);word-break:auto-phrase}
 .cat-hero-s{display:flex;flex-wrap:wrap;gap:16px 32px;padding-top:20px;border-top:1px solid var(--line)}
 .cat-show{position:relative;display:grid;gap:16px;min-width:0;max-width:440px;justify-self:center;width:100%}

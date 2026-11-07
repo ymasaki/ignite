@@ -77,6 +77,7 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
         <div className="cat" ref={ref}>
           <div className="cat-main cat-lp">
             <section className="cat-hero">
+              <div className="cat-hero-fx" aria-hidden="true"><span /><span /><span /><span /></div>
               <div className="cat-hero-b">
                 <div className="cat-hero-brand">
                   {LOGO}
