@@ -950,6 +950,7 @@ for (const [name, selector] of [
 
 test('グラフ共通: 円の区分・ドーナツ・値なしゲージ・選択を保つ', async ({ page }, testInfo) => {
   await open(page, 'charts')
+  await page.evaluate(() => document.fonts.ready)
   const pies = page.locator('.pie')
   for (let i = 0; i < 2; i++) {
     const pie = pies.nth(i), slice = pie.locator('.pie-s').first()
