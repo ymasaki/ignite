@@ -94,6 +94,7 @@ test('Gitの未保存・未追跡・ツリー・依存実体・環境変更を�
     assert.equal((await input()).key, first.key)
     assert.equal((await input({ IGNITE_AUDIT_FRESH: '1' })).key, first.key)
     assert.equal((await input({ DEVBOARD_PROJECT_DIR: '/main', DEVBOARD_BASE_BRANCH: 'main', DEVBOARD_COMMIT: 'commit', DEVBOARD_CHECK_PRIORITY: 'high' })).key, first.key)
+    assert.equal((await input({ CODEX_TOOL_CALL_ID: 'another-call', CODEX_THREAD_ID: 'another-thread', CODEX_SESSION_ID: 'another-session', DEVBOARD_COMPUTER_TOKEN: 'not-a-real-token', DEVBOARD_DISTRIBUTED_SOCKET: '/tmp/test-socket', CODEX_VERSION: 'another-executor', CLAUDE_CODE_ENABLE_TODO_TOOLS: '1' })).key, first.key)
     assert.notEqual((await input({ UNKNOWN_RENDER_OPTION: 'new' })).key, first.key)
     const cacheOptions = { env: {}, snapshot: () => input() }
     const saved = await openAuditCache(dir, [], () => false, cacheOptions)

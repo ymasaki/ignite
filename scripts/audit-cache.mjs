@@ -42,7 +42,18 @@ function git(root, args) {
 }
 // 値は保存せず、ハッシュだけをキーに含める。未知の環境変数は省かない。
 function environment(root, env) {
-  const omit = new Set(['PWD', 'OLDPWD', 'SHLVL', '_', 'IGNITE_AUDIT_FRESH', 'DEVBOARD_PROGRESS_STAGE', 'DEVBOARD_PROGRESS_WEIGHTS', 'DEVBOARD_PROJECT_DIR', 'DEVBOARD_BASE_BRANCH', 'DEVBOARD_COMMIT', 'DEVBOARD_CHECK_PRIORITY'])
+  // 起動元の識別・通信・実行制御だけを除く。未知の変数や描画設定は引き続き照合する。
+  const omit = new Set([
+    'PWD', 'OLDPWD', 'SHLVL', '_', 'IGNITE_AUDIT_FRESH',
+    'DEVBOARD_PROGRESS_STAGE', 'DEVBOARD_PROGRESS_WEIGHTS', 'DEVBOARD_PROJECT_DIR',
+    'DEVBOARD_BASE_BRANCH', 'DEVBOARD_COMMIT', 'DEVBOARD_CHECK_PRIORITY',
+    'DEVBOARD_COMPUTER_SOCKET', 'DEVBOARD_COMPUTER_TOKEN', 'DEVBOARD_DISTRIBUTED_PROTOCOL',
+    'DEVBOARD_DISTRIBUTED_SOCKET', 'DEVBOARD_RESOURCE_LABEL', 'DEVBOARD_RESOURCE_MAX_WAIT',
+    'DEVBOARD_SHIM_DIR', 'DEVBOARD_TIMING_ORIGIN',
+    'CODEX_APPLY_PATCH_PRESERVE_LINE_ENDINGS', 'CODEX_CI', 'CODEX_SANDBOX',
+    'CODEX_SANDBOX_NETWORK_DISABLED', 'CODEX_SESSION_ID', 'CODEX_THREAD_ID',
+    'CODEX_TOOL_CALL_ID', 'CODEX_VERSION', 'CLAUDE_CODE_ENABLE_TODO_TOOLS',
+  ])
   return Object.entries(env).filter(([name]) => !omit.has(name)).sort(([a], [b]) => a.localeCompare(b))
     .map(([name, value]) => [name, String(value) === root ? '<ROOT>' : String(value).replaceAll(root + path.sep, '<ROOT>/')])
 }
