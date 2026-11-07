@@ -1,4 +1,5 @@
 {
+  "kind": "web",
   "icon": "docs/logo/ignite-icon.svg",
   "staging": {
     "url": "http://localhost:5199",
@@ -12,6 +13,7 @@
     "test": "bash scripts/test.sh"
   },
   "production": {
+    "version": "package.json",
     "url": "https://ymasaki.github.io/ignite/",
     "branch": "release",
     "command": "node scripts/release.mjs",

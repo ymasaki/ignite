@@ -95,7 +95,10 @@ async function stop(child) {
   if (alive(group)) throw new Error(`所有プロセス群 ${child.pid} の停止を確認できません。ロックを残します: ${lock}`)
 }
 try {
-  await acquire()
+  const waitStarted = performance.now()
+  try { await acquire() } finally {
+    console.log(`harness-metric: stage=audit-lock seconds=${((performance.now() - waitStarted) / 1000).toFixed(3)}`)
+  }
   if (interrupted) throw new Error('監査を中断しました')
   const server = start([fileURLToPath(new URL('./audit-server.mjs', import.meta.url))], true)
   let ready = false
