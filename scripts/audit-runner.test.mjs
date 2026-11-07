@@ -12,7 +12,7 @@ test('監査の排他と終了処理', async t => {
   const lock = path.join(dir, 'lock')
   const source = (await readFile(new URL('./audit-design.mjs', import.meta.url), 'utf8'))
     .replace("'/tmp/ignite-catalog-audit-5198.lock'", JSON.stringify(lock))
-    .replace('1800000', '3000').replace('60000', '5000') // 混んだマシンでも偽サーバーの起動が間に合う長さ
+    .replace('1800000', '3000').replace('10800000', '8000').replace('60000', '5000') // 混んだマシンでも偽サーバーの起動が間に合う長さ
   async function fixture(name, body) {
     const root = path.join(dir, name)
     await mkdir(path.join(root, 'scripts'), { recursive: true })
@@ -213,8 +213,38 @@ process.kill = (pid, signal) => {
       assert.match((await run(root).done).output, /ロックが残っています/)
       await access(lock)
       await writeFile(path.join(lock, 'owner.json'), JSON.stringify({pid: process.pid}))
-      assert.match((await run(root).done).output, /待機が30分を超えました/)
+      assert.match((await run(root).done).output, /30分を超えて保持/)
       await access(lock)
+      await rm(lock, {recursive:true})
+    })
+    // 所有者を順に入れ替えて、複数の監査が並んだ状態を再現する。
+    async function rotateOwners(until) {
+      await mkdir(lock)
+      for (let i = 0; !until(i); i++) {
+        await writeFile(path.join(lock, 'owner.json'), JSON.stringify({pid: process.pid, root: `queued-${i}`}))
+        await delay(2000)
+      }
+    }
+    await t.test('所有者が入れ替わる間は保持の上限を超えても待ち続ける', async () => {
+      const root = await fixture('queued', 'console.log("順番が来た")')
+      const child = run(root)
+      await rotateOwners(i => i === 3) // 約6秒。保持の上限（試験では3秒）より長い
+      await rm(lock, {recursive:true})
+      const result = await finishWithin(child)
+      assert.equal(result.code, 0, result.output)
+      assert.match(result.output, /順番が来た/)
+      await gone()
+    })
+    await t.test('所有者が入れ替わり続けても全体の上限で打ち切る', async () => {
+      const child = run(await fixture('starved', ''))
+      let done = false
+      child.done.then(() => { done = true })
+      await rotateOwners(i => done || i === 10)
+      const result = await finishWithin(child)
+      assert.notEqual(result.code, 0)
+      assert.match(result.output, /全体で3時間を超えました/)
+      await access(lock)
+      await rm(lock, {recursive:true})
     })
   } finally { await rm(dir, {recursive:true, force:true}) }
 })

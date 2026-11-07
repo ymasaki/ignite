@@ -42,12 +42,23 @@ async function tryAcquire() {
   return true
 }
 async function acquire() {
-  const deadline = Date.now() + 1800000
+  // 複数の監査が並ぶと待ち時間は件数に比例する。順番が進んでいる間は待ち、
+  // 同じ所有者が保持し続けたときと全体が長すぎるときだけ打ち切る。
+  const holdLimit = 1800000
+  const totalDeadline = Date.now() + 10800000
+  let deadline = Date.now() + holdLimit
+  let holder
   let reported = false
   while (!interrupted) {
     if (await tryAcquire()) return
     let owner
     try { owner = JSON.parse(await readFile(`${lock}/owner.json`, 'utf8')) } catch {}
+    const key = owner && Number.isInteger(owner.pid) ? `${owner.pid}:${owner.root}` : undefined
+    if (key && key !== holder) {
+      // 所有者の交代は順番が進んだ証拠なので、保持時間を数え直す。
+      if (holder !== undefined) deadline = Date.now() + holdLimit
+      holder = key
+    }
     if (owner && Number.isInteger(owner.pid) && owner.pid > 0 && !alive(owner.pid)) {
       // 読み取った直後に先行監査が解放・終了した可能性がある。
       if (await tryAcquire()) return
@@ -57,7 +68,8 @@ async function acquire() {
         throw new Error(`監査ロックが残っています: ${lock} (${JSON.stringify(owner)})。所有元と監査サーバーの終了を確認して手動で除去してください。自動削除はしません。`)
       }
     }
-    if (Date.now() >= deadline) throw new Error(`監査ロック待機が30分を超えました: ${lock} (${JSON.stringify(owner)})`)
+    if (Date.now() >= deadline) throw new Error(`同じ監査が監査ロックを30分を超えて保持しています: ${lock} (${JSON.stringify(owner)})`)
+    if (Date.now() >= totalDeadline) throw new Error(`監査ロック待機が全体で3時間を超えました: ${lock} (${JSON.stringify(owner)})`)
     if (!reported) { console.log(`[audit] 他の監査を待機: ${lock}`); reported = true }
     await delay(200)
   }
