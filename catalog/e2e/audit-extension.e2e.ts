@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from './test'
 import { measure, type LayoutMeasurement, type MeasureArgs } from '../../audit/measure'
 
 const args: MeasureArgs = {

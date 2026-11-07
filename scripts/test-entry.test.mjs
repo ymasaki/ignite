@@ -7,7 +7,7 @@ import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 
 const commands = [
-  'node --test scripts/test-entry.test.mjs scripts/audit-runner.test.mjs scripts/serve-catalog.test.mjs scripts/release.test.mjs',
+  'node --test scripts/test-entry.test.mjs scripts/audit-cache.test.mjs scripts/audit-runner.test.mjs scripts/serve-catalog.test.mjs scripts/release.test.mjs',
   'npx tsc --noEmit',
   'npx vitest run --dir tests --maxWorkers=2',
   'node scripts/build.mjs',

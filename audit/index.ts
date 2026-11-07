@@ -10,6 +10,8 @@ import { SKINS } from '../src/skin'
 import { SHELL_SIZES, shellBreakpoints } from '../src/ui/shellLayout'
 import { measure, type AuditPanRegion, type LayoutMeasurement, type Measured } from './measure'
 import { withPreparation } from './lifecycle'
+import { waitForVisualState } from './settle'
+import { prepareOfflinePage } from './network'
 
 export type { AuditPanRegion, LayoutMeasurement } from './measure'
 export type AuditFinding = Measured
@@ -106,7 +108,6 @@ const BASE_EXCEPTIONS = [
 const BASE_HOVER_SKIP = ['[data-chart-tip][role="img"]', '[data-chart-tip][role="meter"]', '[data-chart-tip][role="listitem"]', '.seg button[aria-pressed="true"]', '[role="tab"][aria-selected="true"]', '[aria-current="page"]', '.erow.on', '.swatch[aria-pressed="true"]', '.mark-sw[aria-pressed="true"]', '.tm-tile[aria-pressed="true"]', '.cal-d.on', '.select-opt.on', '[role="region"]', '[role="group"]', '[role="tablist"]']
 // 測るあいだに消える部品（時間で消える知らせなど）を待ち続けず、飛ばす
 const GONE = { timeout: 1000 }
-const PIXEL = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64')
 
 type Finding = { rule: string; where: string; expected: string; actual: string }
 
@@ -183,7 +184,7 @@ export function defineIgniteAudit(config: IgniteAuditConfig): void {
         page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`))
         if (config.today) await page.clock.install({ time: config.today })
         // 外には出ず 1px の画像を返す（ネットワークの有無で結果が変わらないように）
-        await page.route((url) => url.hostname !== 'localhost' && url.hostname !== '127.0.0.1', (route) => route.fulfill({ status: 200, contentType: 'image/png', body: PIXEL }))
+        await prepareOfflinePage(page)
         await use(errors)
         // 落とすと直列の残りの画面が測られないので、指摘として記録して最後まで測る
         for (const e of errors) record(`エラー ${e}`, { rule: 'コンソールのエラー', where: page.url().replace(/^https?:\/\/[^/]+/, ''), expected: 'エラーが出ない', actual: e.split('\n')[0].slice(0, 200) }, page.url())
@@ -210,7 +211,7 @@ export function defineIgniteAudit(config: IgniteAuditConfig): void {
         await open(page, s.path)
         if (s.act) await s.act(page)
         // 出てくる動き（フェードイン・パネルの出し入れ）が終わってから測る
-        await page.waitForTimeout(1200)
+        await waitForVisualState(page)
         await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
         const measured = await measure(page, { ...args, skipLayout: s.layout?.replace })
         const extra = s.layout ? await s.layout.measure(page) : []
@@ -238,7 +239,7 @@ export function defineIgniteAudit(config: IgniteAuditConfig): void {
       await open(page, s.path)
       for (const size of sweepSizes()) {
         await page.setViewportSize(size)
-        await page.waitForTimeout(450)
+        await waitForVisualState(page)
         const measured = await measure(page, { ...args, skipLayout: s.layout?.replace })
         for (const f of measured) {
           if (exceptions.some((e) => e.match.test(`${f.rule.replace(/（.*）/, '')} ${f.where} ${f.expected} ${f.actual}`))) continue
@@ -303,6 +304,7 @@ export function defineIgniteAudit(config: IgniteAuditConfig): void {
     test(`${s.name}（タッチの端末の入力欄）`, async ({ browser, baseURL }) => {
       const ctx = await browser.newContext({ baseURL, viewport: { width: 375, height: 812 }, hasTouch: true, isMobile: true, locale: 'ja-JP', timezoneId: 'Asia/Tokyo' })
       const page = await ctx.newPage()
+      await prepareOfflinePage(page)
       await open(page, s.path)
       if (s.act) await s.act(page)
       const sizes = await page.locator('input:not([type="checkbox"]):not([type="radio"]):visible, textarea:visible').evaluateAll((els) => els.map((el) => ({ label: el.getAttribute('aria-label') || el.getAttribute('placeholder') || el.tagName, size: parseFloat(getComputedStyle(el).fontSize) })))
@@ -321,7 +323,7 @@ export function defineIgniteAudit(config: IgniteAuditConfig): void {
       await page.setViewportSize({ width: 1440, height: 900 })
       await open(page, s.path)
       if (s.act) await s.act(page)
-      await page.waitForTimeout(1200)
+      await waitForVisualState(page)
       const targets = await page.evaluate((SKIP) => {
         const SEL = 'a[href], button, input:not([type="hidden"]), textarea, select, summary, label:has(> input), [role="button"], [role="tab"], [role="switch"], [role="checkbox"], [role="radio"], [role="option"], [role="menuitem"], [role="link"], [tabindex]:not([tabindex="-1"])'
         const who = (el: Element) => {

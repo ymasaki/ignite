@@ -1,8 +1,16 @@
 import path from 'node:path'
+import { expect } from '@playwright/test'
+import { setCatalogTime } from './clock'
 import { defineIgniteAudit } from '../../audit/index'
 
 
 defineIgniteAudit({
+  open: async (page, url) => {
+    await setCatalogTime(page)
+    await page.goto(url)
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 30000 })
+    await expect(page.locator('#boot')).toHaveCount(0)
+  },
   outDir: path.join(import.meta.dirname, '../test-results-audit'),
   screens: [
     { name: '概要', path: '/' },

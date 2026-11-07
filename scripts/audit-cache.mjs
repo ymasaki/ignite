@@ -1,0 +1,180 @@
+// 同じ端末・入力で成功した全件監査だけを共有する。判定不能なら実行へ戻す。
+import fs from 'node:fs/promises'
+import { openSync, closeSync, createReadStream } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { execFileSync, spawnSync } from 'node:child_process'
+import os from 'node:os'
+import path from 'node:path'
+import { setTimeout as delay } from 'node:timers/promises'
+import { pathToFileURL } from 'node:url'
+
+const MAX_AGE = 24 * 60 * 60 * 1000
+const digest = value => createHash('sha256').update(value).digest('hex')
+const inside = (root, file) => file === root || file.startsWith(root + path.sep)
+async function fileHash(file) {
+  const hash = createHash('sha256')
+  for await (const chunk of createReadStream(file)) hash.update(chunk)
+  return hash.digest('hex')
+}
+export async function treeFiles(root, links = false) {
+  if ((await fs.lstat(root)).isSymbolicLink()) throw new Error('入力の根にリンクは使えません')
+  const base = await fs.realpath(root)
+  const files = []
+  async function walk(dir) {
+    for (const name of (await fs.readdir(dir)).sort()) {
+      const file = path.join(dir, name)
+      const relative = path.relative(base, file)
+      const stat = await fs.lstat(file)
+      if (stat.isSymbolicLink()) {
+        if (!links || !inside(base, await fs.realpath(file))) throw new Error('外部参照を含む入力')
+        files.push([relative, 'link', (await fs.readlink(file)).replaceAll(base, '<ROOT>')])
+      } else if (stat.isDirectory()) await walk(file)
+      else if (stat.isFile()) files.push([relative, stat.mode & 0o777, await fileHash(file)])
+      else throw new Error('通常ファイル以外の入力')
+    }
+  }
+  await walk(base)
+  return files
+}
+function git(root, args) {
+  const env = Object.fromEntries(Object.entries(process.env).filter(([name]) => !name.startsWith('GIT_')))
+  return execFileSync('git', ['-C', root, ...args], { encoding: 'utf8', env, stdio: ['ignore', 'pipe', 'pipe'] }).trim()
+}
+// 値は保存せず、ハッシュだけをキーに含める。未知の環境変数は省かない。
+function environment(root, env) {
+  const omit = new Set(['PWD', 'OLDPWD', 'SHLVL', '_', 'IGNITE_AUDIT_FRESH', 'DEVBOARD_PROGRESS_STAGE', 'DEVBOARD_PROGRESS_WEIGHTS', 'DEVBOARD_PROJECT_DIR', 'DEVBOARD_BASE_BRANCH', 'DEVBOARD_COMMIT', 'DEVBOARD_CHECK_PRIORITY'])
+  return Object.entries(env).filter(([name]) => !omit.has(name)).sort(([a], [b]) => a.localeCompare(b))
+    .map(([name, value]) => [name, String(value) === root ? '<ROOT>' : String(value).replaceAll(root + path.sep, '<ROOT>/')])
+}
+export async function hasNestedDependencies(root) {
+  async function walk(dir) {
+    for (const item of await fs.readdir(dir, { withFileTypes: true })) {
+      if (dir === root && (item.name === 'node_modules' || item.name === '.git')) continue
+      if (item.name === 'node_modules') return true
+      if (item.isSymbolicLink()) throw new Error('入力領域のリンクは再利用対象外')
+      if (item.isDirectory() && await walk(path.join(dir, item.name))) return true
+    }
+    return false
+  }
+  return walk(root)
+}
+export async function auditRuntime(root) {
+  if (process.platform !== 'darwin') throw new Error('実行環境の照合はmacOSのみ対応')
+  // Viteが作る中間物は入力にしない。開始前・子群停止確認後に消し、古い中間物を使わせない。
+  for (const name of ['.vite', '.vite-temp']) await fs.rm(path.join(root, 'node_modules', name), { recursive: true, force: true })
+  const dependencies = await treeFiles(path.join(root, 'node_modules'), true)
+  const { chromium } = await import(pathToFileURL(path.join(root, 'node_modules/playwright-core/index.mjs')).href)
+  let browser = chromium.executablePath()
+  while (!/^chromium-\d+$/.test(path.basename(browser))) {
+    const parent = path.dirname(browser)
+    if (parent === browser) throw new Error('ブラウザの配置を特定できません')
+    browser = parent
+  }
+  const browsers = []
+  const directory = path.dirname(browser)
+  const names = (await fs.readdir(directory)).filter(name => /^(chromium|chromium_headless_shell|ffmpeg)-\d+$/.test(name)).sort()
+  if (!names.some(name => name.startsWith('chromium_headless_shell-'))) throw new Error('headlessブラウザがありません')
+  for (const name of names) browsers.push([name, await treeFiles(path.join(directory, name), true)])
+  const fonts = JSON.parse(execFileSync('/usr/sbin/system_profiler', ['SPFontsDataType', '-json'], { encoding: 'utf8', timeout: 30000, maxBuffer: 20 * 1024 * 1024 })).SPFontsDataType
+  if (!Array.isArray(fonts) || !fonts.length || fonts.some(font => !path.isAbsolute(font.path))) throw new Error('書体を照合できません')
+  const fontFiles = []
+  for (const file of [...new Set(fonts.map(font => font.path))].sort()) fontFiles.push([file, await fileHash(file)])
+  return [process.version, await fileHash(process.execPath), os.release(), os.version(), os.arch(), os.hostname(), dependencies, browsers, fonts, fontFiles]
+}
+export async function auditInput(root, env = process.env, inspectRuntime = auditRuntime) {
+  try {
+    root = await fs.realpath(root)
+    if (await fs.realpath(git(root, ['rev-parse', '--show-toplevel'])) !== root) return null
+    if (git(root, ['status', '--porcelain', '--untracked-files=all'])) return null
+    if (await hasNestedDependencies(root)) return null
+    if (/^(120000|160000) /m.test(git(root, ['ls-files', '--stage']))) return null
+    const tree = git(root, ['rev-parse', 'HEAD^{tree}'])
+    const conditions = await inspectRuntime(root)
+    if (git(root, ['status', '--porcelain', '--untracked-files=all']) || git(root, ['rev-parse', 'HEAD^{tree}']) !== tree) return null
+    const store = path.join(git(root, ['rev-parse', '--path-format=absolute', '--git-common-dir']), 'devboard/ignite-audit-cache-v1')
+    return { key: digest(JSON.stringify([1, tree, environment(root, env), conditions])), store }
+  } catch { return null }
+}
+
+async function acquire(file, interrupted) {
+  const fd = openSync(file, 'a')
+  const deadline = Date.now() + 10800000
+  let reported = false
+  try {
+    while (!interrupted()) {
+      // BSD flockは同じopen file descriptionの最後のFDが閉じるまで続く。所有記録や手動解除は不要。
+      const result = spawnSync('/usr/bin/lockf', ['-s', '-t', '1', '3'], { stdio: ['ignore', 'ignore', 'pipe', fd] })
+      if (result.status === 0) return fd
+      if (result.error || result.status !== 75) throw new Error('監査結果の入力ロックを取得できません')
+      if (!reported) { console.log('[audit-cache] 同一入力の監査を待機'); reported = true }
+      if (Date.now() >= deadline) throw new Error('監査結果の入力ロック待機が3時間を超えました')
+      await delay(10)
+    }
+    throw new Error('監査を中断しました')
+  } catch (error) { closeSync(fd); throw error }
+}
+export async function openAuditCache(root, args, interrupted, options = {}) {
+  const env = options.env ?? process.env
+  const snapshot = options.snapshot ?? (() => auditInput(root, env))
+  const now = options.now ?? Date.now
+  const input = await snapshot()
+  if (!input) { console.log('[audit-cache] 再利用せず全件実行（未保存の変更または実行条件を照合できません）'); return null }
+  await fs.mkdir(input.store, { recursive: true })
+  const fd = await acquire(path.join(input.store, `${input.key}.lock`), interrupted)
+  const entry = path.join(input.store, input.key)
+  const output = path.join(root, 'catalog/test-results-audit')
+  const invalidate = () => fs.rm(entry, { recursive: true, force: true })
+  let closed = false
+  const close = () => { if (!closed) { closed = true; closeSync(fd) } }
+  let restore
+  try {
+    if ((await snapshot())?.key !== input.key) { close(); return null }
+    const full = args.length === 0 && !env.IGNITE_STEPPER_SCREENSHOT
+    if (full && env.IGNITE_AUDIT_FRESH !== '1') {
+      try {
+        const record = JSON.parse(await fs.readFile(path.join(entry, 'success.json'), 'utf8'))
+        const age = now() - record.createdAt
+        if (record.key !== input.key || !Number.isFinite(age) || age < 0 || age >= MAX_AGE) throw new Error('期限切れ')
+        const scratch = path.join(root, 'test-results')
+        await fs.mkdir(scratch, { recursive: true })
+        restore = await fs.mkdtemp(path.join(scratch, '.audit-restore-'))
+        await fs.cp(path.join(entry, 'output'), path.join(restore, 'output'), { recursive: true })
+        const files = await treeFiles(path.join(restore, 'output'))
+        if (!files.some(([name]) => name === 'report.md') || JSON.stringify(files) !== JSON.stringify(record.files)) throw new Error('成果物不一致')
+        if (interrupted() || (await snapshot())?.key !== input.key) throw new Error('入力変更または中断')
+        await fs.rm(output, { recursive: true, force: true })
+        await fs.rename(path.join(restore, 'output'), output)
+        await fs.rm(restore, { recursive: true, force: true }); restore = undefined
+        console.log(`[audit-cache] 同じ入力・環境の全件監査を再利用（${Math.floor(age / 1000)}秒前）`)
+        return { hit: true, close, invalidate }
+      } catch {
+        if (restore) {
+          await fs.rm(restore, { recursive: true, force: true }); restore = undefined
+          await fs.rm(output, { recursive: true, force: true })
+        }
+      }
+    }
+    // 再確認を始めた時点で、以前の成功を失効する。失敗・中断では再公開しない。
+    await fs.rm(entry, { recursive: true, force: true })
+    if (interrupted()) throw new Error('監査を中断しました')
+    console.log('[audit-cache] 成功結果なし・強制再確認・対象外のため監査を実行')
+    return {
+      hit: false, close, invalidate,
+      async publish() {
+        let temporary
+        try {
+          if (!full || interrupted() || (await snapshot())?.key !== input.key) return
+          temporary = await fs.mkdtemp(path.join(input.store, '.audit-save-'))
+          await fs.cp(output, path.join(temporary, 'output'), { recursive: true })
+          const files = await treeFiles(path.join(temporary, 'output'))
+          if (!files.some(([name]) => name === 'report.md')) throw new Error('監査レポートがありません')
+          await fs.writeFile(path.join(temporary, 'success.json'), JSON.stringify({ key: input.key, createdAt: now(), files }))
+          if (interrupted()) return
+          await fs.rename(temporary, entry); temporary = undefined
+          console.log('[audit-cache] 全件成功を保存しました（有効期間24時間）')
+        } catch (error) { console.warn(`[audit-cache] 保存できません: ${error.message}`) }
+        finally { if (temporary) await fs.rm(temporary, { recursive: true, force: true }) }
+      },
+    }
+  } catch (error) { close(); throw error }
+}

@@ -19,6 +19,7 @@ test('監査の排他と終了処理', async t => {
     await mkdir(path.join(root, 'scripts'), { recursive: true })
     await mkdir(path.join(root, 'node_modules/@playwright/test'), { recursive: true })
     await writeFile(path.join(root, 'scripts/audit-design.mjs'), source)
+    await writeFile(path.join(root, 'scripts/audit-cache.mjs'), await readFile(new URL('./audit-cache.mjs', import.meta.url), 'utf8'))
     await writeFile(path.join(root, 'scripts/audit-server.mjs'), "process.send({ready:true,port:41234}); setInterval(()=>{},1000)")
     await writeFile(path.join(root, 'node_modules/@playwright/test/cli.js'), body)
     return root

@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright'
-import { expect, test } from '@playwright/test'
+import { expect, test } from './test'
 
 // axe に見えない動きのある操作（DESIGN.md 12 章）。キーボードだけで使えること、フォーカスの行き先、日本語の入力の確定
 

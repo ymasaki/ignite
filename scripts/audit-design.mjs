@@ -3,12 +3,14 @@ import { mkdir, readFile, writeFile, rm } from 'node:fs/promises'
 import { spawn } from 'node:child_process'
 import { setTimeout as delay } from 'node:timers/promises'
 import { fileURLToPath } from 'node:url'
+import { openAuditCache } from './audit-cache.mjs'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
 // ポートは毎回空きを選ぶが、旧版の監査とも順番を取り合えるよう、ロックの名前は以前のまま使う。
 const lock = '/tmp/ignite-catalog-audit-5198.lock'
 const children = []
 let owned = false
+let cache
 let interrupted = 0
 for (const [signal, code] of [['SIGINT', 130], ['SIGTERM', 143], ['SIGHUP', 129]]) {
   process.on(signal, () => { interrupted ||= code })
@@ -104,31 +106,36 @@ async function stop(child) {
   if (alive(group)) throw new Error(`所有プロセス群 ${child.pid} の停止を確認できません。ロックを残します: ${lock}`)
 }
 try {
-  const waitStarted = performance.now()
-  try { await acquire() } finally {
-    console.log(`harness-metric: stage=audit-lock seconds=${((performance.now() - waitStarted) / 1000).toFixed(3)}`)
-  }
-  if (interrupted) throw new Error('監査を中断しました')
-  const server = start([fileURLToPath(new URL('./audit-server.mjs', import.meta.url))], true)
-  let ready = false
-  let port
-  server.on('message', message => {
-    if (message?.ready && Number.isInteger(message.port) && message.port > 0) { port = message.port; ready = true }
-  })
-  const deadline = Date.now() + 60000
-  while (!ready) {
-    if (server.failure || server.result !== undefined) throw new Error('監査サーバーを起動できません（停止・流用はしません）。')
-    if (interrupted || Date.now() >= deadline) throw new Error('監査サーバー起動の中断または60秒の期限超過')
-    await delay(100)
-  }
-  const audit = start([fileURLToPath(new URL('../node_modules/@playwright/test/cli.js', import.meta.url)), 'test', '-c', 'catalog/playwright.audit.config.ts', ...process.argv.slice(2)], false, { IGNITE_AUDIT_PORT: String(port) })
-  while (audit.result === undefined) {
+  cache = await openAuditCache(root, process.argv.slice(2), () => interrupted)
+  if (cache?.hit) {
+    process.exitCode = 0
+  } else {
+    const waitStarted = performance.now()
+    try { await acquire() } finally {
+      console.log(`harness-metric: stage=audit-lock seconds=${((performance.now() - waitStarted) / 1000).toFixed(3)}`)
+    }
+    if (interrupted) throw new Error('監査を中断しました')
+    const server = start([fileURLToPath(new URL('./audit-server.mjs', import.meta.url))], true)
+    let ready = false
+    let port
+    server.on('message', message => {
+      if (message?.ready && Number.isInteger(message.port) && message.port > 0) { port = message.port; ready = true }
+    })
+    const deadline = Date.now() + 60000
+    while (!ready) {
+      if (server.failure || server.result !== undefined) throw new Error('監査サーバーを起動できません（停止・流用はしません）。')
+      if (interrupted || Date.now() >= deadline) throw new Error('監査サーバー起動の中断または60秒の期限超過')
+      await delay(100)
+    }
+    const audit = start([fileURLToPath(new URL('../node_modules/@playwright/test/cli.js', import.meta.url)), 'test', '-c', 'catalog/playwright.audit.config.ts', ...process.argv.slice(2)], false, { IGNITE_AUDIT_PORT: String(port) })
+    while (audit.result === undefined) {
+      if (interrupted || audit.failure || server.failure || server.result !== undefined) throw new Error('監査が中断されたか、監査サーバーが終了しました')
+      await delay(100)
+    }
+    // 両方の終了通知が同じ待機区間に届いた場合も成功にしない。
     if (interrupted || audit.failure || server.failure || server.result !== undefined) throw new Error('監査が中断されたか、監査サーバーが終了しました')
-    await delay(100)
+    process.exitCode = audit.result
   }
-  // 両方の終了通知が同じ待機区間に届いた場合も成功にしない。
-  if (interrupted || audit.failure || server.failure || server.result !== undefined) throw new Error('監査が中断されたか、監査サーバーが終了しました')
-  process.exitCode = audit.result
 } catch (error) {
   console.error(`[audit] ${error.message}`)
   process.exitCode = interrupted || 1
@@ -137,7 +144,25 @@ try {
   for (const child of children.toReversed()) {
     try { await stop(child) } catch (error) { stopped = false; console.error(error.message); process.exitCode = 1 }
   }
-  if (owned && stopped) await rm(lock, { recursive: true })
+  try {
+    // ロック解放も成功してから保存する。SIGKILLに対してはatomic renameが成功の確定点。
+    if (owned && stopped) {
+      await rm(lock, { recursive: true })
+      if (!interrupted && process.exitCode === 0) {
+        try { await cache?.publish() } catch (error) { console.warn(`[audit-cache] 保存できません: ${error.message}`) }
+      }
+    }
+  } catch (error) {
+    console.error(`[audit] 終了処理に失敗しました: ${error.message}`)
+    process.exitCode = 1
+  } finally {
+    try {
+      if (interrupted || process.exitCode !== 0) await cache?.invalidate()
+    } catch (error) {
+      console.error(`[audit-cache] 成功結果の失効に失敗しました: ${error.message}`)
+      process.exitCode = 1
+    } finally { cache?.close() }
+  }
   if (!stopped) {
     // 停止不能でも呼出し元を無限待機させない。ロックは残して失敗を返す。
     for (const child of children) {
