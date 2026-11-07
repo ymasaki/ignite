@@ -12,28 +12,37 @@ Web アプリで同じ見た目・使い勝手・UX をそろえるデザイン�
 | ソースの検査 | `npx ignite check` |
 | 描いた画面の監査（余白・文字・ホバー・コントラスト・axe-core） | `@ymasaki/ignite/audit` |
 | AI エージェント向けの決まりと監査スキル | `npx ignite sync` |
-| 更新の取り込み | `npx ignite upgrade` |
+| 更新の取り込み | `npx ignite upgrade ./vendor/次の版.tgz` |
 
 ## 使い始める
 
-[docs/adopting.md](docs/adopting.md) を見てください。Node.js 22.12.0 以上と、非公開の GitHub Packages を取得する認証設定が必要です。設定後、次のコマンドで部品とひな形を取り込めます。
+[docs/adopting.md](docs/adopting.md) を見てください。Node.js 22.12.0 以上を用意し、GitHub Release の固定版アーカイブを取得して、SHA256 と元コミットを確認します。相対 `vendor/` からの導入・初期化は採用手順に沿って進めてください。
 
-```sh
-npm install @ymasaki/ignite react react-dom @tabler/icons-react
-npx ignite init --app
-```
+更新時も [固定版の更新手順](docs/adopting.md#更新を取り込む)で次版のアーカイブを指定します。規約だけの同期は `npm run ignite:sync` です。
 
-起動・監査に必要な開発依存の導入も含め、[採用手順](docs/adopting.md)に沿って進めてください。更新は `npm run ignite:upgrade`、規約だけの同期は `npm run ignite:sync` です。
+## 文書の案内
+
+| 知りたいこと | 正本 |
+|---|---|
+| デザインの規約・部品と画面の型 | [DESIGN.md](DESIGN.md) |
+| Ignite 自身の構成・変更箇所・確認の対応 | [ARCHITECTURE.md](https://github.com/ymasaki/ignite/blob/main/ARCHITECTURE.md)（開発リポジトリ） |
+| 開発エージェントの作業ルール | [AGENTS.md](https://github.com/ymasaki/ignite/blob/main/AGENTS.md)（開発リポジトリ） |
+| アプリへの導入・更新・監査の設定 | [採用手順](docs/adopting.md) |
+| アプリ固有のテーマ・部品・監査の所有範囲 | [拡張ガイド](docs/extensions.md) |
+| 版・配布・カタログの運用 | [公開手順](docs/releasing.md) |
+| Ignite 開発時のカタログ監査・ロックの扱い | [カタログ監査](docs/catalog-audit.md) |
+| 外部システムとの比較記録・残りの候補 | [比較](docs/coverage.md) |
+| 版ごとの変更点と移行方法 | [CHANGELOG.md](CHANGELOG.md) |
 
 ## 開発
 
 ```sh
 npm ci
-npm run catalog        # 全部品を見るカタログ
+npm run catalog -- --port 15222 --strictPort # worktree 用。空いているポートを選び、終了後に止める
 bash scripts/test.sh   # 型・単体テスト・検査・監査・配布から更新までの通し確認
 ```
 
-版の付け方と公開の手順は [docs/releasing.md](docs/releasing.md) にあります。
+常用カタログの専用ポートは 5199 です。開発の確認方法は [構成と確認の対応](https://github.com/ymasaki/ignite/blob/main/ARCHITECTURE.md#変更と確認の対応)、監査の実行方法は [カタログ監査](docs/catalog-audit.md) を参照してください。
 
 ## DevBoard のコード品質
 

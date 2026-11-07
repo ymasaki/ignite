@@ -1,6 +1,6 @@
 # 主要なデザインシステムとの比較
 
-Ignite に何があり、何が足りないかの記録。2026-10-30 に比べ、1.1.0 で埋めたものと残りを示す。部品を足すときは、この表も直す。
+2026-10-30 の外部比較を基に、Ignite 側の対応と残りの候補を記録する。外部システムの現在の提供範囲を再調査した表ではない。部品を足すときは Ignite の対応欄も直す。現在の全公開部品は `src/index.ts`、規約は [DESIGN.md](../DESIGN.md)、動作例はカタログを参照する。
 
 ## 比べ方
 
@@ -11,7 +11,7 @@ Ignite に何があり、何が足りないかの記録。2026-10-30 に比べ�
 
 ## 部品
 
-| 役割 | 主要システムでの名前（Carbon / Primer / Fluent） | 3 つのうち | 1.0.0 | 1.1.0 |
+| 役割 | 主要システムでの名前（Carbon / Primer / Fluent） | 3 つのうち | 1.0.0 時点 | Ignite の対応（1.1.0 以降の追記を含む） |
 |---|---|---|---|---|
 | ボタン | Button | 3 | あり | 危険・処理中を追加 |
 | チェック | Checkbox | 3 | **なし** | `Checkbox` |
@@ -19,7 +19,7 @@ Ignite に何があり、何が足りないかの記録。2026-10-30 に比べ�
 | 入/切 | Toggle / ToggleSwitch / Switch | 3 | **なし** | `Switch` |
 | 入力欄の枠 | Form / FormControl / Field | 3 | **なし** | `FormField` |
 | 文字の入力 | Text input / TextInput・Textarea / Input・Textarea | 3 | あり | `FormField` と組む |
-| パスワードの入力 | Password input / — / — | 1 | **なし** | `PasswordField` |
+| パスワードの入力 | Password input / — / — | 1 | **なし** | `PasswordField`（1.3.0） |
 | 選択 | Select・Dropdown / Select / Select・Dropdown | 3 | あり | `disabled` を追加 |
 | 候補から選ぶ | —（Dropdown）/ Autocomplete / Combobox | 2 | **なし** | `Combobox` |
 | 数の入力 | Number input / — / Spin button | 2 | **なし** | `NumberField` |
@@ -49,7 +49,7 @@ Ignite に何があり、何が足りないかの記録。2026-10-30 に比べ�
 | ファイルの添付 | File uploader / — / — | 1 | **なし** | **未対応** |
 | 複数選択 | Multiselect / SelectPanel / Combobox | 3 | **なし** | **未対応**（`Checkbox` の並びで代用） |
 | カード | Tile / Card / Card | 3 | 一部（`EntityRow`・`ChartCard`） | 意図して足さない（役割ごとの部品に分ける） |
-| コード表示 | Code snippet / — / — | 1 | あり（`Code`・`CodeBlock`） | 1.3.0 で追加 |
+| コード表示 | Code snippet / — / — | 1 | **なし** | `Code`・`CodeBlock`（1.3.0） |
 | カルーセル・評価 | — / — / Carousel・Rating | 1 | **なし** | 対象外（業務の画面で使わない） |
 
 ## グラフ（1.7.0）

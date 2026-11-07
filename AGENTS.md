@@ -2,14 +2,12 @@
 
 アプリ共通のデザインシステム。決まりの正本は `DESIGN.md`、採用は `docs/adopting.md`、版と公開は `docs/releasing.md`、主要なデザインシステムとの比較と残りの候補は `docs/coverage.md`。
 
-## 構成
+## 必要なときに読む文書
 
-- `src/`: 部品・トークン・CSS。業務の語やアプリのデータの形を持たない
-- `cli/`: `ignite` の命令（検査・同期・更新）
-- `audit/`: 描いた画面の監査（`@ymasaki/ignite/audit`）
-- `templates/`: 採用アプリに置くファイル（AI エージェント向けの決まり・ひな形）
-- `catalog/`: 全部品のカタログ。監査の対象でもある。配布しない
-- `scripts/smoke.mjs`: 実際のパッケージで配布から更新までを確かめる
+- 構成・公開入口・変更と確認の対応: [ARCHITECTURE.md](ARCHITECTURE.md)
+- カタログの起動・配布・版の判断: [docs/releasing.md](docs/releasing.md)
+- カタログ監査の入口・共通ロックの扱い: [docs/catalog-audit.md](docs/catalog-audit.md)
+- 文書全体の案内: [README.md](README.md#文書の案内)
 
 ## 決まり
 
@@ -29,11 +27,8 @@
 - 検査中は同じworktreeを編集せず、同じworktreeで検査を重ねない。別の作業は別タスクのworktreeで行う。
 - 認識していない変更には触れない。ステージするのは変更したファイルの明示指定だけとし、`git add .` / `git add -A` は使わない。stashはworktree間で共有されるため、名前のないstash / popはしない。
 
-## カタログの運用
+## 文書を保つ
 
-- #20 のオーナー指定により、カタログはWebDockを使わずスタンドアロンで起動する。
-- URL: `http://localhost:5199/`。main取り込み後に `bash scripts/build-catalog.sh` で反映する。
-- 起動: `bash scripts/start-catalog.sh`（停止まで動く。DevBoardのstaging.startから起動）。停止は起動元で行う。
-- 確認: `curl --fail http://localhost:5199/`。専用ポートを固定し、競合時には停止する。
-- worktreeの一時検証は別ポートを使い、終了後に必ず止める。
-- 公開用のカタログは `https://ymasaki.github.io/ignite/`。GitHubのmainが更新されると `.github/workflows/pages.yml` が配信する（`docs/releasing.md` の「カタログの公開」）。
+- 構成・公開入口・ビルドの流れを変えたら `ARCHITECTURE.md` も更新する。文書の役割や置き場所を変えたら README の案内も直す。
+- 同じ規則や手順を書き写さず正本へリンクする。Ignite 自身の作業ルールはこの文書、採用アプリへ同期する規則は `templates/agent/` に置く。
+- `CLAUDE.md` はこの文書を参照する入口として保つ。

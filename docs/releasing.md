@@ -44,7 +44,7 @@ GitHubでは `v<版>` のdraftを作り、不足する3添付（tgz・`SHA256SUM
 
 通信失敗時は同じコミットで「プロダクションへ」を再実行できます。添付や公開が成功した後に応答だけ失われても、既存の状態を読み直して照合します。ロック `releases/.<版>.lock` が残った場合は、該当プロセスが終了していることを人が確認してからそのロックだけを除去してください。稼働中や確認不能のロックは削除しません。不一致時にRelease・添付・タグを消してやり直す運用はしません。
 
-採用側は `gh release download v1.3.1 --repo github.com/ymasaki/ignite --dir ./ignite-download` として3添付を取得し、そのディレクトリで `shasum -a 256 -c SHA256SUMS` と `COMMIT` を確認します。tgzは既存の相対vendor方式で採用します。
+採用側の3添付の取得・照合・相対 vendor への導入は [採用手順](adopting.md#1-固定版を取得する) にまとめます。
 
 ローカル準備だけの場合は `bash scripts/prepare-package.sh` を使います。固定コミットの検査と同じ検証記録による再利用を行い、GitHubには接続しません。この処理も本番処理もレジストリへは発行しません。過去の承認済みアーカイブを新しく作った同版のファイルで置き換えません。
 
@@ -54,7 +54,9 @@ GitHubでは `v<版>` のdraftを作り、不足する3添付（tgz・`SHA256SUM
 
 最初の一度だけ、人がリポジトリの Settings → Pages の Source を「GitHub Actions」にします。
 
-## レジストリへの発行
+## 代替経路: レジストリへの発行
+
+現在の `production.command` はレジストリへ発行しません。以下は GitHub Packages を使う場合の手動手順です。切り替え条件は [採用手順](adopting.md#github-packagesへ切り替える条件)を確認します。
 
 1. `package.json` の版と `CHANGELOG.md` を直す
 2. `bash scripts/test.sh` を通す。`npm pack --pack-destination /tmp` で公開せず配布物も確認する
@@ -63,13 +65,13 @@ GitHubでは `v<版>` のdraftを作り、不足する3添付（tgz・`SHA256SUM
 
 `npm pack` と `npm publish` は `prepack` でビルドしてから配布物を作ります。開発依存を含めて `npm ci` しておきます。`--ignore-scripts` はこの保証を省くため、通常の配布では付けません。`prepare` は開発時と Git 経由の導入に備えて維持しています。
 
-## 最初の公開の前に要ること
+### レジストリへ初めて発行する前に
 
 リポジトリ `ymasaki/ignite` が存在することを確認し、`package.json` の `repository` と一致させます。パッケージの名前の範囲 `@ymasaki` は GitHub のアカウント名と一致する必要があります。
 
-## 配布経路の現状（2026-11-01）
+### 初回固定版と認証の確認記録（2026-11-01）
 
-既存gh認証はPackages権限がなく一覧取得が403のため、レジストリ配布は未成立です。現在採用する1.1.1アーカイブとハッシュ、同梱・更新方法は [adopting.md](adopting.md#相対アーカイブで継続利用する) に固定しています。この文書変更後に作る同じ版のtgzは、その承認済みアーカイブの代用品にはしません。
+当時の gh 認証は Packages 権限がなく一覧取得が403で、レジストリ配布の成立を確認できませんでした。現在の公開スクリプトによる Release 配布とは別の記録です。初回固定版1.1.1の元コミット・ハッシュは [採用手順の記録](adopting.md#初回固定版の記録2026-11-01) に残しています。本棚卸しでは外部の発行・取得状態を再確認していません。
 
 発行は人が行います。classic PATのwrite:packagesとパッケージへのWrite権限を用意し、秘密管理から環境変数へ渡したうえでユーザー設定（Git管理外）でnpm.pkg.github.comへの認証を設定します。上の確認とpackを通してから発行し、パッケージのVisibilityがPrivateであること、採用者のRead権限を確認します。新規パッケージは既定でPrivateですが、既存の可視性も確認し、Publicへの変更はしません。発行済みの同じ版を上書きせず、内容変更時はpatch版を上げます。
 
