@@ -102,6 +102,7 @@ export const PAGES: PageDef[] = [
     { id: 'rows', title: '一覧の行', parts: ['EntityRow', 'Highlight'] },
     { id: 'table', title: '値の表', parts: ['DataTable'] },
     { id: 'tablestate', title: '表の状態', parts: ['DataTable'] },
+    { id: 'tabletree', title: '階層の表', parts: ['DataTable'] },
     { id: 'kv', title: '項目と本文', parts: ['Section', 'SubHeading', 'KeyValues', 'Prose'] },
     { id: 'bar', title: '内容の上の帯', parts: ['ScreenBar'] },
     { id: 'sideparts', title: '左メニューの部品', parts: ['SideStatus', 'SideAccount', 'SideIconButton'] },

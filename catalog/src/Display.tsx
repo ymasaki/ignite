@@ -4,6 +4,36 @@ import { useState } from 'react'
 import { PROJECTS } from './data'
 import { Case, Cases, Page, Spec } from './kit'
 
+// 階層の表の見本（深さ・名前・担当・作業の数・期限）。深さ優先で並べる
+const TREE_ROWS: [number, string, string, number, string][] = [
+  [0, 'ウェブサイトの刷新', '高橋 誠', 64, '12月20日'],
+  [1, '調査', '佐藤 葵', 14, '10月31日'],
+  [2, '利用者の聞き取り', '鈴木 翔', 8, '10月17日'],
+  [3, '質問を作る', '田中 結', 3, '10月3日'],
+  [3, '聞き取りの日程', '伊藤 蓮', 2, '10月8日'],
+  [3, '結果のまとめ', '渡辺 陽菜', 3, '10月17日'],
+  [2, '競合の比較', '山本 湊', 6, '10月31日'],
+  [3, '比べる項目を決める', '中村 凛', 2, '10月22日'],
+  [3, '比較表を作る', '小林 樹', 4, '10月31日'],
+  [1, '設計', '加藤 紬', 22, '11月21日'],
+  [2, '画面の設計', '吉田 律', 12, '11月14日'],
+  [3, '画面の一覧', '山田 芽依', 3, '11月5日'],
+  [3, '主な画面の下書き', '佐々木 悠真', 5, '11月12日'],
+  [3, '試作の確認', '山口 澪', 4, '11月14日'],
+  [2, '文言の設計', '松本 大和', 10, '11月21日'],
+  [3, '用語をそろえる', '井上 楓', 4, '11月18日'],
+  [3, '案内文を書く', '木村 蒼', 6, '11月21日'],
+  [1, '開発', '林 咲良', 20, '12月12日'],
+  [2, '部品の組み込み', '清水 湊斗', 12, '12月5日'],
+  [3, '一覧の画面', '山崎 心春', 6, '12月1日'],
+  [3, '詳細の画面', '森 颯', 6, '12月5日'],
+  [2, '表示の速さ', '池田 美月', 8, '12月12日'],
+  [3, '画像を軽くする', '橋本 朝陽', 4, '12月9日'],
+  [3, '読み込みを測る', '阿部 葵', 4, '12月12日'],
+  [1, '公開', '石川 陽向', 8, '12月20日'],
+  [2, 'お知らせを書く', '前田 澄', 2, '12月18日'],
+]
+
 export function MarksPage({ target }: { target?: string | null }) {
   const p = 'marks'
   const [mark, setMark] = useState(1)
@@ -68,6 +98,12 @@ export function DataPage({ target }: { target?: string | null }) {
           <Case label="読み込み中" fill><DataTable label="読み込み中の表" columns={['名前', 'タスク']} rows={[]} loading /></Case>
           <Case label="空" fill><DataTable label="空の表" columns={['名前', 'タスク']} rows={[]} empty="該当するものがありません" /></Case>
         </Cases>
+      </Spec>
+      <Spec page={p} id="tabletree">
+        {/* stickyHead は表の枠を親の高さいっぱいの縦スクロールにする。親に高さを決めて置く */}
+        <div className="cat-tabletree">
+          <DataTable label="作業の階層" stickyHead depths={TREE_ROWS.map((r) => r[0])} columns={['名前', '担当', '作業', '期限']} rows={TREE_ROWS.map(([, name, owner, n, due]) => [{ content: name }, { content: owner }, { content: `${n}件` }, { content: due }])} />
+        </div>
       </Spec>
       <Spec page={p} id="kv">
         <div className="cat-sheet">

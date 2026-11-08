@@ -236,6 +236,48 @@ test('DataTable: 見出しを押すと並び順が読み上げに出て、すべ
   await expect(table.getByRole('checkbox', { checked: true })).toHaveCount(0)
 })
 
+test('DataTable: 階層の表は、スクロールしても見出しと上位の行を上に積み、系統が変わると入れ替える', async ({ page }) => {
+  await open(page, 'data')
+  const table = page.getByRole('table', { name: '作業の階層' })
+  const sc = table.locator('xpath=..')
+  await table.scrollIntoViewIfNeeded()
+  // 行 name が、積んだ行の下（流れる行の先頭）に来るまで枠をスクロールし、積んだ行の名前・位置と見出しの位置を返す
+  const scrollTo = (name: string) => sc.evaluate((el, name) => {
+    const rows = [...el.querySelectorAll('tbody tr')] as HTMLElement[]
+    const target = rows.find((r) => r.querySelector('th')!.textContent!.startsWith(name))!
+    const head = el.querySelector('thead')!.getBoundingClientRect().height
+    const box = el.getBoundingClientRect().top
+    const at = () => target.getBoundingClientRect().top - box + el.scrollTop
+    const n = (target.getAttribute('style')?.match(/--depth:\s*(\d+)/)?.[1] ?? '0') as string
+    el.scrollTop = at() - head - Number(n) * target.getBoundingClientRect().height
+  }, name)
+  // 固定するのはセルなので、行の位置は行見出しのセルで測る（tr は元の位置に残る）
+  const state = () => sc.evaluate((el) => {
+    const box = el.getBoundingClientRect().top
+    const stuck = [...el.querySelectorAll('tbody tr.stuck')].map((r) => ({ name: r.querySelector('th')!.textContent!.replace(/（.*$/, ''), top: Math.round(r.querySelector('th')!.getBoundingClientRect().top - box), h: Math.round(r.querySelector('th')!.getBoundingClientRect().height) }))
+    return { scrolled: el.scrollTop, head: Math.round(el.querySelector('thead th')!.getBoundingClientRect().top - box), headH: Math.round(el.querySelector('thead th')!.getBoundingClientRect().height), stuck }
+  })
+  // スクロール前は何も積まない
+  expect((await state()).stuck).toEqual([])
+  await scrollTo('聞き取りの日程')
+  await expect.poll(async () => (await state()).stuck.map((r) => r.name)).toEqual(['ウェブサイトの刷新', '調査', '利用者の聞き取り'])
+  const s1 = await state()
+  expect(s1.scrolled).toBeGreaterThan(0)
+  // 見出しは枠の上端に残り、積んだ行は見出しの下に隙間なく並ぶ
+  expect(s1.head).toBe(0)
+  let y = s1.headH
+  for (const r of s1.stuck) {
+    expect(Math.abs(r.top - y)).toBeLessThanOrEqual(1)
+    y = r.top + r.h
+  }
+  // 別の系統まで進むと、上位の行が入れ替わる
+  await scrollTo('主な画面の下書き')
+  await expect.poll(async () => (await state()).stuck.map((r) => r.name)).toEqual(['ウェブサイトの刷新', '設計', '画面の設計'])
+  // 積んだ行の最後にだけ影を付ける
+  await expect(table.locator('tr.stuck-last')).toHaveCount(1)
+  await expect(table.locator('tr.stuck-last th')).toHaveText(/^画面の設計/)
+})
+
 test('DataTable: ホバーは行見出しを含む行全体の地を変え、選んだ行は灰色にしない', async ({ page }) => {
   await open(page, 'data')
   const table = page.getByRole('table', { name: '並べ替えと選択' })

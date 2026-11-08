@@ -244,3 +244,4 @@
 /* キャンバスの見本（Diagram.tsx）。面の中の枠として線で囲む */
 .cat-canvas{overflow:hidden;border:1px solid var(--line);border-radius:12px}
 .cat-board{display:grid;grid-template-columns:repeat(6,200px);gap:24px}
+.cat-tabletree{height:320px;overflow:hidden;border:1px solid var(--line);border-radius:10px}

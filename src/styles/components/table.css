@@ -32,3 +32,19 @@
 .data-table .sel-cell{width:1%;padding-right:0;text-align:left}
 .data-table tr.sel th,.data-table tr.sel td{background:var(--pri-soft)}
 .data-table .table-note{padding:24px 16px;text-align:center;white-space:normal;color:var(--ink-3)}
+
+/* 階層の字下げ（DataTable の depths。--depth は行の深さ） */
+.data-table th[scope=row]{padding-left:calc(16px + var(--depth, 0) * 20px)}
+.data-table.dense th[scope=row]{padding-left:calc(10px + var(--depth, 0) * 16px)}
+
+/* 見出しの固定（DataTable の stickyHead）。表の枠を親の高さいっぱいの縦スクロールにし、見出しをその上端に残す。
+   枠線はセルに持たせる（collapse だと sticky で動かしたセルに枠線が付いてこない）。見た目は stickyHead なしと同じ */
+.data-table-scroll.sticky{overflow:auto;height:100%;max-height:100%;overscroll-behavior:contain}
+.data-table-scroll.sticky .data-table{border-collapse:separate;border-spacing:0}
+.data-table-scroll.sticky thead th{position:sticky;top:0;z-index:20;background:var(--panel-2)}
+/* 見出しの下に積んだ上位の行（位置は --stuck-top）。見出しと同じ地で見出しの続きに見せ、帯の下端（最後の行）にだけ影を付けて流れる行と分ける */
+.data-table tr.stuck > :is(th,td){position:sticky;top:var(--stuck-top);z-index:var(--stuck-z);background-color:var(--panel-2);transition:background-color .2s ease-out,box-shadow .2s ease-out}
+/* 影はセルの真下に薄れていく帯で描く（セルごとの box-shadow は左右へにじみ、セルの境目に縦の筋が出る）。色は --scrim から作り、ダークでは濃くなる */
+.data-table tr.stuck-last > :is(th,td)::after{content:'';position:absolute;left:0;right:0;top:100%;height:4px;background:linear-gradient(color-mix(in srgb,var(--scrim) 30%,transparent),transparent);pointer-events:none}
+.data-table tr.stuck.sel > :is(th,td){background-color:var(--pri-soft)}
+@media (prefers-reduced-motion:reduce){.data-table tr.stuck > :is(th,td){transition:none}}
