@@ -115,7 +115,8 @@ test('監査の排他と終了処理', async t => {
     await t.test('監査中のサーバー終了は監査も失敗・停止する', async () => {
       const marker = path.join(dir, 'server-death.pid')
       const root = await fixture('server-death', `require('fs').writeFileSync(${JSON.stringify(marker)}, String(process.pid));setInterval(()=>{},1000)`)
-      await writeFile(path.join(root, 'scripts/audit-server.mjs'), 'process.send({ready:true,port:41234});setTimeout(()=>process.exit(0),500)')
+      // 監査が起動して目印を書いてから落ちる。固定の待ち時間では、混んだマシンで監査の起動より先に落ちて目印が残らない
+      await writeFile(path.join(root, 'scripts/audit-server.mjs'), `import {existsSync} from 'node:fs';process.send({ready:true,port:41234});setInterval(()=>{if(existsSync(${JSON.stringify(marker)}))process.exit(0)},50)`)
       assert.equal((await run(root).done).code, 1)
       const pid = Number(await readFile(marker, 'utf8'))
       assert.throws(() => process.kill(pid, 0))
