@@ -151,22 +151,27 @@
 .cat-pillar-t{font-size:var(--fs-16);font-weight:700;color:var(--ink)}
 .cat-pillar-go{justify-self:start;display:inline-flex;align-items:center;gap:4px;font-size:var(--fs-13)}
 .cat-pillar-go svg{width:14px;height:14px;transition:translate var(--dur-base) var(--ease-spring)}
-/* 特徴。左に説明・右に本物の部品の見本を置き、段ごとに左右を入れ替える。狭いときは説明 → 見本の順に縦に積む */
-.cat-feats{display:grid;gap:56px}
-.cat-feat{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);align-items:center;gap:48px}
-.cat-feat:nth-child(even) .cat-feat-b{order:2}
-.cat-feat-b{display:grid;justify-items:start;gap:12px;min-width:0}
-.cat-feat-t{font-size:var(--fs-20);font-weight:700;line-height:1.4;color:var(--ink)}
-.cat-feat-s{font-size:var(--fs-14);line-height:1.8;color:var(--ink-2);word-break:auto-phrase}
-.cat-feat-demo{min-width:0;padding:24px;background:var(--panel-2);border:1px solid var(--line);border-radius:14px}
-@container (max-width:760px){.cat-feat{grid-template-columns:minmax(0,1fr);gap:20px}.cat-feat:nth-child(even) .cat-feat-b{order:0}}
+/* 特徴。カードを 12 列に「5＋7」で 2 段敷き（段の境目をそろえる）、最後は横長の 1 枚。
+   カードの上に見出しと短い説明、下に沈んだ面の上で本物の部品の見本を見せる（説明と見本が 1 枚にまとまり、対応が迷わない）。
+   狭いときは 1 列に積む */
+.cat-bento{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px}
+.cat-bento-c{grid-column:span 6;display:grid;grid-template-rows:auto 1fr;gap:20px;min-width:0;padding:24px;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+.cat-bento-c.w5{grid-column:span 5}
+.cat-bento-c.w7{grid-column:span 7}
+.cat-bento-c.w12{grid-column:span 12;grid-template-columns:minmax(0,5fr) minmax(0,7fr);grid-template-rows:auto;align-items:center;gap:32px}
+.cat-bento-h{display:grid;justify-items:start;align-content:start;gap:8px;min-width:0}
+.cat-bento-t{display:flex;align-items:center;gap:10px;font-size:var(--fs-16);font-weight:700;line-height:1.4;color:var(--ink)}
+.cat-bento-s{font-size:var(--fs-14);line-height:1.7;color:var(--ink-2);word-break:auto-phrase}
+.cat-bento-demo{display:grid;align-content:center;min-width:0;padding:20px;background:var(--panel-2);border-radius:12px}
+@container (max-width:899px){.cat-bento-c.w5,.cat-bento-c.w7,.cat-bento-c.w12{grid-column:span 12}.cat-bento-c.w12{grid-template-columns:minmax(0,1fr);gap:20px}}
 .cat-demo-card{display:grid;gap:14px;padding:18px;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
 .cat-demo-col{display:grid;gap:14px;min-width:0}
 .cat-demo-split{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));align-items:center;gap:20px}
 .cat-demo-l{font-size:var(--fs-12);color:var(--ink-3)}
 .cat-demo-num{display:flex;align-items:baseline;gap:12px}
 /* 幅の見本。枠の幅を変えると、中の並び（器の幅で決まる auto-fit）が組み変わる */
-.cat-demo-stage{display:grid;justify-items:center;padding:16px;background:var(--panel);border:1px dashed var(--line-2);border-radius:12px}
+/* 高さはスマホ幅（縦 1 列）のときの分を先に取り、切り替えでカードの高さが変わって下の段が動かないようにする */
+.cat-demo-stage{display:grid;justify-items:center;align-content:center;min-height:300px}
 .cat-demo-frame{width:100%;padding:14px;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;transition:width var(--dur-slow) var(--ease-spring)}
 .cat-demo-frame.tab{width:62%}
 .cat-demo-frame.sp{width:36%;min-width:130px}

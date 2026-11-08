@@ -10,8 +10,8 @@ const GROUPS = ['基礎', '部品', '画面の型']
 const REPO = 'https://github.com/ymasaki/ignite'
 const ico = (I: typeof IconBell) => <I size={18} stroke={1.8} />
 
-/** 特徴の見出しと説明。demo は説明の隣に置く本物の部品の見本、go は詳しく見るページ */
-type Feature = { icon: ReactNode; title: string; text: string[]; go: string; more: string; demo: ReactNode }
+/** 特徴のカード。上に見出しと短い説明、下に本物の部品の見本（demo）。go は詳しく見るページ、size はカードの幅（12 列のうち 5・7・12） */
+type Feature = { icon: ReactNode; title: string; text: string[]; go: string; more: string; demo: ReactNode; size: 'w5' | 'w7' | 'w12' }
 
 const TEXT_OPTIONS: { value: Assist['text']; label: string }[] = [{ value: 'normal', label: '標準' }, { value: 'large', label: '大' }, { value: 'larger', label: '特大' }]
 const CONTRAST_OPTIONS: { value: Assist['contrast']; label: string }[] = [{ value: 'auto', label: '端末に合わせる' }, { value: 'more', label: '強く' }]
@@ -90,6 +90,7 @@ function AssistTry() {
 /** シンプル: 灰色の濃さと余白で分け、色は主要色ひとつだけ */
 function SimpleDemo() {
   const [name, setName] = useState('山田 花子')
+  const [scope, setScope] = useState<'all' | 'team' | 'me'>('team')
   return (
     <div className="cat-demo-card">
       <div className="cat-mock-h">
@@ -98,6 +99,7 @@ function SimpleDemo() {
         <Tag variant="ok">公開中</Tag>
       </div>
       <TextField label="表示名" value={name} onChange={setName} />
+      <Segmented fill label="公開範囲" value={scope} onChange={setScope} options={[{ value: 'all', label: '全員' }, { value: 'team', label: 'チーム' }, { value: 'me', label: '自分だけ' }]} />
       <div className="cat-end">
         <Button>取り消す</Button>
         <Button variant="primary">保存</Button>
@@ -187,11 +189,11 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
   const ref = useRef<HTMLDivElement>(null)
   useScrollFocus(ref, '概要')
   const features: Feature[] = [
-    { icon: ico(IconLayout), title: 'シンプルでモダン', text: ['クセがなく、ひと目で使い方がわかる。', '色は主要色ひとつ。ほかは灰色の濃さと余白で分ける。', 'それでいて、ちゃんとかっこいい。'], go: 'actions', more: '部品を見る', demo: <SimpleDemo /> },
-    { icon: ico(IconPalette), title: 'テーマで色を着せ替え', text: ['テーマカラーを選ぶだけで、画面全体の色がそろって変わる。', 'ライトとダークにも標準で対応。', '選ぶと、このカタログの色がすぐに変わる。'], go: 'color', more: '色を見る', demo: <ThemeDemo theme={theme} onTheme={onTheme} /> },
-    { icon: ico(IconSparkles), title: '遊び心のあるアニメーション', text: ['数字は転がって変わり、スイッチは弾んで切り替わる。', 'ちょっとした動きに手ざわりがあって、触るのが楽しくなる。'], go: 'motion', more: '動きを見る', demo: <MotionDemo /> },
-    { icon: ico(IconDevices), title: 'どんな幅にもフィット', text: ['レスポンシブの仕組みを標準装備。', 'PC からスマホまで、幅に合わせて UI がしなやかに組み変わる。', '幅を変えると、並びが組み変わる。'], go: 'responsive', more: 'レスポンシブ表示を見る', demo: <ResponsiveDemo /> },
-    { icon: ico(IconAccessible), title: '誰にでも見やすく', text: ['見づらさを感じる人にも届くように。', 'コントラストを強めたり、文字を大きくしたりできる。', '選ぶと、このページ全体に効く。'], go: 'settings', more: '設定の画面を見る', demo: <AssistDemo /> },
+    { size: 'w5', icon: ico(IconLayout), title: 'シンプルでモダン', text: ['クセがなく、ひと目で使い方がわかる。', '色は主要色ひとつ、あとは灰色と余白で分ける。'], go: 'actions', more: '部品を見る', demo: <SimpleDemo /> },
+    { size: 'w7', icon: ico(IconPalette), title: 'テーマで色を着せ替え', text: ['テーマカラーを選ぶだけで、全体の色がそろって変わる。', 'ライトとダークにも標準で対応。'], go: 'color', more: '色を見る', demo: <ThemeDemo theme={theme} onTheme={onTheme} /> },
+    { size: 'w5', icon: ico(IconSparkles), title: '遊び心のあるアニメーション', text: ['数字は転がり、スイッチは弾む。', '小さな動きの手ざわりで、触るのが楽しくなる。'], go: 'motion', more: '動きを見る', demo: <MotionDemo /> },
+    { size: 'w7', icon: ico(IconDevices), title: 'どんな幅にもフィット', text: ['PC からスマホまで、', '幅に合わせて UI がしなやかに組み変わる。'], go: 'responsive', more: 'レスポンシブ表示を見る', demo: <ResponsiveDemo /> },
+    { size: 'w12', icon: ico(IconAccessible), title: '誰にでも見やすく', text: ['見づらさを感じる人にも届くように。', 'コントラストと文字の大きさを、このページで試せる。'], go: 'settings', more: '設定の画面を見る', demo: <AssistDemo /> },
   ]
   return (
     <Board>
@@ -229,16 +231,15 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
               <Lead eyebrow="特徴" title="毎日さわる画面を、もっと気持ちよく">
                 <span>見本は、どれも本物の部品。押して試せる。</span>
               </Lead>
-              <div className="cat-feats">
+              <div className="cat-bento">
                 {features.map((f) => (
-                  <div className="cat-feat" key={f.title}>
-                    <div className="cat-feat-b">
-                      <IconBox size="lg">{f.icon}</IconBox>
-                      <span className="cat-feat-t" role="heading" aria-level={3}>{f.title}</span>
-                      <span className="cat-feat-s">{f.text.map((l) => <span key={l}>{l}</span>)}</span>
+                  <div className={`cat-bento-c ${f.size}`} key={f.title}>
+                    <div className="cat-bento-h">
+                      <span className="cat-bento-t" role="heading" aria-level={3}><IconBox>{f.icon}</IconBox>{f.title}</span>
+                      <span className="cat-bento-s">{f.text.map((l) => <span key={l}>{l}</span>)}</span>
                       <LinkButton className="cat-pillar-go" onClick={() => onOpen(f.go)}>{f.more}{ico(IconArrowRight)}</LinkButton>
                     </div>
-                    <div className="cat-feat-demo">{f.demo}</div>
+                    <div className="cat-bento-demo">{f.demo}</div>
                   </div>
                 ))}
               </div>
