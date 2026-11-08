@@ -46,7 +46,7 @@ bash scripts/test.sh   # 型・単体テスト・検査・監査・配布から�
 
 ## DevBoard のコード品質
 
-開発依存を含む `npm ci` で、固定版の計測用の道具も入ります。`devboard.json` の `health` に登録した次の命令は、ネット接続や対話なしで `DEVBOARD_HEALTH_OUTPUT` に JSON を出します。管理下のファイルは変更せず、途中の報告・キャッシュ・ビルドは一時ディレクトリで作って削除します。
+`devboard.json` の `health` に登録した次の命令は、対話なしで `DEVBOARD_HEALTH_OUTPUT` に JSON を出します。実行場所の `node_modules` が古い・欠けていても結果が変わらないよう、管理下のファイルを一時ディレクトリへ写し、`package-lock.json` どおりの固定版の道具を `npm ci --prefer-offline` で入れてから測ります（npm のキャッシュに無い版だけ取得します）。管理下のファイルと実行場所の `node_modules` は変更せず、途中の報告・キャッシュ・ビルドは一時ディレクトリで作って削除します。結果が出力されないときは失敗として終わります。
 
 ```sh
 DEVBOARD_HEALTH_OUTPUT=/tmp/ignite-analysis.json npm run health:analysis

@@ -7,6 +7,7 @@ import { test } from 'node:test'
 import { analyzeText, addDuplicates } from './health/analysis.mjs'
 import { measureCoverage } from './health/coverage.mjs'
 import { root, isSource, sourceFiles, temporary } from './health/common.mjs'
+import { copyTracked, measure } from './health/run.mjs'
 
 test('本体だけを対象にし、問題のないファイルも Git 一覧から残す', async () => {
   for (const file of ['src/a.ts', 'src/ui/a.tsx', 'cli/a.ts', 'audit/a.ts']) assert.ok(isSource(file))
@@ -99,4 +100,26 @@ test('未 import の本体をカバレッジの母数に含め、テスト失敗
     fs.writeFileSync(testFile, passing.replace('toBe(1)', 'toBe(999)'))
     await assert.rejects(measureCoverage(dir), /テストが失敗/)
   })
+})
+
+test('計測の前に管理下のファイルだけを写し、写した先でも同じ一覧を対象にする', async () => {
+  await temporary(async (dir) => {
+    const from = path.join(dir, 'from')
+    const to = path.join(dir, 'to')
+    fs.mkdirSync(path.join(from, 'src'), { recursive: true })
+    fs.mkdirSync(path.join(from, 'node_modules/broken'), { recursive: true })
+    fs.writeFileSync(path.join(from, 'src/tracked.ts'), 'export const value = 1\n')
+    fs.writeFileSync(path.join(from, 'src/untracked.ts'), 'export const value = 2\n')
+    fs.writeFileSync(path.join(from, 'src/removed.ts'), 'export const value = 3\n')
+    execFileSync('git', ['init', '-q', from])
+    execFileSync('git', ['add', 'src/tracked.ts', 'src/removed.ts'], { cwd: from })
+    fs.rmSync(path.join(from, 'src/removed.ts'))
+    fs.writeFileSync(path.join(from, 'src/tracked.ts'), 'export const value = 10\n')
+    copyTracked(from, to)
+    assert.deepEqual(sourceFiles(to), ['src/tracked.ts'])
+    assert.equal(fs.readFileSync(path.join(to, 'src/tracked.ts'), 'utf8'), 'export const value = 10\n')
+    assert.ok(!fs.existsSync(path.join(to, 'node_modules')))
+    assert.ok(!fs.existsSync(path.join(to, 'src/untracked.ts')))
+  })
+  await assert.rejects(measure('unknown'), /計測の種類が不明/)
 })
