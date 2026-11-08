@@ -70,9 +70,11 @@
 .cat-gap-b{display:block;height:12px;background:var(--pri-soft-2);border-radius:3px}
 .cat-icons{display:flex;flex-wrap:wrap;gap:20px;color:var(--ink-2)}
 
-/* 概要（LP の構成。段ごとに見出し → 中身。色は役割のトークンだけ） */
-.cat-lp{gap:0}
-.cat-hero{position:relative;padding:24px 0 48px;isolation:isolate}
+/* 概要（LP の構成。段ごとに見出し → 中身。色は役割のトークンだけ）。
+   上のヘッダーのほかは、ヒーロー・段の見出しも含めてすべて角丸の枠のカードの上に置く（ページの地に中身を直接置かない） */
+.cat-lp{gap:32px}
+.cat-card.cat-hero{position:relative;padding:40px;isolation:isolate}
+@container (max-width:480px){.cat-card.cat-hero{padding:24px 18px}}
 /* 背景は熱を帯びた炎の色の面。赤・橙・黄の大きな面を強くぼかして重ね、ゆっくり途切れずにうねらせる。
    本文全体を器にして敷き、.cat の中で本文と一緒にスクロールする。段や文字の列では切らない。
    文字を邪魔しないよう薄く敷くだけにし、文字の背後にベールは置かない。
@@ -142,8 +144,11 @@
 .cat-mock-h{display:flex;align-items:center;gap:10px}
 .cat-mock-t{flex:1;font-size:var(--fs-14);font-weight:700;color:var(--ink)}
 /* 段どうしはカードの格子と余白で分かれるので、線は引かない */
-.cat-band{display:grid;gap:20px;padding:32px 0}
-.cat-lead{display:grid;gap:6px;max-width:560px}
+/* 段。見出しのカードの下に中身のカードを、カードの間と同じ間隔で並べる */
+.cat-band{display:grid;gap:16px}
+/* 段の見出しのカード。左に印・見出し、右に段全体への操作 */
+.cat-card.cat-lead{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 24px;padding:20px 24px}
+.cat-lead-b{display:grid;gap:4px;min-width:0;max-width:560px}
 .cat-eyebrow{font-size:var(--fs-12);font-weight:700;color:var(--pri-ink)}
 .cat-lead-t{font-size:var(--fs-24);font-weight:700;line-height:1.4;color:var(--ink);word-break:auto-phrase}
 .cat-lead-s{font-size:var(--fs-14);line-height:1.7;color:var(--ink-2);word-break:auto-phrase}

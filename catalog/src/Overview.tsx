@@ -22,13 +22,16 @@ const STEPS = [
   { title: '検査する', code: '$ npx ignite check\n$ npm run ignite:audit' },
 ]
 
-/** LP の段の見出し。小さな印・大きな見出し・短い補足 */
-function Lead({ eyebrow, title, children }: { eyebrow: string; title: ReactNode; children?: ReactNode }) {
+/** LP の段の見出しのカード。小さな印・大きな見出し・短い補足と、右端に段全体への操作（action） */
+function Lead({ eyebrow, title, children, action }: { eyebrow: string; title: ReactNode; children?: ReactNode; action?: ReactNode }) {
   return (
-    <div className="cat-lead">
-      <span className="cat-eyebrow">{eyebrow}</span>
-      <span className="cat-lead-t" role="heading" aria-level={2}>{title}</span>
-      {children && <span className="cat-lead-s">{children}</span>}
+    <div className="cat-card cat-lead">
+      <div className="cat-lead-b">
+        <span className="cat-eyebrow">{eyebrow}</span>
+        <span className="cat-lead-t" role="heading" aria-level={2}>{title}</span>
+        {children && <span className="cat-lead-s">{children}</span>}
+      </div>
+      {action}
     </div>
   )
 }
@@ -180,7 +183,7 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
         <div className="cat" ref={ref}>
           <div className="cat-main cat-lp cat-fx-wrap">
             <div className="cat-fx" aria-hidden="true"><span /><span /><span /><span /></div>
-            <section className="cat-hero">
+            <section className="cat-card cat-hero">
               <div className="cat-hero-b">
                 <HeroLogo>
                   <Tag>v{version}</Tag>
@@ -222,7 +225,7 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
             </section>
 
             <section className="cat-band">
-              <Lead eyebrow="はじめかた" title="取得から検査までの手順" />
+              <Lead eyebrow="はじめかた" title="取得から検査までの手順" action={<Button icon={ico(IconArrowRight)} onClick={() => onOpen('setup')}>手順をすべて見る</Button>} />
               <div className="cat-steps">
                 {STEPS.map((s, i) => (
                   <div className="cat-card cat-step" key={s.title}>
@@ -234,7 +237,6 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
                   </div>
                 ))}
               </div>
-              <div className="cat-row"><Button icon={ico(IconArrowRight)} onClick={() => onOpen('setup')}>手順をすべて見る</Button></div>
             </section>
 
             <section className="cat-band">
