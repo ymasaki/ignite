@@ -30,9 +30,9 @@
     "check:design": "node dist/cli.js check",
     "audit:design": "node scripts/audit-design.mjs",
     "smoke": "node scripts/smoke.mjs",
-    "health:analysis": "node scripts/health/analysis.mjs",
-    "health:coverage": "node scripts/health/coverage.mjs",
-    "health:benchmarks": "node scripts/health/benchmarks.mjs"
+    "health:analysis": "node scripts/health/run.mjs analysis",
+    "health:coverage": "node scripts/health/run.mjs coverage",
+    "health:benchmarks": "node scripts/health/run.mjs benchmarks"
   },
   "peerDependencies": {
     "@axe-core/playwright": "^4.13.0",
