@@ -79,7 +79,9 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
             <div className="cat-fx" aria-hidden="true"><span /><span /><span /><span /></div>
             <section className="cat-hero">
               <div className="cat-hero-b">
-                <HeroLogo />
+                <HeroLogo>
+                  <Tag>v{version}</Tag>
+                </HeroLogo>
                 <div role="heading" aria-level={2}>
                   <span className="cat-hero-t">使いやすさと楽しさを、</span>
                   <span className="cat-hero-t em">誰にでも</span>
