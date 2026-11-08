@@ -12,6 +12,7 @@ const cases = ['.', 'app'].flatMap((subdir) => [
   { subdir, themes: ['web/styles'], bad: '@media(max-width:600px){.x{padding:8px}}\n', good: tokenTheme },
 ])
 
+// 制限時間は 30 秒。git の起動と検査を 4 回ずつくり返すので、並列のタスクで機械が混むと既定の 5 秒を超える（負荷 20 前後で 8 秒かかった）
 it.each(cases)('--staged は $subdir から index を読み、テーマ指定 $themes でも $bad を検査する', ({ subdir, themes, bad, good }) => {
   const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'ignite-staged-'))
   const root = path.join(repo, subdir)
@@ -35,4 +36,4 @@ it.each(cases)('--staged は $subdir から index を読み、テーマ指定 $t
     log.mockRestore()
     fs.rmSync(repo, { recursive: true, force: true })
   }
-})
+}, 30_000)
