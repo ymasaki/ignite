@@ -71,29 +71,31 @@
 /* 概要（LP の構成。段ごとに見出し → 中身。色は役割のトークンだけ） */
 .cat-lp{gap:0}
 .cat-hero{position:relative;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(360px,100%),1fr));gap:40px;align-items:center;padding:24px 0 48px;isolation:isolate}
-/* バウンスで上端が面から離れても境界が見えないよう、背景は上端を透明からつなぐ */
-.cat-hero::before{content:"";position:absolute;z-index:-1;inset:-24px -24px 0;background:radial-gradient(60% 70% at 85% 30%,var(--pri-soft),transparent 70%),radial-gradient(40% 50% at 0% 0%,var(--pri-soft),transparent 70%);mask-image:linear-gradient(to bottom,transparent,#000 48px);opacity:.9;pointer-events:none} /* design-ok: #000 は表示色ではなくマスクの濃淡 */
-/* 背景は熱を帯びた炎の色の面。赤・橙・黄の大きな面をぼかして重ね、ゆっくり途切れずにうねらせる。
+/* 背景は熱を帯びた炎の色の面。赤・橙・黄の大きな面を強くぼかして重ね、ゆっくり途切れずにうねらせる。
+   内容の面全体に敷き、スクロールする .cat の外に置くので、段や文字の列で四角く切れず、送っても背景として残る（バウンスでも動かない）。
+   文字を邪魔しないよう薄く敷くだけにし、文字の背後にベールは置かない。
    往復（alternate）で動かすので、周期の頭で面が急に現れることがない。周期は互いに割り切れない長さにして繰り返しを目立たせない。
    面は器（overflow:hidden）の中で動くので、面の外へはみ出さない（横スクロールを出さない）。
-   色は --pri の色相を黄色の側へ回して作るので、スキンとダークに従う。視差効果を減らす設定では出さず、上の静止した背景だけにする */
-.cat-hero-fx{display:none}
+   色は --pri の色相を黄色の側へ回して作るので、スキンとダークに従う。視差効果を減らす設定では動かさず、止まった炎の色だけにする */
+.cat-fx-wrap{position:relative;isolation:isolate}
+.cat-fx-wrap>.cat{position:relative}
+.cat-fx{position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none;border-radius:12px;
+  --flame-a:oklch(from var(--pri) l c calc(h + 18));
+  --flame-b:oklch(from var(--pri) calc(l + .1) c calc(h + 40));
+  --flame-c:oklch(from var(--pri) .92 .14 calc(h + 70))}
+.cat-fx>span{position:absolute;border-radius:50%;filter:blur(90px);opacity:.1;mix-blend-mode:multiply}
+.cat-fx>span:nth-child(1){width:60%;height:60%;left:-10%;top:45%;background:var(--pri)}
+.cat-fx>span:nth-child(2){width:50%;height:55%;left:35%;top:55%;background:var(--flame-b)}
+.cat-fx>span:nth-child(3){width:55%;height:60%;left:55%;top:-5%;background:var(--flame-a)}
+.cat-fx>span:nth-child(4){width:45%;height:45%;left:15%;top:-10%;background:var(--flame-c);opacity:.14}
+/* 暗い地では掛け合わせると沈むので、光として足す。黄色は暗い地で薄めると濁るので控えめにする */
+[data-mode="dark"] .cat-fx>span{mix-blend-mode:screen;opacity:.14}
+[data-mode="dark"] .cat-fx>span:nth-child(4){opacity:.06}
 @media (prefers-reduced-motion:no-preference){
-  .cat-hero::before{display:none}
-  .cat-hero-fx{display:block;position:absolute;z-index:-1;inset:-24px -24px 0;overflow:hidden;pointer-events:none;
-    --flame-a:oklch(from var(--pri) l c calc(h + 18));
-    --flame-b:oklch(from var(--pri) calc(l + .1) c calc(h + 40));
-    --flame-c:oklch(from var(--pri) .92 .14 calc(h + 70));
-    /* 上端はバウンス対策で、下端は次の段との境目を見せないよう、どちらも透明からつなぐ */
-    mask-image:linear-gradient(to bottom,transparent,#000 48px,#000 70%,transparent)} /* design-ok: #000 は表示色ではなくマスクの濃淡 */
-  .cat-hero-fx>span{position:absolute;border-radius:50%;filter:blur(60px);opacity:.55;mix-blend-mode:multiply}
-  .cat-hero-fx>span:nth-child(1){width:55%;height:70%;left:-5%;top:45%;background:var(--pri);animation:cat-heat-1 11s ease-in-out infinite alternate}
-  .cat-hero-fx>span:nth-child(2){width:45%;height:60%;left:30%;top:50%;background:var(--flame-b);animation:cat-heat-2 9s ease-in-out infinite alternate}
-  .cat-hero-fx>span:nth-child(3){width:50%;height:65%;left:60%;top:35%;background:var(--flame-a);animation:cat-heat-3 13s ease-in-out infinite alternate}
-  .cat-hero-fx>span:nth-child(4){width:35%;height:45%;left:40%;top:10%;background:var(--flame-c);opacity:.7;animation:cat-heat-4 7s ease-in-out infinite alternate}
-  /* 暗い地では掛け合わせると沈むので、光として足す。黄色は暗い地で薄めると濁るので控えめにする */
-  [data-mode="dark"] .cat-hero-fx>span{mix-blend-mode:screen;opacity:.6}
-  [data-mode="dark"] .cat-hero-fx>span:nth-child(4){opacity:.25}
+  .cat-fx>span:nth-child(1){animation:cat-heat-1 11s ease-in-out infinite alternate}
+  .cat-fx>span:nth-child(2){animation:cat-heat-2 9s ease-in-out infinite alternate}
+  .cat-fx>span:nth-child(3){animation:cat-heat-3 13s ease-in-out infinite alternate}
+  .cat-fx>span:nth-child(4){animation:cat-heat-4 7s ease-in-out infinite alternate}
 }
 @keyframes cat-heat-1{to{transform:translate(25%,-20%) scale(1.15) rotate(20deg)}}
 @keyframes cat-heat-2{to{transform:translate(-30%,-25%) scale(.85) rotate(-25deg)}}
@@ -105,11 +107,6 @@
 .cat-hero-t{display:block;font-size:var(--fs-24);font-weight:700;line-height:1.35;color:var(--ink);word-break:auto-phrase}
 .cat-hero-t.em{color:var(--pri-ink)}
 .cat-hero-b{position:relative;display:grid;gap:20px;min-width:0}
-/* 炎の色が濃いところでも文字が読めるよう、文字の列の背後にだけ地の色のベールを敷く。縁はぼかして、周りの炎は鮮やかなまま残す */
-@media (prefers-reduced-motion:no-preference){
-  .cat-hero-b::before{content:"";position:absolute;z-index:-1;inset:-16px -24px;pointer-events:none;border-radius:14px;filter:blur(20px);
-    background:color-mix(in srgb,var(--panel) 92%,transparent)}
-}
 .cat-hero-p{display:grid;font-size:var(--fs-14);line-height:1.8;color:var(--ink-2);word-break:auto-phrase}
 .cat-hero-s{display:flex;flex-wrap:wrap;gap:16px 32px;padding-top:20px;border-top:1px solid var(--line)}
 .cat-show{position:relative;display:grid;gap:16px;min-width:0;max-width:440px;justify-self:center;width:100%}
