@@ -1,5 +1,5 @@
-import { IconAccessible, IconArrowRight, IconBell, IconBrandGithub, IconDevices, IconEyeCheck, IconLayout, IconRocket, IconSparkles } from '@tabler/icons-react'
-import { Board, Button, Checkbox, CodeBlock, EntityRow, IconBox, ProgressBar, Segmented, Stat, Steps, Switch, Tag, ThemeSettings, useScrollFocus, type Theme } from '@ymasaki/ignite'
+import { IconAccessible, IconArrowRight, IconBell, IconBrandGithub, IconDevices, IconLayout, IconPalette, IconRocket, IconSparkles } from '@tabler/icons-react'
+import { Board, Button, Checkbox, CodeBlock, currentAssist, EntityRow, IconBox, LinkButton, ProgressBar, Segmented, SettingGroup, SettingRow, setAssist, Stat, Steps, Switch, Tag, ThemeSettings, useScrollFocus, withFade, type Assist, type Theme } from '@ymasaki/ignite'
 import { useRef, useState, type ReactNode } from 'react'
 import { version } from '../../package.json'
 import { HeroLogo } from './logo'
@@ -8,14 +8,20 @@ import { PAGES, PART_COUNT } from './nav'
 // カタログの入口。Ignite が何をしてくれるかを、本物の部品で見せる（見本の部品は押して試せる）
 const GROUPS = ['基礎', '部品', '画面の型']
 const REPO = 'https://github.com/ymasaki/ignite'
+const TRY = 'cat-try'
 const ico = (I: typeof IconBell) => <I size={18} stroke={1.8} />
 
+/** 特徴。go は詳しく見る先（ページの key、または概要の中の段の id） */
 const PILLARS = [
-  { icon: ico(IconLayout), title: '色は主要色だけ', lines: ['強調に使う色は主要色ひとつ。', 'ほかは灰色の濃さと余白で分ける。'] },
-  { icon: ico(IconSparkles), title: '開閉と数字に動き', lines: ['開閉や数字の変化に動きを付ける。', '動きを減らす設定にすると止まる。'] },
-  { icon: ico(IconEyeCheck), title: '見やすさを監査', lines: ['文字と背景のコントラストと', '文字の大きさを、画面ごとに測る。'] },
-  { icon: ico(IconDevices), title: 'スマホの幅にも対応', lines: ['画面が狭くなると、', '部品が余白と並びを詰める。'] },
+  { icon: ico(IconLayout), title: 'シンプルでモダン', text: ['クセがなく、ひと目で使い方がわかる。', 'それでいて、ちゃんとかっこいい。'], go: 'actions', more: '部品を見る' },
+  { icon: ico(IconPalette), title: 'テーマで色を着せ替え', text: ['テーマカラーを選ぶだけで、画面全体の色がそろって変わる。', 'ライトとダークにも標準で対応。'], go: TRY, more: '試してみる' },
+  { icon: ico(IconSparkles), title: '遊び心のあるアニメーション', text: ['開く、切り替わる、数字が動く。', 'ちょっとした動きに手ざわりがあって、触るのが楽しくなる。'], go: 'motion', more: '動きを見る' },
+  { icon: ico(IconDevices), title: 'どんな幅にもフィット', text: ['レスポンシブの仕組みを標準装備。', 'PC からスマホまで、幅に合わせて UI がしなやかに組み変わる。'], go: 'responsive', more: 'レスポンシブ表示を見る' },
+  { icon: ico(IconAccessible), title: '誰にでも見やすく', text: ['見づらさを感じる人にも届くように。', 'コントラストを強めたり、文字を大きくしたりもできる。'], go: TRY, more: '試してみる' },
 ]
+
+const TEXT_OPTIONS: { value: Assist['text']; label: string }[] = [{ value: 'normal', label: '標準' }, { value: 'large', label: '大' }, { value: 'larger', label: '特大' }]
+const CONTRAST_OPTIONS: { value: Assist['contrast']; label: string }[] = [{ value: 'auto', label: '端末に合わせる' }, { value: 'more', label: '強く' }]
 
 const STEPS = [
   { title: '取得する', code: `$ gh release download v${version} --repo github.com/ymasaki/ignite` },
@@ -68,9 +74,31 @@ function Showcase() {
   )
 }
 
+/** 見やすさの補助のうち、違いがすぐ目に見える 2 つだけを試せる。全部の項目は AssistSettings（画面の型の設定）にある */
+function AssistTry() {
+  const [assist, set] = useState<Assist>(currentAssist)
+  const change = (patch: Partial<Assist>) => {
+    const next = { ...currentAssist(), ...patch }
+    withFade(() => setAssist(next))
+    set(next)
+  }
+  return (
+    <SettingGroup title="見やすさ">
+      <SettingRow label="コントラスト">
+        <Segmented label="コントラスト" value={assist.contrast} onChange={(contrast) => change({ contrast })} options={CONTRAST_OPTIONS} />
+      </SettingRow>
+      <SettingRow label="文字の大きさ">
+        <Segmented label="文字の大きさ" value={assist.text} onChange={(text) => change({ text })} options={TEXT_OPTIONS} />
+      </SettingRow>
+    </SettingGroup>
+  )
+}
+
 export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme: (t: Theme) => void; onOpen: (key: string) => void }) {
   const ref = useRef<HTMLDivElement>(null)
   useScrollFocus(ref, '概要')
+  // 概要の中の段へは、その場でスクロールする。それ以外はページを開く
+  const go = (to: string) => (to === TRY ? document.getElementById(TRY)?.scrollIntoView({ behavior: 'smooth', block: 'start' }) : onOpen(to))
   return (
     <Board>
       <div className="cat-wrap">
@@ -82,13 +110,11 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
                 <HeroLogo>
                   <Tag>v{version}</Tag>
                 </HeroLogo>
-                <div role="heading" aria-level={2}>
-                  <span className="cat-hero-t">使いやすさと楽しさを、</span>
-                  <span className="cat-hero-t em">誰にでも</span>
-                </div>
+                <span className="cat-hero-t" role="heading" aria-level={2}>使いやすさと楽しさを、<em>誰にでも</em></span>
                 <div className="cat-hero-p">
-                  <span>ボタン・入力欄・表・グラフなど {PART_COUNT} の部品を React で使える。</span>
-                  <span>決まりに沿っているかは、ignite check と監査で確かめる。</span>
+                  <span>すっきり見やすくて、触るとちょっと楽しい。</span>
+                  <span>Ignite は、そんな画面を React ですぐ形にできる</span>
+                  <span>デザインシステムです。</span>
                 </div>
                 <div className="cat-row">
                   <Button variant="primary" icon={ico(IconRocket)} onClick={() => onOpen('setup')}>セットアップを始める</Button>
@@ -97,7 +123,7 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
                 </div>
                 <div className="cat-hero-s">
                   <Stat label="部品" value={PART_COUNT} />
-                  <Stat label="スキン" value={3} />
+                  <Stat label="テーマカラー" value={3} />
                   <Stat label="表示モード" value={3} />
                   <Stat label="外部の UI ライブラリ" value={0} />
                 </div>
@@ -106,28 +132,30 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
             </section>
 
             <section className="cat-band">
-              <Lead eyebrow="特徴" title="部品が持っている決まり">
-                部品を使えば、アプリの CSS で決めなくても次の点がそろう。
-              </Lead>
+              <Lead eyebrow="特徴" title="毎日さわる画面を、もっと気持ちよく" />
               <div className="cat-pillars">
                 {PILLARS.map((p) => (
                   <div className="cat-pillar" key={p.title}>
                     <IconBox size="lg">{p.icon}</IconBox>
                     <span className="cat-pillar-t">{p.title}</span>
-                    <span className="cat-pillar-s">{p.lines.map((l) => <span key={l}>{l}</span>)}</span>
+                    <span className="cat-pillar-s">{p.text.map((l) => <span key={l}>{l}</span>)}</span>
+                    <LinkButton className="cat-pillar-go" onClick={() => go(p.go)}>{p.more}{ico(IconArrowRight)}</LinkButton>
                   </div>
                 ))}
               </div>
             </section>
 
-            <section className="cat-band cat-split">
-              <Lead eyebrow="テーマ" title="スキンと表示モードを切り替える">
-                選ぶと、このカタログ全体の色がすぐ変わる。
-              </Lead>
+            <section className="cat-band cat-split" id={TRY}>
+              <div className="cat-stack">
+                <Lead eyebrow="試してみる" title="好きな色で、見やすい大きさで">
+                  <span>選ぶと、このカタログ全体がすぐに変わる。</span>
+                  <span>どのテーマでも、コントラストは監査で確かめている。</span>
+                </Lead>
+                <div className="cat-ramp" aria-hidden="true">{[1, 2, 3, 4, 5].map((n) => <i className="cat-ramp-i" key={n} ref={(el) => el?.style.setProperty('background', `var(--chart-${n})`)} />)}</div>
+              </div>
               <div className="cat-stack">
                 <ThemeSettings value={theme} onChange={onTheme} />
-                <div className="cat-ramp">{[1, 2, 3, 4, 5].map((n) => <i className="cat-ramp-i" key={n} ref={(el) => el?.style.setProperty('background', `var(--chart-${n})`)} />)}</div>
-                <div className="cat-row cat-note">{ico(IconAccessible)}<span>どのスキンでもコントラストを監査で確かめている</span></div>
+                <AssistTry />
               </div>
             </section>
 

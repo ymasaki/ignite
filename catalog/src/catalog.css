@@ -76,7 +76,7 @@
    文字を邪魔しないよう薄く敷くだけにし、文字の背後にベールは置かない。
    往復（alternate）で動かすので、周期の頭で面が急に現れることがない。周期は互いに割り切れない長さにして繰り返しを目立たせない。
    面は器（overflow:hidden）の中で動くので、面の外へはみ出さない（横スクロールを出さない）。
-   色は --pri の色相を黄色の側へ回して作るので、スキンとダークに従う。視差効果を減らす設定では動かさず、止まった炎の色だけにする */
+   色は --pri の色相を黄色の側へ回して作るので、テーマカラーとダークに従う。視差効果を減らす設定では動かさず、止まった炎の色だけにする */
 .cat-fx-wrap{position:relative;isolation:isolate}
 .cat-fx{position:absolute;inset:-24px;z-index:-1;overflow:hidden;pointer-events:none;border-radius:12px;
   --flame-a:oklch(from var(--pri) l c calc(h + 18));
@@ -100,12 +100,14 @@
 @keyframes cat-heat-2{to{transform:translate(-30%,-25%) scale(.85) rotate(-25deg)}}
 @keyframes cat-heat-3{to{transform:translate(-20%,15%) scale(1.2) rotate(15deg)}}
 @keyframes cat-heat-4{to{transform:translate(35%,40%) scale(1.3)}}
+/* 広いときは見本の列を抑えて文字の列を広げ、キャッチコピーを 1 行に収める */
+@container (min-width:900px){.cat-hero{grid-template-columns:minmax(0,1fr) minmax(300px,400px)}}
 .cat-hero-brand{display:flex;align-items:center;gap:16px}
 .cat-hero-brand .brand-mark{width:64px;height:64px}
 .cat-hero-name{font-size:var(--fs-32);font-weight:700;line-height:1.2;color:var(--ink)}
 /* 動くロゴ（概要の先頭。#64 の D「熱の流れ」）。止まった形はヘッダーのロゴと同じ単色の炎と文字。
    動いてよいときだけ、炎の形で切り抜いた熱の面（根元は主要色・先端は黄）を上下させ、先端から火の粉を昇らせ、文字に時々光を通す。
-   色は背景の炎（.cat-fx）と同じく --pri の色相を回して作るので、スキンとダークに従う。
+   色は背景の炎（.cat-fx）と同じく --pri の色相を回して作るので、テーマカラーとダークに従う。
    動きを減らす設定（端末・設定の画面のどちらも <html data-motion="reduce">）では重ねた面ごと出さず、止まったロゴだけにする */
 .cat-logo{--flame-b:oklch(from var(--pri) calc(l + .1) c calc(h + 40));--flame-c:oklch(from var(--pri) .92 .14 calc(h + 70))}
 .cat-logo .brand-mark{overflow:visible}
@@ -130,10 +132,11 @@
 @keyframes cat-logo-ember-r{0%{opacity:0;transform:none}15%{opacity:.9}100%{opacity:0;transform:translate(6px,-26px) scale(.3)}}
 @keyframes cat-logo-ember-l{0%{opacity:0;transform:none}15%{opacity:.9}100%{opacity:0;transform:translate(-7px,-22px) scale(.3)}}
 @keyframes cat-logo-shine{0%{background-position:100% 0}35%,100%{background-position:0 0}}
-.cat-hero-t{display:block;font-size:var(--fs-24);font-weight:700;line-height:1.35;color:var(--ink);word-break:auto-phrase}
-.cat-hero-t.em{color:var(--pri-ink)}
+/* キャッチコピーは 1 つの見出し。幅が足りないときだけ文節で折り返す */
+.cat-hero-t{display:block;font-size:var(--fs-32);font-weight:700;line-height:1.3;color:var(--ink);word-break:auto-phrase}
+.cat-hero-t em{display:inline-block;font-style:normal;color:var(--pri-ink)}
 .cat-hero-b{position:relative;display:grid;gap:20px;min-width:0}
-.cat-hero-p{display:grid;font-size:var(--fs-14);line-height:1.8;color:var(--ink-2);word-break:auto-phrase}
+.cat-hero-p{max-width:520px;margin:0;font-size:var(--fs-16);line-height:1.8;color:var(--ink-2);word-break:auto-phrase}
 .cat-hero-s{display:flex;flex-wrap:wrap;gap:16px 32px;padding-top:20px;border-top:1px solid var(--line)}
 .cat-show{position:relative;display:grid;gap:16px;min-width:0;max-width:440px;justify-self:center;width:100%}
 .cat-mock{display:grid;gap:14px;padding:18px;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow-2)}
@@ -145,10 +148,24 @@
 .cat-eyebrow{font-size:var(--fs-12);font-weight:700;color:var(--pri-ink)}
 .cat-lead-t{font-size:var(--fs-24);font-weight:700;line-height:1.4;color:var(--ink);word-break:auto-phrase}
 .cat-lead-s{font-size:var(--fs-14);line-height:1.7;color:var(--ink-2);word-break:auto-phrase}
-.cat-pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr));gap:16px}
-.cat-pillar{display:grid;align-content:start;gap:10px;padding:20px;background:var(--panel-2);border:1px solid var(--line);border-radius:12px}
+/* 特徴は 5 つ。1 枚だけ取り残されないよう、広いときは 3 枚＋2 枚（6 列を 2 列ずつ・3 列ずつ）、狭いときは縦 1 列に並べる */
+.cat-pillars{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:16px}
+.cat-pillar{grid-column:span 2}
+.cat-pillar:nth-child(n+4){grid-column:span 3}
+@container (max-width:760px){.cat-pillars{grid-template-columns:minmax(0,1fr)}.cat-pillar,.cat-pillar:nth-child(n+4){grid-column:auto}}
+.cat-pillar{display:grid;grid-template-rows:auto auto 1fr auto;gap:10px;padding:20px;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;transition:translate var(--dur-base) var(--ease-spring),box-shadow var(--dur-base),border-color var(--dur-base)}
 .cat-pillar-t{font-size:var(--fs-16);font-weight:700;color:var(--ink)}
-.cat-pillar-s{display:grid;font-size:var(--fs-13);line-height:1.7;color:var(--ink-2)}
+.cat-pillar-s{font-size:var(--fs-13);line-height:1.7;color:var(--ink-2);word-break:auto-phrase}
+.cat-pillar-go{justify-self:start;display:inline-flex;align-items:center;gap:4px;font-size:var(--fs-13)}
+.cat-pillar-go svg{width:14px;height:14px;transition:translate var(--dur-base) var(--ease-spring)}
+/* 触ると少し浮き、アイコンがはずむ（動きを減らす設定では assist.css・base.css が止める） */
+@media (hover:hover){
+  .cat-pillar:hover{translate:0 -3px;border-color:var(--line-2);box-shadow:var(--shadow-hover)}
+  .cat-pillar:hover .ico{animation:cat-pop var(--dur-slow) var(--ease-spring)}
+  .cat-pillar-go:hover svg{translate:3px 0}
+}
+@keyframes cat-pop{40%{transform:scale(1.15) rotate(-8deg)}}
+#cat-try{scroll-margin-top:16px}
 .cat-split{grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));align-items:start;gap:32px}
 .cat-note{gap:6px;font-size:var(--fs-12);color:var(--ink-3)}
 .cat-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:16px}
@@ -170,7 +187,7 @@
 .cat-reading{margin-left:8px;font-size:var(--fs-12);font-weight:400;color:var(--ink-3)}
 .cat-search{width:280px;max-width:100%}
 @media (max-width:860px){.cat-search{width:100%}}
-@container (max-width:480px){.cat-hero-t{font-size:var(--fs-20)}.cat-hero-brand .brand-mark{width:48px;height:48px}}
+@container (max-width:480px){.cat-hero-t{font-size:var(--fs-24)}.cat-hero-brand .brand-mark{width:48px;height:48px}}
 .cat-face{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 24px;min-width:0}
 .cat-face-l{flex:0 0 120px;font-size:var(--fs-12);color:var(--ink-3)}
 .cat-face-v{font-size:var(--fs-24);font-weight:700}
