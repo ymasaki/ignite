@@ -25,13 +25,26 @@ test('監査の排他と終了処理', async t => {
     return root
   }
   let lastOutput = ''
+  const wrappers = []
   function run(root) {
     const child = spawn(process.execPath, ['scripts/audit-design.mjs'], { cwd: root })
     let output = ''
     child.stdout.on('data', x => { output += x })
     child.stderr.on('data', x => { output += x })
     child.done = new Promise(resolve => child.on('exit', code => { lastOutput = output; resolve({code, output}) }))
+    wrappers.push(child)
     return child
+  }
+  const running = child => child.exitCode === null && child.signalCode === null
+  // SIGKILLだけではラッパーの子の群が残り、出力のパイプを握ってテストのファイルが終われなくなる。
+  // 先にSIGTERMでラッパー自身に子の群の停止とロックの解放をさせ、止まらないときだけSIGKILLする。
+  async function terminate(child) {
+    if (!running(child)) return
+    child.kill('SIGTERM')
+    let timer
+    await Promise.race([child.done, new Promise(resolve => { timer = setTimeout(resolve, 15000) })])
+    clearTimeout(timer)
+    if (running(child)) child.kill('SIGKILL')
   }
   async function finishWithin(child) {
     let timer
@@ -41,9 +54,15 @@ test('監査の排他と終了処理', async t => {
       })])
     } finally {
       clearTimeout(timer)
-      if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL')
+      await terminate(child)
     }
   }
+  // 混んだマシンでは起動に数秒かかる。待ちを打ち切っても、ラッパーは後始末で止める。
+  async function waitForFile(file) {
+    for (let i = 0; i < 300; i++) { try { await access(file); return } catch { await delay(100) } }
+  }
+  // 途中で失敗したサブテストのラッパーを残すと、ロックが後続へ連鎖し、ファイルも終われない。
+  t.afterEach(async () => { for (const child of wrappers.splice(0)) await terminate(child) })
   async function gone() { await assert.rejects(access(lock), undefined, lastOutput) }
   try {
     await t.test('異なる版が同時開始しても順番に自分の版を実行', async () => {
@@ -77,7 +96,7 @@ test('監査の排他と終了処理', async t => {
     for (const signal of ['SIGTERM', 'SIGINT']) await t.test(`${signal}で子群終了と解放`, async () => {
       const marker = path.join(dir, `${signal}.pid`)
       const child = run(await fixture(signal, `require('fs').writeFileSync(${JSON.stringify(marker)}, String(process.pid));setInterval(()=>{},1000)`))
-      for (let i=0;i<100;i++) { try { await access(marker); break } catch { await delay(20) } }
+      await waitForFile(marker)
       const pid = Number(await readFile(marker, 'utf8'))
       child.kill(signal)
       const result = await child.done
