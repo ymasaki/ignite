@@ -71,11 +71,24 @@ test('ネイティブ依存なしで配信し、境界・競合・停止を守�
     assert.equal((await exited.get(conflict))[0], 1)
     const invalid = start(undefined, { PORT: 'not-a-port', HOST: '127.0.0.1' })
     assert.equal((await exited.get(invalid))[0], 1)
+    // 有効なPORTでも不正HOSTなら失敗する。HOSTを無視して既定値へ戻す退行を検出する。
+    const invalidHost = start(undefined, { PORT: '0', HOST: 'not/a/host' })
+    let deadline
+    try {
+      const ended = await Promise.race([
+        exited.get(invalidHost),
+        new Promise((_, reject) => { deadline = setTimeout(() => reject(new Error('不正HOSTで起動が終了しません')), 5000) }),
+      ])
+      assert.equal(ended[0], 1)
+    } finally { clearTimeout(deadline) }
     child.kill('SIGTERM')
     await exited.get(child)
     await assert.rejects(request(port, '/'), { code: 'ECONNREFUSED' })
   } finally {
-    if (child && child.exitCode === null && child.signalCode === null) { child.kill('SIGTERM'); await exited.get(child) }
+    // 期待した失敗が起きなかった場合も、起動した全サーバーを必ず停止する。
+    for (const [serverProcess, done] of exited) {
+      if (serverProcess.exitCode === null && serverProcess.signalCode === null) { serverProcess.kill('SIGTERM'); await done }
+    }
     await rm(work, { recursive: true, force: true })
   }
 })
