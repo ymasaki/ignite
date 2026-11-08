@@ -72,14 +72,13 @@
 .cat-lp{gap:0}
 .cat-hero{position:relative;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(360px,100%),1fr));gap:40px;align-items:center;padding:24px 0 48px;isolation:isolate}
 /* 背景は熱を帯びた炎の色の面。赤・橙・黄の大きな面を強くぼかして重ね、ゆっくり途切れずにうねらせる。
-   内容の面全体に敷き、スクロールする .cat の外に置くので、段や文字の列で四角く切れず、送っても背景として残る（バウンスでも動かない）。
+   本文全体を器にして敷き、.cat の中で本文と一緒にスクロールする。段や文字の列では切らない。
    文字を邪魔しないよう薄く敷くだけにし、文字の背後にベールは置かない。
    往復（alternate）で動かすので、周期の頭で面が急に現れることがない。周期は互いに割り切れない長さにして繰り返しを目立たせない。
    面は器（overflow:hidden）の中で動くので、面の外へはみ出さない（横スクロールを出さない）。
    色は --pri の色相を黄色の側へ回して作るので、スキンとダークに従う。視差効果を減らす設定では動かさず、止まった炎の色だけにする */
 .cat-fx-wrap{position:relative;isolation:isolate}
-.cat-fx-wrap>.cat{position:relative}
-.cat-fx{position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none;border-radius:12px;
+.cat-fx{position:absolute;inset:-24px;z-index:-1;overflow:hidden;pointer-events:none;border-radius:12px;
   --flame-a:oklch(from var(--pri) l c calc(h + 18));
   --flame-b:oklch(from var(--pri) calc(l + .1) c calc(h + 40));
   --flame-c:oklch(from var(--pri) .92 .14 calc(h + 70))}
