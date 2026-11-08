@@ -1,4 +1,7 @@
 import { test } from 'node:test'
+import nativeFs from 'node:fs'
+import { syncBuiltinESMExports } from 'node:module'
+import { createHash } from 'node:crypto'
 import { pathToFileURL } from 'node:url'
 import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
@@ -300,4 +303,65 @@ test('使用しないブラウザの追加は入力を変えず、使用する�
     assert.notDeepEqual(await browserFiles(executable, manifest), before)
     await assert.rejects(browserFiles(executable, { browsers: [...manifest.browsers.slice(0, 1), { name: 'chromium-headless-shell', revision: '11' }, manifest.browsers[2]] }))
   } finally { await fs.rm(dir, { recursive: true, force: true }) }
+})
+
+test('全ファイルの順序・mode・リンク・SHA256を保ち、変更と削除も照合する', async () => {
+  const dir = await fs.mkdtemp(path.join(tmpdir(), 'ignite-hash-files-'))
+  const root = path.join(dir, 'input')
+  const hash = text => createHash('sha256').update(text).digest('hex')
+  try {
+    await fs.mkdir(path.join(root, 'nested'), { recursive: true })
+    const expected = []
+    for (const name of ['00.txt', '01.txt', '02.txt', 'nested/z.txt']) {
+      await fs.writeFile(path.join(root, name), name)
+      await fs.chmod(path.join(root, name), 0o640)
+      expected.push([name, 0o640, hash(name)])
+    }
+    await fs.symlink('nested/z.txt', path.join(root, 'zz-link'))
+    expected.push(['zz-link', 'link', 'nested/z.txt'])
+    assert.deepEqual(await treeFiles(root, true), expected)
+    await assert.rejects(treeFiles(root), /外部参照/)
+    await fs.writeFile(path.join(root, '00.txt'), 'changed')
+    expected[0][2] = hash('changed')
+    assert.deepEqual(await treeFiles(root, true), expected)
+    await fs.rm(path.join(root, '01.txt'))
+    expected.splice(1, 1)
+    assert.deepEqual(await treeFiles(root, true), expected)
+    await fs.writeFile(path.join(dir, 'outside'), 'outside')
+    await fs.symlink('../outside', path.join(root, 'external'))
+    await assert.rejects(treeFiles(root, true), /外部参照/)
+  } finally { await fs.rm(dir, { recursive: true, force: true }) }
+})
+
+test('ハッシュの読み取りは最大4個で、1件が失敗しても全workerの終了を待つ', async () => {
+  const dir = await fs.mkdtemp(path.join(tmpdir(), 'ignite-hash-workers-'))
+  const original = nativeFs.createReadStream
+  let active = 0, maximum = 0, failing = false
+  try {
+    for (let i = 0; i < 12; i++) await fs.writeFile(path.join(dir, `${String(i).padStart(2, '0')}.txt`), String(i))
+    // このテストだけストリームを制御する。本番の入口へ注入用APIは足さない。
+    nativeFs.createReadStream = file => ({
+      async *[Symbol.asyncIterator]() {
+        active++; maximum = Math.max(maximum, active)
+        try {
+          if (failing && path.basename(file) === '00.txt') throw new Error('読み取りエラー')
+          await new Promise(resolve => setTimeout(resolve, 20))
+          yield await fs.readFile(file)
+        } finally { active-- }
+      },
+    })
+    syncBuiltinESMExports()
+    const files = await treeFiles(dir)
+    assert.equal(files.length, 12)
+    assert.ok(files.every(file => typeof file[2] === 'string'))
+    assert.ok(maximum > 1 && maximum <= 4, `最大同時数: ${maximum}`)
+    assert.equal(active, 0)
+    failing = true
+    await assert.rejects(treeFiles(dir), /読み取りエラー/)
+    assert.equal(active, 0, '他の読み取りが残っている間に失敗を返さない')
+  } finally {
+    nativeFs.createReadStream = original
+    syncBuiltinESMExports()
+    await fs.rm(dir, { recursive: true, force: true })
+  }
 })

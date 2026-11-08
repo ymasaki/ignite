@@ -20,6 +20,7 @@ export async function treeFiles(root, links = false) {
   if ((await fs.lstat(root)).isSymbolicLink()) throw new Error('入力の根にリンクは使えません')
   const base = await fs.realpath(root)
   const files = []
+  const inputs = []
   async function walk(dir) {
     for (const name of (await fs.readdir(dir)).sort()) {
       const file = path.join(dir, name)
@@ -29,11 +30,26 @@ export async function treeFiles(root, links = false) {
         if (!links || !inside(base, await fs.realpath(file))) throw new Error('外部参照を含む入力')
         files.push([relative, 'link', (await fs.readlink(file)).replaceAll(base, '<ROOT>')])
       } else if (stat.isDirectory()) await walk(file)
-      else if (stat.isFile()) files.push([relative, stat.mode & 0o777, await fileHash(file)])
+      else if (stat.isFile()) {
+        inputs.push([files.length, file])
+        files.push([relative, stat.mode & 0o777, null])
+      }
       else throw new Error('通常ファイル以外の入力')
     }
   }
   await walk(base)
+  // 列挙順と全バイトの照合を保ち、読み取り待ちだけを最大4個重ねる。
+  let next = 0
+  const workers = Array.from({ length: Math.min(4, inputs.length) }, async () => {
+    while (next < inputs.length) {
+      const [index, file] = inputs[next++]
+      files[index][2] = await fileHash(file)
+    }
+  })
+  // 失敗しても他の読み取りが終わるまで待ち、部分的な結果を返さない。
+  const settled = await Promise.allSettled(workers)
+  const failure = settled.find(result => result.status === 'rejected')
+  if (failure) throw failure.reason
   return files
 }
 function git(root, args) {

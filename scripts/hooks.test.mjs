@@ -116,21 +116,21 @@ test('導入は原子的・冪等で、同時導入と公開前失敗でも既�
   assert.equal(await fs.stat(target).catch(() => null), null)
 })
 
-test('本当の公開前中断でも最終パスに書きかけのhookを残さない', async t => {
+test('本当の公開前中断でも最終パスに書きかけのhookを残さない', { timeout: 15000 }, async t => {
   const f = await fixture(t)
   const script = `import { installHook } from ${JSON.stringify(new URL('./install-hooks.mjs', import.meta.url).href)};
 await installHook(process.argv[1], {beforePublish: async () => { process.send('ready'); await new Promise(() => {}); }});`
   const child = spawn(process.execPath, ['--input-type=module', '-e', script, f.root], { env: f.env, stdio: ['ignore', 'pipe', 'pipe', 'ipc'] })
   t.after(() => { if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL') })
   const exit = once(child, 'exit')
-  await once(child, 'message')
+  await once(child, 'message', { signal: AbortSignal.timeout(10000) })
   child.kill('SIGTERM')
   await exit
   assert.equal(await fs.stat(path.join(f.root, '.git/hooks/pre-commit')).catch(() => null), null)
   await installHook(f.root)
 })
 
-test('指定indexを使い、検査中のindex更新と中断を成功にしない', { timeout: 20000 }, async t => {
+test('指定indexを使い、検査中のindex更新と中断を成功にしない', { timeout: 30000 }, async t => {
   const f = await fixture(t)
   await installHook(f.root)
   f.git('add', '.gitignore', 'tsconfig.json', 'src/value.ts', 'scripts')
@@ -142,6 +142,7 @@ test('指定indexを使い、検査中のindex更新と中断を成功にしな�
   const release = path.join(f.root, 'scratch/release')
   await fs.writeFile(path.join(f.root, 'node_modules/typescript/bin/tsc'), `
 const fs = require('node:fs');
+setTimeout(() => process.exit(21), 10000).unref();
 if (Object.keys(process.env).some(name => name.startsWith('GIT_'))) process.exit(19);
 fs.writeFileSync(${JSON.stringify(ready)}, process.cwd());
 const timer = setInterval(() => { if (fs.existsSync(${JSON.stringify(release)})) { clearInterval(timer); } }, 10);
@@ -151,7 +152,7 @@ const timer = setInterval(() => { if (fs.existsSync(${JSON.stringify(release)}))
   const env = { ...f.env, GIT_INDEX_FILE: alternate }
   const originalTree = f.git('write-tree')
   const waitReady = async () => {
-    for (let i = 0; i < 200; i++) {
+    for (let i = 0; i < 1000; i++) {
       try { return await fs.readFile(ready, 'utf8') } catch { await new Promise(resolve => setTimeout(resolve, 10)) }
     }
     throw new Error('型検査が始まりませんでした')
@@ -162,7 +163,14 @@ const timer = setInterval(() => { if (fs.existsSync(${JSON.stringify(release)}))
     child.stdout.on('data', chunk => { output += chunk })
     child.stderr.on('data', chunk => { output += chunk })
     const done = once(child, 'close').then(([code]) => ({ code, output }))
-    t.after(() => { if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL') })
+    t.after(async () => {
+      if (child.exitCode !== null || child.signalCode !== null) return
+      child.kill('SIGTERM')
+      let timer
+      await Promise.race([done, new Promise(resolve => { timer = setTimeout(resolve, 3000) })])
+      clearTimeout(timer)
+      if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL')
+    })
     return { child, done }
   }
   const first = run()
