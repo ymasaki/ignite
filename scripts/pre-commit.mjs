@@ -19,6 +19,8 @@ try {
   const git = args => execFileSync('git', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] }).trim()
   const root = git(['rev-parse', '--show-toplevel'])
   process.chdir(root)
+  // 軽い確認を全件成功と取り違えないよう、以前の成功票も先に失効する。
+  await fs.rm(git(['rev-parse', '--path-format=absolute', '--git-path', 'wt-tests-passed']), { force: true })
   const tree = git(['write-tree'])
   execFileSync('git', ['diff', '--cached', '--check'], { stdio: 'inherit' })
   temporary = await fs.mkdtemp(path.join(os.tmpdir(), 'ignite-commit-'))

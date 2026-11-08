@@ -46,6 +46,7 @@ test('コミットする型・空白を検査し、部分stageとskip-worktree�
   await fs.writeFile(source, "const value: number = 'bad'\n")
   f.git('add', 'src/value.ts')
   await fs.writeFile(source, 'const value: number = 2\n')
+  await fs.writeFile(path.join(f.root, '.git/wt-tests-passed'), f.git('rev-parse', 'HEAD^{tree}'))
   await unchangedOnFailure(f, /TS2322/)
   // 逆に、未stageの型エラーと未追跡の型エラーはコミット対象へ混ぜない。
   f.git('add', 'src/value.ts')
