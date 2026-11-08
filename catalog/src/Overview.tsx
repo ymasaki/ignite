@@ -10,8 +10,8 @@ const GROUPS = ['基礎', '部品', '画面の型']
 const REPO = 'https://github.com/ymasaki/ignite'
 const ico = (I: typeof IconBell) => <I size={18} stroke={1.8} />
 
-/** 特徴のカード（1 行に 1 つ）。左に見出し・説明、右に本物の部品の見本（demo）。go は詳しく見るページ */
-type Feature = { title: string; text: string[]; go: string; more: string; demo: ReactNode }
+/** 特徴のカード。上に見出し・説明、線の下に本物の部品の見本（demo）。go は詳しく見るページ、wide は格子の横いっぱい */
+type Feature = { title: string; text: string[]; go: string; more: string; demo: ReactNode; wide?: boolean }
 
 const TEXT_OPTIONS: { value: Assist['text']; label: string }[] = [{ value: 'normal', label: '標準' }, { value: 'large', label: '大' }, { value: 'larger', label: '特大' }]
 const CONTRAST_OPTIONS: { value: Assist['contrast']; label: string }[] = [{ value: 'auto', label: '端末に合わせる' }, { value: 'more', label: '強く' }]
@@ -169,8 +169,8 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
   useScrollFocus(ref, '概要')
   const features: Feature[] = [
     { title: 'シンプルでモダン', text: ['クセがなく、ひと目で使い方がわかる。', '色は主要色ひとつ、あとは灰色と余白で分ける。'], go: 'actions', more: '部品を見る', demo: <SimpleDemo /> },
-    { title: 'テーマで色を着せ替え', text: ['テーマカラーを選ぶだけで、全体の色がそろって変わる。', 'ライトとダークにも標準で対応。'], go: 'color', more: '色を見る', demo: <ThemeDemo theme={theme} onTheme={onTheme} /> },
     { title: '遊び心のあるアニメーション', text: ['数字は転がり、スイッチは弾む。', '小さな動きの手ざわりで、触るのが楽しくなる。'], go: 'motion', more: '動きを見る', demo: <MotionDemo /> },
+    { title: 'テーマで色を着せ替え', text: ['テーマカラーを選ぶだけで、全体の色がそろって変わる。', 'ライトとダークにも標準で対応。'], go: 'color', more: '色を見る', demo: <ThemeDemo theme={theme} onTheme={onTheme} />, wide: true },
     { title: 'どんな幅にもフィット', text: ['PC からスマホまで、', '幅に合わせて UI がしなやかに組み変わる。'], go: 'responsive', more: 'レスポンシブ表示を見る', demo: <ResponsiveDemo /> },
     { title: '誰にでも見やすく', text: ['見づらさを感じる人にも届くように。', 'コントラストと文字の大きさを、このページで試せる。'], go: 'settings', more: '設定の画面を見る', demo: <AssistDemo /> },
   ]
@@ -209,7 +209,7 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
               <Lead eyebrow="特徴" title="毎日さわる画面を、もっと気持ちよく" />
               <div className="cat-features">
                 {features.map((f) => (
-                  <div className="cat-feature" key={f.title}>
+                  <div className={`cat-card cat-feature${f.wide ? ' wide' : ''}`} key={f.title}>
                     <div className="cat-feature-b">
                       <span className="cat-feature-t" role="heading" aria-level={3}>{f.title}</span>
                       <span className="cat-feature-s">{f.text.map((l) => <span key={l}>{l}</span>)}</span>
@@ -225,9 +225,11 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
               <Lead eyebrow="はじめかた" title="取得から検査までの手順" />
               <div className="cat-steps">
                 {STEPS.map((s, i) => (
-                  <div className="cat-step" key={s.title}>
-                    <span className="cat-step-n num">{String(i + 1).padStart(2, '0')}</span>
-                    <span className="cat-pillar-t">{s.title}</span>
+                  <div className="cat-card cat-step" key={s.title}>
+                    <div className="cat-step-h">
+                      <span className="cat-step-n num">{String(i + 1).padStart(2, '0')}</span>
+                      <span className="cat-pillar-t" role="heading" aria-level={3}>{s.title}</span>
+                    </div>
                     <CodeBlock language="shell" label={s.title} wrap code={s.code} />
                   </div>
                 ))}
@@ -237,14 +239,22 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
 
             <section className="cat-band">
               <Lead eyebrow="カタログ" title="部品と画面の型を見る" />
-              {GROUPS.map((g) => (
-                <div className="cat-group" key={g}>
-                  <span className="cat-group-t" role="heading" aria-level={3}>{g}</span>
-                  <div className="cat-tiles">
-                    {PAGES.filter((p) => p.group === g).map((p) => <EntityRow key={p.key} onClick={() => onOpen(p.key)} lead={<IconBox>{p.icon}</IconBox>} title={p.label} sub={p.specs.length ? `${p.specs.length}項目` : '画面の型'} />)}
-                  </div>
-                </div>
-              ))}
+              <div className="cat-groups">
+                {GROUPS.map((g) => {
+                  const pages = PAGES.filter((p) => p.group === g)
+                  return (
+                    <div className={`cat-card cat-group${g === '部品' ? ' wide' : ''}`} key={g}>
+                      <div className="cat-group-h">
+                        <span className="cat-group-t" role="heading" aria-level={3}>{g}</span>
+                        <span className="cat-group-n num">{pages.length}ページ</span>
+                      </div>
+                      <div className="cat-tiles">
+                        {pages.map((p) => <EntityRow key={p.key} onClick={() => onOpen(p.key)} lead={<IconBox>{p.icon}</IconBox>} title={p.label} sub={p.specs.length ? `${p.specs.length}項目` : '画面の型'} />)}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             </section>
           </div>
         </div>

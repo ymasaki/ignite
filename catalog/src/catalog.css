@@ -141,7 +141,8 @@
 .cat-hero-s{display:flex;flex-wrap:wrap;gap:16px 32px;padding-top:20px;border-top:1px solid var(--line)}
 .cat-mock-h{display:flex;align-items:center;gap:10px}
 .cat-mock-t{flex:1;font-size:var(--fs-14);font-weight:700;color:var(--ink)}
-.cat-band{display:grid;gap:24px;padding:40px 0;border-top:1px solid var(--line)}
+/* 段どうしはカードの格子と余白で分かれるので、線は引かない */
+.cat-band{display:grid;gap:20px;padding:32px 0}
 .cat-lead{display:grid;gap:6px;max-width:560px}
 .cat-eyebrow{font-size:var(--fs-12);font-weight:700;color:var(--pri-ink)}
 .cat-lead-t{font-size:var(--fs-24);font-weight:700;line-height:1.4;color:var(--ink);word-break:auto-phrase}
@@ -149,21 +150,27 @@
 .cat-pillar-t{font-size:var(--fs-16);font-weight:700;color:var(--ink)}
 .cat-pillar-go{justify-self:start;display:inline-flex;align-items:center;gap:4px;font-size:var(--fs-13)}
 .cat-pillar-go svg{width:14px;height:14px;transition:translate var(--dur-base) var(--ease-spring)}
-/* 特徴。1 行に 1 つ、左に見出し・説明、右に本物の部品の見本を、間を広く取って縦に並べる。
-   概要は面（Board）を持たない画面なので、見本のカードはページの地に直接置く。角丸の枠を重ねないよう、
-   行そのものには枠・地を付けない（7 章「面の中に角丸の枠のカードを重ねない」）。狭いときは説明 → 見本の順に縦に積む */
-.cat-features{display:grid;gap:72px}
-.cat-feature{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,6fr);align-items:center;gap:56px}
-.cat-feature-b{display:grid;justify-items:start;align-content:center;gap:14px;min-width:0}
-/* 見出しは段の見出し（24px）より大きくし、行の中で最初に目に入るようにする */
-.cat-feature-t{font-size:var(--fs-32);font-weight:700;line-height:1.3;letter-spacing:-.01em;color:var(--ink);word-break:auto-phrase}
-.cat-feature-s{max-width:400px;font-size:var(--fs-16);line-height:1.9;color:var(--ink-2);word-break:auto-phrase}
-.cat-feature-b .cat-pillar-go{margin-top:6px}
-.cat-feature-demo{display:grid;place-items:center;min-width:0}
+/* 概要のカード。概要は面（Board）を持たない画面なので、ダッシュボードと同じくまとまりごとに角丸の枠のカード（ChartCard と同じ枠）を格子に並べる。
+   角丸の枠を重ねないよう（7 章）、カードの中の見本・コードは枠を外し、線と余白で区切る */
+.cat-card{display:flex;flex-direction:column;gap:16px;min-width:0;padding:24px;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+/* 特徴。広いときは 2 列、wide のカードは横いっぱい。上に見出し・説明、線の下に本物の部品の見本 */
+.cat-features{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.cat-feature.wide{grid-column:1/-1}
+.cat-feature-b{display:grid;justify-items:start;gap:8px;min-width:0}
+.cat-feature-t{font-size:var(--fs-24);font-weight:700;line-height:1.35;color:var(--ink);word-break:auto-phrase}
+.cat-feature-s{font-size:var(--fs-14);line-height:1.8;color:var(--ink-2);word-break:auto-phrase}
+.cat-feature-b .cat-pillar-go{margin-top:4px}
+.cat-feature-demo{flex:1;display:grid;place-items:center;min-width:0;padding-top:20px;border-top:1px solid var(--line)}
 .cat-feature-demo>*{width:100%;max-width:520px}
-@container (max-width:899px){.cat-features{gap:56px}.cat-feature{grid-template-columns:minmax(0,1fr);gap:24px}}
-@container (max-width:480px){.cat-feature-t{font-size:var(--fs-24)}}
-.cat-demo-card{display:grid;gap:14px;padding:18px;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+.cat-feature.wide .cat-feature-demo>*{max-width:760px}
+/* 横いっぱいのカードは、説明を左・見本を右に並べ、間を縦の線で区切る */
+@container (min-width:840px){
+  .cat-feature.wide{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);align-items:center;gap:24px}
+  .cat-feature.wide .cat-feature-demo{align-self:stretch;padding:0 0 0 24px;border-top:0;border-left:1px solid var(--line)}
+}
+@container (max-width:839px){.cat-features{grid-template-columns:minmax(0,1fr)}}
+@container (max-width:480px){.cat-card{padding:18px}.cat-feature-t{font-size:var(--fs-20)}}
+.cat-demo-card{display:grid;gap:14px;min-width:0}
 .cat-demo-col{display:grid;gap:14px;min-width:0}
 .cat-demo-split{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));align-items:center;gap:20px}
 .cat-demo-l{font-size:var(--fs-12);color:var(--ink-3)}
@@ -171,7 +178,8 @@
 /* 幅の見本。枠の幅を変えると、中の小さなアプリ画面が組み変わる（枠を container にして、枠の幅だけで決める）。
    枠の高さはどの幅でも同じにし、切り替えでカードの高さを変えない */
 .cat-demo-stage{display:grid;justify-items:center}
-.cat-demo-frame{container-type:inline-size;width:100%;height:210px;overflow:hidden;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);transition:width var(--dur-slow) var(--ease-spring)}
+/* カードの中に置くので、カードに見えないよう角丸を部品の段（10px）にし、影を付けない。輪郭は幅の変化を見せるために残す */
+.cat-demo-frame{container-type:inline-size;width:100%;height:210px;overflow:hidden;background:var(--panel);border:1px solid var(--line-2);border-radius:10px;transition:width var(--dur-slow) var(--ease-spring)}
 .cat-demo-frame.tab{width:72%}
 .cat-demo-frame.sp{width:44%;min-width:170px}
 .cat-demo-app{display:grid;grid-template-columns:120px minmax(0,1fr);height:100%}
@@ -188,13 +196,27 @@
 @media (hover:hover){.cat-pillar-go:hover svg{translate:3px 0}}
 .cat-split{grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));align-items:start;gap:32px}
 .cat-note{gap:6px;font-size:var(--fs-12);color:var(--ink-3)}
-.cat-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:16px}
-.cat-step{display:grid;align-content:start;gap:8px;min-width:0}
-.cat-step-n{font-size:var(--fs-24);font-weight:700;color:var(--pri-ink)}
-.cat-group{display:grid;gap:8px}
-.cat-group + .cat-group{margin-top:8px}
-.cat-group-t{font-size:var(--fs-12);font-weight:700;color:var(--ink-3)}
-.cat-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(220px,100%),1fr));gap:4px 16px}
+/* 3 枚を 1 行に。2 枚と 1 枚に割れて穴が空かないよう、入らない幅では 1 列に積む */
+.cat-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@container (max-width:719px){.cat-steps{grid-template-columns:minmax(0,1fr)}}
+/* 手順のカード。コードはカードの下半分に線 1 本で区切って収め、コードの枠をカードの枠に重ねない */
+.cat-step{gap:6px;padding:0;overflow:hidden}
+.cat-step-h{display:grid;gap:4px;padding:20px 24px 14px}
+.cat-step-n{font-size:var(--fs-20);font-weight:700;line-height:1.2;color:var(--pri-ink)}
+.cat-step .cb{flex:1;border:0;border-top:1px solid var(--line);border-radius:0}
+/* カタログ。まとまり（基礎・部品・画面の型）ごとに 1 枚のカード */
+/* 広いときは 4 列にし、ページの多いまとまり（部品）は 2 列分の幅で中を 2 列に並べて、カードの高さをそろえる */
+.cat-groups{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.cat-group.wide{grid-column:span 2}
+.cat-group.wide .cat-tiles{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:16px}
+/* 2 列では、横いっぱいの部品を最後に回し、残りの 2 枚を 1 行に並べる */
+@container (max-width:1079px){.cat-groups{grid-template-columns:repeat(2,minmax(0,1fr))}.cat-group.wide{grid-column:1/-1;order:1}}
+@container (max-width:599px){.cat-groups{grid-template-columns:minmax(0,1fr)}.cat-group.wide .cat-tiles{grid-template-columns:minmax(0,1fr)}}
+.cat-group{gap:8px;padding:20px 16px 16px}
+.cat-group-h{display:flex;align-items:baseline;gap:8px;padding:0 8px}
+.cat-group-t{font-size:var(--fs-16);font-weight:700;color:var(--ink)}
+.cat-group-n{font-size:var(--fs-12);color:var(--ink-3)}
+.cat-tiles{display:grid;gap:2px}
 
 /* 画面の型 */
 .cat-filter{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:var(--shell-gap);padding-inline:var(--shell-x);font-size:var(--fs-12);color:var(--ink-2)}
