@@ -148,24 +148,30 @@
 .cat-eyebrow{font-size:var(--fs-12);font-weight:700;color:var(--pri-ink)}
 .cat-lead-t{font-size:var(--fs-24);font-weight:700;line-height:1.4;color:var(--ink);word-break:auto-phrase}
 .cat-lead-s{font-size:var(--fs-14);line-height:1.7;color:var(--ink-2);word-break:auto-phrase}
-/* 特徴は 5 つ。1 枚だけ取り残されないよう、広いときは 3 枚＋2 枚（6 列を 2 列ずつ・3 列ずつ）、狭いときは縦 1 列に並べる */
-.cat-pillars{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:16px}
-.cat-pillar{grid-column:span 2}
-.cat-pillar:nth-child(n+4){grid-column:span 3}
-@container (max-width:760px){.cat-pillars{grid-template-columns:minmax(0,1fr)}.cat-pillar,.cat-pillar:nth-child(n+4){grid-column:auto}}
-.cat-pillar{display:grid;grid-template-rows:auto auto 1fr auto;gap:10px;padding:20px;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;transition:translate var(--dur-base) var(--ease-spring),box-shadow var(--dur-base),border-color var(--dur-base)}
 .cat-pillar-t{font-size:var(--fs-16);font-weight:700;color:var(--ink)}
-.cat-pillar-s{font-size:var(--fs-13);line-height:1.7;color:var(--ink-2);word-break:auto-phrase}
 .cat-pillar-go{justify-self:start;display:inline-flex;align-items:center;gap:4px;font-size:var(--fs-13)}
 .cat-pillar-go svg{width:14px;height:14px;transition:translate var(--dur-base) var(--ease-spring)}
-/* 触ると少し浮き、アイコンがはずむ（動きを減らす設定では assist.css・base.css が止める） */
-@media (hover:hover){
-  .cat-pillar:hover{translate:0 -3px;border-color:var(--line-2);box-shadow:var(--shadow-hover)}
-  .cat-pillar:hover .ico{animation:cat-pop var(--dur-slow) var(--ease-spring)}
-  .cat-pillar-go:hover svg{translate:3px 0}
-}
-@keyframes cat-pop{40%{transform:scale(1.15) rotate(-8deg)}}
-#cat-try{scroll-margin-top:16px}
+/* 特徴。左に説明・右に本物の部品の見本を置き、段ごとに左右を入れ替える。狭いときは説明 → 見本の順に縦に積む */
+.cat-feats{display:grid;gap:56px}
+.cat-feat{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);align-items:center;gap:48px}
+.cat-feat:nth-child(even) .cat-feat-b{order:2}
+.cat-feat-b{display:grid;justify-items:start;gap:12px;min-width:0}
+.cat-feat-t{font-size:var(--fs-20);font-weight:700;line-height:1.4;color:var(--ink)}
+.cat-feat-s{font-size:var(--fs-14);line-height:1.8;color:var(--ink-2);word-break:auto-phrase}
+.cat-feat-demo{min-width:0;padding:24px;background:var(--panel-2);border:1px solid var(--line);border-radius:14px}
+@container (max-width:760px){.cat-feat{grid-template-columns:minmax(0,1fr);gap:20px}.cat-feat:nth-child(even) .cat-feat-b{order:0}}
+.cat-demo-card{display:grid;gap:14px;padding:18px;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+.cat-demo-col{display:grid;gap:14px;min-width:0}
+.cat-demo-split{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));align-items:center;gap:20px}
+.cat-demo-l{font-size:var(--fs-12);color:var(--ink-3)}
+.cat-demo-num{display:flex;align-items:baseline;gap:12px}
+/* 幅の見本。枠の幅を変えると、中の並び（器の幅で決まる auto-fit）が組み変わる */
+.cat-demo-stage{display:grid;justify-items:center;padding:16px;background:var(--panel);border:1px dashed var(--line-2);border-radius:12px}
+.cat-demo-frame{width:100%;padding:14px;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;transition:width var(--dur-slow) var(--ease-spring)}
+.cat-demo-frame.tab{width:62%}
+.cat-demo-frame.sp{width:36%;min-width:130px}
+.cat-demo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(64px,1fr));gap:12px}
+@media (hover:hover){.cat-pillar-go:hover svg{translate:3px 0}}
 .cat-split{grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));align-items:start;gap:32px}
 .cat-note{gap:6px;font-size:var(--fs-12);color:var(--ink-3)}
 .cat-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:16px}

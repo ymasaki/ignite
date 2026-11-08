@@ -1,5 +1,5 @@
-import { IconAccessible, IconArrowRight, IconBell, IconBrandGithub, IconDevices, IconLayout, IconPalette, IconRocket, IconSparkles } from '@tabler/icons-react'
-import { Board, Button, Checkbox, CodeBlock, currentAssist, EntityRow, IconBox, LinkButton, ProgressBar, Segmented, SettingGroup, SettingRow, setAssist, Stat, Steps, Switch, Tag, ThemeSettings, useScrollFocus, withFade, type Assist, type Theme } from '@ymasaki/ignite'
+import { IconAccessible, IconArrowRight, IconBell, IconBrandGithub, IconDevices, IconEyeCheck, IconLayout, IconPalette, IconRefresh, IconRocket, IconSparkles } from '@tabler/icons-react'
+import { Avatar, Board, Button, Checkbox, CodeBlock, currentAssist, Delta, EntityRow, IconBox, LinkButton, ProgressBar, RollingNumber, Segmented, SettingGroup, SettingRow, setAssist, Sparkline, Stat, Steps, Switch, Tag, TextField, ThemeSettings, useScrollFocus, withFade, type Assist, type Theme } from '@ymasaki/ignite'
 import { useRef, useState, type ReactNode } from 'react'
 import { version } from '../../package.json'
 import { HeroLogo } from './logo'
@@ -8,17 +8,10 @@ import { PAGES, PART_COUNT } from './nav'
 // カタログの入口。Ignite が何をしてくれるかを、本物の部品で見せる（見本の部品は押して試せる）
 const GROUPS = ['基礎', '部品', '画面の型']
 const REPO = 'https://github.com/ymasaki/ignite'
-const TRY = 'cat-try'
 const ico = (I: typeof IconBell) => <I size={18} stroke={1.8} />
 
-/** 特徴。go は詳しく見る先（ページの key、または概要の中の段の id） */
-const PILLARS = [
-  { icon: ico(IconLayout), title: 'シンプルでモダン', text: ['クセがなく、ひと目で使い方がわかる。', 'それでいて、ちゃんとかっこいい。'], go: 'actions', more: '部品を見る' },
-  { icon: ico(IconPalette), title: 'テーマで色を着せ替え', text: ['テーマカラーを選ぶだけで、画面全体の色がそろって変わる。', 'ライトとダークにも標準で対応。'], go: TRY, more: '試してみる' },
-  { icon: ico(IconSparkles), title: '遊び心のあるアニメーション', text: ['開く、切り替わる、数字が動く。', 'ちょっとした動きに手ざわりがあって、触るのが楽しくなる。'], go: 'motion', more: '動きを見る' },
-  { icon: ico(IconDevices), title: 'どんな幅にもフィット', text: ['レスポンシブの仕組みを標準装備。', 'PC からスマホまで、幅に合わせて UI がしなやかに組み変わる。'], go: 'responsive', more: 'レスポンシブ表示を見る' },
-  { icon: ico(IconAccessible), title: '誰にでも見やすく', text: ['見づらさを感じる人にも届くように。', 'コントラストを強めたり、文字を大きくしたりもできる。'], go: TRY, more: '試してみる' },
-]
+/** 特徴の見出しと説明。demo は説明の隣に置く本物の部品の見本、go は詳しく見るページ */
+type Feature = { icon: ReactNode; title: string; text: string[]; go: string; more: string; demo: ReactNode }
 
 const TEXT_OPTIONS: { value: Assist['text']; label: string }[] = [{ value: 'normal', label: '標準' }, { value: 'large', label: '大' }, { value: 'larger', label: '特大' }]
 const CONTRAST_OPTIONS: { value: Assist['contrast']; label: string }[] = [{ value: 'auto', label: '端末に合わせる' }, { value: 'more', label: '強く' }]
@@ -94,11 +87,112 @@ function AssistTry() {
   )
 }
 
+/** シンプル: 灰色の濃さと余白で分け、色は主要色ひとつだけ */
+function SimpleDemo() {
+  const [name, setName] = useState('山田 花子')
+  return (
+    <div className="cat-demo-card">
+      <div className="cat-mock-h">
+        <Avatar initial="山" />
+        <span className="cat-mock-t">プロフィール</span>
+        <Tag variant="ok">公開中</Tag>
+      </div>
+      <TextField label="表示名" value={name} onChange={setName} />
+      <div className="cat-end">
+        <Button>取り消す</Button>
+        <Button variant="primary">保存</Button>
+      </div>
+    </div>
+  )
+}
+
+/** テーマ: 選ぶとページ全体が切り替わる。隣の部品で、主要色がどこに効くかを見せる */
+function ThemeDemo({ theme, onTheme }: { theme: Theme; onTheme: (t: Theme) => void }) {
+  const [on, setOn] = useState(true)
+  return (
+    <div className="cat-demo-split">
+      <ThemeSettings value={theme} onChange={onTheme} />
+      <div className="cat-demo-card">
+        <Switch label="新着を知らせる" checked={on} onChange={setOn} />
+        <ProgressBar label="進み" value={68} showValue />
+        <div className="cat-end">
+          <Tag variant="ok">受け取る</Tag>
+          <Button variant="primary">保存</Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/** アニメーション: 数字が転がり、スイッチと開閉が弾む */
+function MotionDemo() {
+  const [n, setN] = useState(1280)
+  const [prev, setPrev] = useState(1180)
+  const [hist, setHist] = useState([9, 12, 10, 14, 13, 16, 15])
+  const [on, setOn] = useState(false)
+  const bump = () => {
+    const next = Math.max(800, n + Math.round((Math.random() - 0.35) * 300))
+    setPrev(n)
+    setN(next)
+    setHist((h) => [...h.slice(1), Math.round(next / 80)])
+  }
+  return (
+    <div className="cat-demo-card">
+      <span className="cat-demo-l">今週の訪問</span>
+      <div className="cat-demo-num">
+        <span className="cat-face-v num"><RollingNumber value={n} /></span>
+        <Delta value={n - prev} />
+      </div>
+      <Sparkline label="訪問の推移" values={hist} />
+      <Switch label="自動で更新する" checked={on} onChange={setOn} />
+      <div className="cat-end"><Button variant="primary" icon={ico(IconRefresh)} onClick={bump}>数字を変える</Button></div>
+    </div>
+  )
+}
+
+const WIDTHS = [{ value: 'pc', label: 'PC' }, { value: 'tab', label: 'タブレット' }, { value: 'sp', label: 'スマホ' }] as const
+type Width = (typeof WIDTHS)[number]['value']
+
+/** レスポンシブ: 枠の幅を変えると、中の部品が並びを組み変える */
+function ResponsiveDemo() {
+  const [w, setW] = useState<Width>('pc')
+  return (
+    <div className="cat-demo-col">
+      <Segmented fill label="画面の幅" value={w} onChange={setW} options={[...WIDTHS]} />
+      <div className="cat-demo-stage">
+        <div className={`cat-demo-frame ${w}`}>
+          <div className="cat-demo-grid">
+            <Stat label="訪問" value={1280} />
+            <Stat label="登録" value={86} />
+            <Stat label="継続率" value={92} unit="%" />
+            <Stat label="問い合わせ" value={14} />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/** アクセシビリティ: 選ぶとページ全体の文字とコントラストが変わる */
+function AssistDemo() {
+  return (
+    <div className="cat-demo-col">
+      <AssistTry />
+      <span className="cat-row cat-note">{ico(IconEyeCheck)}<span>どのテーマでも、コントラストは監査で確かめている</span></span>
+    </div>
+  )
+}
+
 export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme: (t: Theme) => void; onOpen: (key: string) => void }) {
   const ref = useRef<HTMLDivElement>(null)
   useScrollFocus(ref, '概要')
-  // 概要の中の段へは、その場でスクロールする。それ以外はページを開く
-  const go = (to: string) => (to === TRY ? document.getElementById(TRY)?.scrollIntoView({ behavior: 'smooth', block: 'start' }) : onOpen(to))
+  const features: Feature[] = [
+    { icon: ico(IconLayout), title: 'シンプルでモダン', text: ['クセがなく、ひと目で使い方がわかる。', '色は主要色ひとつ。ほかは灰色の濃さと余白で分ける。', 'それでいて、ちゃんとかっこいい。'], go: 'actions', more: '部品を見る', demo: <SimpleDemo /> },
+    { icon: ico(IconPalette), title: 'テーマで色を着せ替え', text: ['テーマカラーを選ぶだけで、画面全体の色がそろって変わる。', 'ライトとダークにも標準で対応。', '選ぶと、このカタログの色がすぐに変わる。'], go: 'color', more: '色を見る', demo: <ThemeDemo theme={theme} onTheme={onTheme} /> },
+    { icon: ico(IconSparkles), title: '遊び心のあるアニメーション', text: ['数字は転がって変わり、スイッチは弾んで切り替わる。', 'ちょっとした動きに手ざわりがあって、触るのが楽しくなる。'], go: 'motion', more: '動きを見る', demo: <MotionDemo /> },
+    { icon: ico(IconDevices), title: 'どんな幅にもフィット', text: ['レスポンシブの仕組みを標準装備。', 'PC からスマホまで、幅に合わせて UI がしなやかに組み変わる。', '幅を変えると、並びが組み変わる。'], go: 'responsive', more: 'レスポンシブ表示を見る', demo: <ResponsiveDemo /> },
+    { icon: ico(IconAccessible), title: '誰にでも見やすく', text: ['見づらさを感じる人にも届くように。', 'コントラストを強めたり、文字を大きくしたりできる。', '選ぶと、このページ全体に効く。'], go: 'settings', more: '設定の画面を見る', demo: <AssistDemo /> },
+  ]
   return (
     <Board>
       <div className="cat-wrap">
@@ -132,30 +226,21 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
             </section>
 
             <section className="cat-band">
-              <Lead eyebrow="特徴" title="毎日さわる画面を、もっと気持ちよく" />
-              <div className="cat-pillars">
-                {PILLARS.map((p) => (
-                  <div className="cat-pillar" key={p.title}>
-                    <IconBox size="lg">{p.icon}</IconBox>
-                    <span className="cat-pillar-t">{p.title}</span>
-                    <span className="cat-pillar-s">{p.text.map((l) => <span key={l}>{l}</span>)}</span>
-                    <LinkButton className="cat-pillar-go" onClick={() => go(p.go)}>{p.more}{ico(IconArrowRight)}</LinkButton>
+              <Lead eyebrow="特徴" title="毎日さわる画面を、もっと気持ちよく">
+                <span>見本は、どれも本物の部品。押して試せる。</span>
+              </Lead>
+              <div className="cat-feats">
+                {features.map((f) => (
+                  <div className="cat-feat" key={f.title}>
+                    <div className="cat-feat-b">
+                      <IconBox size="lg">{f.icon}</IconBox>
+                      <span className="cat-feat-t" role="heading" aria-level={3}>{f.title}</span>
+                      <span className="cat-feat-s">{f.text.map((l) => <span key={l}>{l}</span>)}</span>
+                      <LinkButton className="cat-pillar-go" onClick={() => onOpen(f.go)}>{f.more}{ico(IconArrowRight)}</LinkButton>
+                    </div>
+                    <div className="cat-feat-demo">{f.demo}</div>
                   </div>
                 ))}
-              </div>
-            </section>
-
-            <section className="cat-band cat-split" id={TRY}>
-              <div className="cat-stack">
-                <Lead eyebrow="試してみる" title="好きな色で、見やすい大きさで">
-                  <span>選ぶと、このカタログ全体がすぐに変わる。</span>
-                  <span>どのテーマでも、コントラストは監査で確かめている。</span>
-                </Lead>
-                <div className="cat-ramp" aria-hidden="true">{[1, 2, 3, 4, 5].map((n) => <i className="cat-ramp-i" key={n} ref={(el) => el?.style.setProperty('background', `var(--chart-${n})`)} />)}</div>
-              </div>
-              <div className="cat-stack">
-                <ThemeSettings value={theme} onChange={onTheme} />
-                <AssistTry />
               </div>
             </section>
 
