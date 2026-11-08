@@ -43,7 +43,7 @@ Ignite 自身を変更するときの案内。デザインの規約は [DESIGN.m
 
 ## 変更と確認の対応
 
-開発には Node.js 22.12.0 以上と `npm ci` を使う。必須の一括確認は `bash scripts/test.sh`（`devboard.json` の `workflow.test` と同じ）。途中の確認には次の対応を使い、一括確認の代わりにはしない。
+開発には Node.js 22.12.0 以上と `bash scripts/setup.sh` を使う。依存の導入前に、共通Gitディレクトリへ完成済みの pre-commit 入口を排他的に配置する。別のhookや `core.hooksPath` があれば上書きせず停止する。コミット時は同じ入口の `--commit` がステージした全内容（skip-worktreeを含む）を一時コピーへ取り出して空白と型を検査し、成功・失敗時にコピーを消す。依存はそのworktreeのものを利用し、定義変更時の再導入と全件確認は取り込み前に行う。全件成功票は作らない。必須の一括確認は `bash scripts/test.sh`（`devboard.json` の `workflow.test` と同じ）。途中の確認には次の対応を使い、一括確認の代わりにはしない。
 
 | 変更 | 関連する確認 |
 |---|---|
@@ -52,7 +52,7 @@ Ignite 自身を変更するときの案内。デザインの規約は [DESIGN.m
 | 静的検査 | `tests/check.test.ts`・`tests/staged.test.ts` と、ビルド後の `npm run check:design` |
 | 初期化・同期・更新 | `tests/cli.test.ts` と `npm run smoke` |
 | 画面の測定・前後処理 | `tests/audit.test.ts`、`catalog/e2e/audit-extension.e2e.ts`、カタログ監査 |
-| 監査の実行・配信・公開処理 | `node --test scripts/test-entry.test.mjs scripts/health.test.mjs scripts/audit-cache.test.mjs scripts/audit-runner.test.mjs scripts/serve-catalog.test.mjs scripts/release.test.mjs` |
+| 監査の実行・配信・公開処理 | `node --test scripts/hooks.test.mjs scripts/test-entry.test.mjs scripts/health.test.mjs scripts/audit-cache.test.mjs scripts/audit-runner.test.mjs scripts/serve-catalog.test.mjs scripts/release.test.mjs` |
 | コード品質の計測 | `scripts/health/` の各コマンドが解析・行カバレッジ・計算の速さを測る。対象と実行方法は [README のコード品質](README.md#devboard-のコード品質)を正本とし、`scripts/health.test.mjs` で出力と失敗時の扱いを確認する |
 | パッケージ・ひな形・ビルド | `npm run smoke`。実際に pack して、空環境への導入・同期・模擬次版への更新を確かめる |
 

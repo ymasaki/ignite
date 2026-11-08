@@ -3,6 +3,15 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+# pre-commitは軽い型・空白検査。全件成功票は発行せず、取り込みは従来どおり全件を確認する。
+if [[ "$#" -eq 1 && "$1" == '--commit' ]]; then
+  exec node scripts/pre-commit.mjs
+fi
+if [[ "$#" -ne 0 ]]; then
+  echo '使い方: bash scripts/test.sh [--commit]' >&2
+  exit 2
+fi
+
 # 全件を毎回実行する。時間は整数秒で記録し、失敗した工程の終了値をそのまま返す。
 stage=0
 run() {
@@ -15,7 +24,7 @@ run() {
   return "$rc"
 }
 
-run harness '実行基盤の検査' node --test scripts/test-entry.test.mjs scripts/health.test.mjs scripts/audit-cache.test.mjs scripts/audit-runner.test.mjs scripts/serve-catalog.test.mjs scripts/release.test.mjs
+run harness '実行基盤の検査' node --test scripts/hooks.test.mjs scripts/test-entry.test.mjs scripts/health.test.mjs scripts/audit-cache.test.mjs scripts/audit-runner.test.mjs scripts/serve-catalog.test.mjs scripts/release.test.mjs
 run types '型の検査' npx tsc --noEmit
 run unit '単体テスト' npx vitest run --dir tests --maxWorkers=2
 run build '配布物のビルド' node scripts/build.mjs

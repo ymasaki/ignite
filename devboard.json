@@ -2,14 +2,14 @@
   "kind": "web",
   "icon": "docs/logo/ignite-icon.svg",
   "staging": {
-    "url": "http://localhost:5199",
+    "server": "ignite-catalog",
     "start": "bash scripts/start-catalog.sh",
     "command": "bash scripts/build-catalog.sh",
     "note": "main取り込み後にカタログをビルド。URLを開くと専用サーバーを起動する"
   },
   "workflow": {
     "base": "main",
-    "setup": "npm ci",
+    "setup": "bash scripts/setup.sh",
     "test": "bash scripts/test.sh"
   },
   "production": {

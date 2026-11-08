@@ -22,10 +22,10 @@ test('ネイティブ依存なしで配信し、境界・競合・停止を守�
   const work = await mkdtemp(path.join(tmpdir(), 'ignite-serve-'))
   let child
   const exited = new Map()
-  const start = port => {
-    const process = spawn('bash', ['scripts/start-catalog.sh', String(port)], { cwd: work })
-    exited.set(process, once(process, 'exit'))
-    return process
+  const start = (port, env = {}) => {
+    const serverProcess = spawn('bash', ['scripts/start-catalog.sh', ...(port === undefined ? [] : [String(port)])], { cwd: work, env: { ...process.env, ...env } })
+    exited.set(serverProcess, once(serverProcess, 'exit'))
+    return serverProcess
   }
   try {
     await mkdir(path.join(work, 'scripts'))
@@ -37,7 +37,7 @@ test('ネイティブ依存なしで配信し、境界・競合・停止を守�
     await writeFile(path.join(work, 'catalog-dist/favicon.svg'), '<svg/>')
     await writeFile(path.join(work, 'secret'), '秘密')
     await symlink(path.join(work, 'secret'), path.join(work, 'catalog-dist/link'))
-    child = start(0)
+    child = start(undefined, { PORT: '0', HOST: '127.0.0.1' })
     const port = await new Promise((resolve, reject) => {
       let output = ''
       let errors = ''
@@ -66,8 +66,11 @@ test('ネイティブ依存なしで配信し、境界・競合・停止を守�
     assert.equal(head.headers['content-length'], index.headers['content-length'])
     for (const [url, status] of [['/missing', 404], ['/assets/', 404], ['/%ZZ', 400], ['/%00', 400], ['/../secret', 403], ['/%2e%2e/secret', 403], ['/link', 403]]) assert.equal((await request(port, url)).status, status, url)
     assert.equal((await request(port, '/', 'POST')).status, 405)
-    const conflict = start(port)
+    // 明示引数がPORTより優先し、使用中ポートから自動で逃げない。
+    const conflict = start(port, { PORT: '0', HOST: '127.0.0.1' })
     assert.equal((await exited.get(conflict))[0], 1)
+    const invalid = start(undefined, { PORT: 'not-a-port', HOST: '127.0.0.1' })
+    assert.equal((await exited.get(invalid))[0], 1)
     child.kill('SIGTERM')
     await exited.get(child)
     await assert.rejects(request(port, '/'), { code: 'ECONNREFUSED' })

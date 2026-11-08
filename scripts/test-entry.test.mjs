@@ -5,9 +5,10 @@ import { mkdtempSync, mkdirSync, copyFileSync, writeFileSync, readFileSync, rmSy
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { spawnSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
 
 const commands = [
-  'node --test scripts/test-entry.test.mjs scripts/health.test.mjs scripts/audit-cache.test.mjs scripts/audit-runner.test.mjs scripts/serve-catalog.test.mjs scripts/release.test.mjs',
+  'node --test scripts/hooks.test.mjs scripts/test-entry.test.mjs scripts/health.test.mjs scripts/audit-cache.test.mjs scripts/audit-runner.test.mjs scripts/serve-catalog.test.mjs scripts/release.test.mjs',
   'npx tsc --noEmit',
   'npx vitest run --dir tests --maxWorkers=2',
   'node scripts/build.mjs',
@@ -46,4 +47,12 @@ if [[ "$command" = "$IGNITE_TEST_FAIL" ]]; then exit 17; fi
         new RegExp(`harness-metric: stage=${stages[i]} seconds=\\d+ status=${i === failure ? 17 : 0}\\n`))
     }
   } finally { rmSync(work, { recursive: true, force: true }) }
+})
+
+test('不明な軽量モードを空の成功にしない', () => {
+  for (const args of [['--unknown'], ['--commit', 'extra']]) {
+    const result = spawnSync('bash', [fileURLToPath(new URL('./test.sh', import.meta.url)), ...args], { encoding: 'utf8' })
+    assert.equal(result.status, 2)
+    assert.match(result.stderr, /使い方/)
+  }
 })

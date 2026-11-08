@@ -21,6 +21,8 @@
 
 ## 確認
 
+`bash scripts/setup.sh` で依存と共通の pre-commit を導入する（既存の別hook・`core.hooksPath` は上書きせず停止する）。コミット時は `bash scripts/test.sh --commit` でステージした内容の空白・型だけを一時コピーで検査し、取り込み時には全件を確認する。導入前の版のworktreeには新しい検査を強制しない。
+
 `bash scripts/test.sh`（型・単体テスト・ビルド・`ignite check`・カタログの監査・配布から更新までの通し確認）。
 
 - 検査は全件を基本とし、同じ保存済み入力・環境で成功したカタログ監査だけ24時間まで再利用する（条件は `docs/catalog-audit.md`）。`IGNITE_AUDIT_FRESH=1 bash scripts/test.sh` で必ず測り直す。工程別の秒数・終了値と監査のロック待ち秒数を出す。単体テストは最大2 workerとし、並列タスク間の負荷を抑える。

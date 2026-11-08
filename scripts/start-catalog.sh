@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# DevBoardのstaging.start。専用ポートで停止まで動く。
+# DevBoardのstaging.start。割り当てられたPORT・HOSTで停止まで動く（手動指定にも対応）。
 set -euo pipefail
 cd "$(dirname "$0")/.."
 export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
