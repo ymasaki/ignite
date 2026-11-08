@@ -149,8 +149,10 @@ interface ShellApi {
    * 横に並べる形では裏が見えているので何もしない（DESIGN.md 5 章「操作の結果を見える場所に出す」）
    */
   revealMain: () => void
+  /** AppShell の中か（枠の外に置く画面の型が、枠の中で見本として描かれたときに main を重ねないため） */
+  inShell: boolean
 }
-const ShellContext = createContext<ShellApi>({ revealMain: () => {} })
+const ShellContext = createContext<ShellApi>({ revealMain: () => {}, inShell: false })
 export const useShell = () => useContext(ShellContext)
 
 /**
@@ -272,7 +274,7 @@ export function AppShell({ side, foot, collapse, title, titleAfter, search, tool
     window.addEventListener('popstate', expand)
     return () => window.removeEventListener('popstate', expand)
   }, [])
-  const shellApi: ShellApi = { revealMain: () => !inline && panel?.open && panel.peek && setMinimized(true) }
+  const shellApi: ShellApi = { revealMain: () => !inline && panel?.open && panel.peek && setMinimized(true), inShell: true }
   return (
     <ShellContext.Provider value={shellApi}>
       <div className={`app${minimized ? ' panel-peek' : ''}${rail ? ' side-min' : ''}${rail && settled ? ' side-min-done' : ''}${switching ? ' side-switch' : ''}`} style={vars}>

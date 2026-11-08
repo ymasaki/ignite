@@ -1,5 +1,7 @@
 /* カタログの配置。色・文字・枠は部品に任せる */
 .cat-wrap{container-type:inline-size;height:100%}
+/* 面を持たない画面（概要）。Board と同じく本体の残りの高さを占め、枠・地は付けない */
+.cat-bare{display:flex;flex:1;flex-direction:column;min-width:0;min-height:0}
 .cat{display:grid;grid-template-columns:minmax(0,1fr);gap:32px;align-items:start;height:100%;padding:24px;overflow-y:auto;scroll-padding-top:24px}
 .cat-main{display:grid;grid-template-columns:minmax(0,1fr);min-width:0}
 /* まとまりの 1 段。線 1 本だけで区切る。左の見出しは長い段でも見えるよう、面の上端に留める */
@@ -44,7 +46,7 @@
 .pb > .cat-row{margin-top:16px}
 .cat-detail{display:flex;flex-direction:column;gap:16px;padding:0 18px 18px}
 .cat-pop{display:grid;gap:12px;min-width:220px;padding:14px}
-.cat-end{display:flex;justify-content:flex-end;gap:8px}
+.cat-end{display:flex;justify-content:flex-end;align-items:center;gap:8px}
 
 /* 基礎 */
 .cat-swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(108px,100%),1fr));gap:12px}
@@ -82,11 +84,12 @@
   --flame-a:oklch(from var(--pri) l c calc(h + 18));
   --flame-b:oklch(from var(--pri) calc(l + .1) c calc(h + 40));
   --flame-c:oklch(from var(--pri) .92 .14 calc(h + 70))}
-.cat-fx>span{position:absolute;border-radius:50%;filter:blur(90px);opacity:.1;mix-blend-mode:multiply}
+/* 概要は面を持たず、炎はページの地（白より暗い）に重なる。小さな文字が 4.5:1 を保つよう、白い面の上より薄くする */
+.cat-fx>span{position:absolute;border-radius:50%;filter:blur(90px);opacity:.06;mix-blend-mode:multiply}
 .cat-fx>span:nth-child(1){width:60%;height:60%;left:-10%;top:45%;background:var(--pri)}
 .cat-fx>span:nth-child(2){width:50%;height:55%;left:35%;top:55%;background:var(--flame-b)}
 .cat-fx>span:nth-child(3){width:55%;height:60%;left:55%;top:-5%;background:var(--flame-a)}
-.cat-fx>span:nth-child(4){width:45%;height:45%;left:15%;top:-10%;background:var(--flame-c);opacity:.14}
+.cat-fx>span:nth-child(4){width:45%;height:45%;left:15%;top:-10%;background:var(--flame-c);opacity:.08}
 /* 暗い地では掛け合わせると沈むので、光として足す。黄色は暗い地で薄めると濁るので控えめにする */
 [data-mode="dark"] .cat-fx>span{mix-blend-mode:screen;opacity:.14}
 [data-mode="dark"] .cat-fx>span:nth-child(4){opacity:.06}
@@ -146,21 +149,20 @@
 .cat-pillar-t{font-size:var(--fs-16);font-weight:700;color:var(--ink)}
 .cat-pillar-go{justify-self:start;display:inline-flex;align-items:center;gap:4px;font-size:var(--fs-13)}
 .cat-pillar-go svg{width:14px;height:14px;transition:translate var(--dur-base) var(--ease-spring)}
-/* 特徴。1 行に 1 つのカードを、間を広く取って縦に並べる。
-   カードの左に番号・見出し・説明、右に本物の部品の見本を置く（説明と見本が 1 枚にまとまり、対応が迷わない）。
-   見本の面は主要色をごく薄く差して、見本だけが浮かぶようにする。狭いときは説明 → 見本の順に縦に積む */
-.cat-features{display:grid;gap:24px}
-.cat-feature{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,6fr);align-items:center;gap:56px;min-height:380px;padding:40px;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+/* 特徴。1 行に 1 つ、左に見出し・説明、右に本物の部品の見本を、間を広く取って縦に並べる。
+   概要は面（Board）を持たない画面なので、見本のカードはページの地に直接置く。角丸の枠を重ねないよう、
+   行そのものには枠・地を付けない（7 章「面の中に角丸の枠のカードを重ねない」）。狭いときは説明 → 見本の順に縦に積む */
+.cat-features{display:grid;gap:72px}
+.cat-feature{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,6fr);align-items:center;gap:56px}
 .cat-feature-b{display:grid;justify-items:start;align-content:center;gap:14px;min-width:0}
-.cat-feature-n{display:flex;align-items:center;gap:12px;font-size:var(--fs-13);font-weight:700;color:var(--pri-ink)}
-.cat-feature-t{font-size:var(--fs-24);font-weight:700;line-height:1.4;color:var(--ink);word-break:auto-phrase}
+/* 見出しは段の見出し（24px）より大きくし、行の中で最初に目に入るようにする */
+.cat-feature-t{font-size:var(--fs-32);font-weight:700;line-height:1.3;letter-spacing:-.01em;color:var(--ink);word-break:auto-phrase}
 .cat-feature-s{max-width:400px;font-size:var(--fs-16);line-height:1.9;color:var(--ink-2);word-break:auto-phrase}
 .cat-feature-b .cat-pillar-go{margin-top:6px}
-.cat-feature-demo{display:grid;place-items:center;align-self:stretch;min-width:0;padding:40px;border-radius:12px;
-  background:radial-gradient(120% 100% at 100% 0%,var(--pri-soft) 0%,var(--panel-2) 65%)}
-.cat-feature-demo>*{width:100%;max-width:480px}
-@container (max-width:899px){.cat-feature{grid-template-columns:minmax(0,1fr);gap:28px;min-height:0;padding:28px}.cat-feature-demo{padding:24px}}
-@container (max-width:480px){.cat-feature{padding:20px}.cat-feature-demo{padding:16px}}
+.cat-feature-demo{display:grid;place-items:center;min-width:0}
+.cat-feature-demo>*{width:100%;max-width:520px}
+@container (max-width:899px){.cat-features{gap:56px}.cat-feature{grid-template-columns:minmax(0,1fr);gap:24px}}
+@container (max-width:480px){.cat-feature-t{font-size:var(--fs-24)}}
 .cat-demo-card{display:grid;gap:14px;padding:18px;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
 .cat-demo-col{display:grid;gap:14px;min-width:0}
 .cat-demo-split{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));align-items:center;gap:20px}

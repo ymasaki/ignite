@@ -125,3 +125,15 @@ test('グラフの確認口を Tab から外す・読み上げから隠す違反
   await page.locator('div').evaluate(el => { el.tabIndex = 0; el.setAttribute('aria-hidden', 'true') })
   expect(await graphFindings()).toHaveLength(1)
 })
+
+test('角丸の枠の中の角丸の枠を拾い、ボタン・丸い部品・除いた枠は拾わない', async ({ page }) => {
+  await page.setContent(`<style>
+    body{margin:0;font-size:16px} .face{border:1px solid #ccc;border-radius:14px;padding:20px;width:400px}
+    .card{border:1px solid #ccc;border-radius:12px;padding:10px} .plain{border-radius:12px;background:#eee;padding:10px}
+    button{border:1px solid #ccc;border-radius:10px} .pill{border:1px solid #ccc;border-radius:99px}
+  </style><div class="face"><div class="card nested">カード</div><div class="plain">地だけ</div>
+    <button>押す</button><span class="pill">タグ</span><div class="card sample">見本</div></div>`)
+  const nested = (f: Awaited<ReturnType<typeof measure>>) => f.filter((x) => x.rule === '角丸の枠を重ねない（7 章）').map((x) => x.where)
+  expect(nested(await measure(page, args))).toEqual(['div.face の中の div.card.nested', 'div.face の中の div.card.sample'])
+  expect(nested(await measure(page, { ...args, nestOk: '.sample' }))).toEqual(['div.face の中の div.card.nested'])
+})

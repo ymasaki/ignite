@@ -12,6 +12,8 @@ defineIgniteAudit({
     await expect(page.locator('#boot')).toHaveCount(0)
   },
   outDir: path.join(import.meta.dirname, '../test-results-audit'),
+  // 7 章の例外: 部品を見せるための見本の枠（角丸の見本・端末の枠・面の中に並べた KPI とキャンバスの見本）
+  nestOk: ['.cat-box', '.cat-phone', '.cat-demo-frame', '.cat-canvas', '.kpis'],
   screens: [
     { name: '概要', path: '/' },
     { name: 'セットアップ', path: '/?nav=setup' },
@@ -35,7 +37,7 @@ defineIgniteAudit({
     { name: '候補を出す検索', path: '/?nav=forms', act: (page) => page.getByRole('combobox', { name: '人やプロジェクトを探す' }).fill('sato') },
     { name: '候補を出す検索（該当なし）', path: '/?nav=forms&mode=dark', act: (page) => page.getByRole('combobox', { name: '人やプロジェクトを探す' }).fill('zzz') },
     { name: 'テーマ', path: '/?nav=color', act: (page) => page.getByRole('button', { name: 'テーマを変える' }).click() },
-    { name: '人と印', path: '/?nav=marks' },
+    { name: 'アイコンとタグ', path: '/?nav=marks' },
     { name: '一覧と表', path: '/?nav=data' },
     { name: 'グラフと数字', path: '/?nav=charts' },
     { name: '一覧の型', path: '/?nav=list' },

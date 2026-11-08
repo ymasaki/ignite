@@ -87,7 +87,7 @@ export function DashboardPage() {
 DashboardPage.Band = Band
 
 /** ログインの型。見本なので、送ると少し待って必ず失敗する */
-export function LoginPage({ mark, onBack }: { mark: ReactNode; onBack: () => void }) {
+export function LoginPage({ mark }: { mark: ReactNode }) {
   const [kind, setKind] = useState('basic')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string>()
@@ -107,10 +107,7 @@ export function LoginPage({ mark, onBack }: { mark: ReactNode; onBack: () => voi
       name="Ignite"
       title="ログイン"
       footer={
-        <>
-          <Segmented label="見本の形" value={kind} onChange={setKind} options={[{ value: 'basic', label: '基本' }, { value: 'alt', label: '外部認証あり' }]} />
-          <LinkButton onClick={onBack}>カタログへ戻る</LinkButton>
-        </>
+        <Segmented label="見本の形" value={kind} onChange={setKind} options={[{ value: 'basic', label: '基本' }, { value: 'alt', label: '外部認証あり' }]} />
       }
     >
       <LoginForm

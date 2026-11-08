@@ -78,8 +78,6 @@ export function App() {
   // 設定の画面では、行から開いたバージョン履歴・ライセンスを詳細パネルに出す
   const about = nav === 'settings' && open ? <AboutPanel id={open} onClose={close} /> : null
   const View = PAGE_VIEWS[nav as keyof typeof PAGE_VIEWS]
-  // ログインはアプリの枠の外に置く画面なので、カタログでも枠を出さない
-  if (nav === 'login') return <LoginPage mark={LOGO} onBack={() => go({ nav: 'overview' })} />
   return (
     <AppShell
       side={(closeSide, state) => (
@@ -103,6 +101,8 @@ export function App() {
       {(nav === 'list' || headerTools) && <ListPage selected={open} onOpen={(id) => go({ open: id })} />}
       {nav === 'dashboard' && <DashboardPage />}
       {nav === 'settings' && <SettingsPage detail={open} onOpen={(id) => go({ open: id })} />}
+      {/* ログインはアプリでは枠の外に置く画面。カタログでは左メニューを残したまま本体の中に見せる */}
+      {nav === 'login' && <LoginPage mark={LOGO} />}
     </AppShell>
   )
 }

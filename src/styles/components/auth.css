@@ -1,5 +1,5 @@
-/* ログインの画面の型と中身（ui/Auth.tsx）。body がスクロールしないので、画面の中をスクロールする */
-.auth-screen{display:flex;height:100%;padding:var(--space-4);overflow:auto;background:var(--bg)}
+/* ログインの画面の型と中身（ui/Auth.tsx）。body がスクロールしないので、画面の中をスクロールする。AppShell の本体（横並び）に見本として置いても幅いっぱいに広がる */
+.auth-screen{display:flex;flex:1;min-width:0;height:100%;padding:var(--space-4);overflow:auto;background:var(--bg)}
 /* 中央寄せは margin:auto（align-items:center だと低い窓で上が切れる） */
 .auth-column{display:grid;gap:var(--space-4);width:100%;max-width:400px;margin:auto}
 .auth-card{display:grid;gap:var(--space-5);min-width:0;padding:var(--space-5);border:1px solid var(--line);border-radius:14px;background:var(--panel);box-shadow:var(--shadow)}

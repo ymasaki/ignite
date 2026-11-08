@@ -8,28 +8,33 @@ import { FormField } from './Field'
 import { Checkbox } from './Form'
 import { Notice } from './Layout'
 import { Collapse } from './Motion'
+import { useShell } from './Shell'
 import { PasswordField, TextField } from './TextArea'
 
 /**
  * アプリの枠（AppShell）の外に置く、ログインなどの画面の型。窓の中央に 1 枚の面を置く。
- * mark と name はアプリの印と名前、title は h1（読み上げ用。画面には出さない）、footer は面の外の下に添えるもの。低い窓では画面の中をスクロールする
+ * mark と name はアプリの印と名前、title は h1（読み上げ用。画面には出さない）、footer は面の外の下に添えるもの。低い窓では画面の中をスクロールする。
+ * カタログのように AppShell の中で見本として描くときは、枠の main と h1 を重ねないよう div と h2 で描く
  */
 export function AuthScreen({ mark, name, title, footer, children }: { mark?: ReactNode; name: ReactNode; title: string; footer?: ReactNode; children: ReactNode }) {
   const titleId = useId()
+  const inShell = useShell().inShell
+  const Root = inShell ? 'div' : 'main'
+  const Title = inShell ? 'h2' : 'h1'
   return (
-    <main className="auth-screen">
+    <Root className="auth-screen">
       <div className="auth-column">
         <section className="auth-card" aria-labelledby={titleId}>
           <div className="auth-brand">
             {mark && <span className="auth-mark">{mark}</span>}
             <span className="auth-name">{name}</span>
           </div>
-          <h1 className="auth-title sr-only" id={titleId}>{title}</h1>
+          <Title className="auth-title sr-only" id={titleId}>{title}</Title>
           {children}
         </section>
         {footer && <div className="auth-foot">{footer}</div>}
       </div>
-    </main>
+    </Root>
   )
 }
 

@@ -15,13 +15,15 @@ export interface MeasureArgs {
   overflow: string
   bars: string
   frames: string
+  /** 角丸の枠を重ねてよい枠（部品そのものが持つ枠・見本の枠）。この中と、これ自身は測らない */
+  nestOk?: string
   panRegions?: AuditPanRegion[]
   skipLayout?: LayoutMeasurement[]
 }
 export type Measured = { rule: string; where: string; expected: string; actual: string }
 
 export function measure(page: Page, args: MeasureArgs): Promise<Measured[]> {
-  return page.evaluate(({ FONT_SIZES, FONT_WEIGHTS, RADII, SHELL, rows: rowSel, overflow, bars, frames, panRegions = [], skipLayout = [] }) => {
+  return page.evaluate(({ FONT_SIZES, FONT_WEIGHTS, RADII, SHELL, rows: rowSel, overflow, bars, frames, nestOk = '', panRegions = [], skipLayout = [] }) => {
     const out: Measured[] = []
     const root = getComputedStyle(document.querySelector('.mainwrap') || document.documentElement)
     const px = (v: string) => parseFloat(root.getPropertyValue(v))
@@ -264,6 +266,27 @@ export function measure(page: Page, args: MeasureArgs): Promise<Measured[]> {
           else if (painted(ecs) && er < r - 2) bad = bad || el
         }
         if (!clipped && bad) out.push({ rule: '角丸（4 章）', where: `${who(frame)} の${c.name}の角 ← ${parentWho(bad)}`, expected: `枠の角丸 ${r}px を中の地が塗らない`, actual: `${who(bad)}（角丸 ${parseFloat(getComputedStyle(bad)[c.prop]) || 0}px）の地が角を塗る` })
+      }
+    }
+
+    // 7 章: 角丸の枠の上に角丸の枠を重ねない。枠はカード・パネルの段の角丸（12px 以上。丸い部品の 99px・50% を除く）で四辺に線があるもの。
+    // ボタン・入力欄（角丸 10 以下）は枠に数えない。部品そのものが持つ枠（表・コード・アイコンの箱など）は nestOk で除く
+    const lined = (cs: CSSStyleDeclaration) => (['Top', 'Right', 'Bottom', 'Left'] as const).every((side) => {
+      const color = cs[`border${side}Color`]
+      return parseFloat(cs[`border${side}Width`]) > 0 && cs[`border${side}Style`] !== 'none' && color !== 'transparent' && !/^rgba\(.*,\s*0\)$/.test(color)
+    })
+    const card = (el: Element) => {
+      const cs = getComputedStyle(el)
+      const rad = cs.borderTopLeftRadius
+      const r = parseFloat(rad)
+      return !rad.endsWith('%') && r >= 12 && r < 99 && lined(cs)
+    }
+    for (const el of document.querySelectorAll('body *')) {
+      if (!visible(el) || (nestOk && el.closest(nestOk)) || !card(el)) continue
+      for (let a = el.parentElement; a; a = a.parentElement) {
+        if (!card(a)) continue
+        out.push({ rule: '角丸の枠を重ねない（7 章）', where: `${who(a)} の中の ${who(el)}`, expected: '角丸の枠の中は見出し・線・余白で区切る', actual: `角丸 ${parseFloat(getComputedStyle(a).borderTopLeftRadius)}px の枠の中に、角丸 ${parseFloat(getComputedStyle(el).borderTopLeftRadius)}px の枠` })
+        break
       }
     }
 

@@ -1,17 +1,17 @@
-import { IconAccessible, IconArrowRight, IconBell, IconBrandGithub, IconDevices, IconEyeCheck, IconLayout, IconPalette, IconRefresh, IconRocket, IconSparkles, IconChartBar, IconHome, IconMenu2, IconSettings, IconUsers } from '@tabler/icons-react'
-import { Avatar, Board, Button, CodeBlock, currentAssist, Delta, EntityRow, IconBox, LinkButton, ProgressBar, RollingNumber, Segmented, SettingGroup, SettingRow, setAssist, Sparkline, Stat, Switch, Tag, TextField, ThemeSettings, useScrollFocus, withFade, type Assist, type Theme } from '@ymasaki/ignite'
+import { IconArrowRight, IconBell, IconBrandGithub, IconEyeCheck, IconRefresh, IconRocket, IconChartBar, IconHome, IconMenu2, IconSettings, IconUsers } from '@tabler/icons-react'
+import { Avatar, Button, CodeBlock, currentAssist, Delta, EntityRow, IconBox, LinkButton, ProgressBar, RollingNumber, Segmented, SettingGroup, SettingRow, setAssist, Sparkline, Stat, Switch, Tag, TextField, ThemeSettings, useScrollFocus, withFade, type Assist, type Theme } from '@ymasaki/ignite'
 import { useRef, useState, type ReactNode } from 'react'
 import { version } from '../../package.json'
 import { HeroLogo } from './logo'
 import { PAGES, PART_COUNT } from './nav'
 
-// カタログの入口。Ignite が何をしてくれるかを、本物の部品で見せる（見本の部品は押して試せる）
+// カタログの入口。Ignite が何をしてくれるかを、本物の部品で見せる
 const GROUPS = ['基礎', '部品', '画面の型']
 const REPO = 'https://github.com/ymasaki/ignite'
 const ico = (I: typeof IconBell) => <I size={18} stroke={1.8} />
 
-/** 特徴のカード（1 行に 1 つ）。左に番号・見出し・説明、右に本物の部品の見本（demo）。go は詳しく見るページ */
-type Feature = { icon: ReactNode; title: string; text: string[]; go: string; more: string; demo: ReactNode }
+/** 特徴のカード（1 行に 1 つ）。左に見出し・説明、右に本物の部品の見本（demo）。go は詳しく見るページ */
+type Feature = { title: string; text: string[]; go: string; more: string; demo: ReactNode }
 
 const TEXT_OPTIONS: { value: Assist['text']; label: string }[] = [{ value: 'normal', label: '標準' }, { value: 'large', label: '大' }, { value: 'larger', label: '特大' }]
 const CONTRAST_OPTIONS: { value: Assist['contrast']; label: string }[] = [{ value: 'auto', label: '端末に合わせる' }, { value: 'more', label: '強く' }]
@@ -157,7 +157,7 @@ function ResponsiveDemo() {
 /** アクセシビリティ: 選ぶとページ全体の文字とコントラストが変わる */
 function AssistDemo() {
   return (
-    <div className="cat-demo-col">
+    <div className="cat-demo-card">
       <AssistTry />
       <span className="cat-row cat-note">{ico(IconEyeCheck)}<span>どのテーマでも、コントラストは監査で確かめている</span></span>
     </div>
@@ -168,14 +168,14 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
   const ref = useRef<HTMLDivElement>(null)
   useScrollFocus(ref, '概要')
   const features: Feature[] = [
-    { icon: ico(IconLayout), title: 'シンプルでモダン', text: ['クセがなく、ひと目で使い方がわかる。', '色は主要色ひとつ、あとは灰色と余白で分ける。'], go: 'actions', more: '部品を見る', demo: <SimpleDemo /> },
-    { icon: ico(IconPalette), title: 'テーマで色を着せ替え', text: ['テーマカラーを選ぶだけで、全体の色がそろって変わる。', 'ライトとダークにも標準で対応。'], go: 'color', more: '色を見る', demo: <ThemeDemo theme={theme} onTheme={onTheme} /> },
-    { icon: ico(IconSparkles), title: '遊び心のあるアニメーション', text: ['数字は転がり、スイッチは弾む。', '小さな動きの手ざわりで、触るのが楽しくなる。'], go: 'motion', more: '動きを見る', demo: <MotionDemo /> },
-    { icon: ico(IconDevices), title: 'どんな幅にもフィット', text: ['PC からスマホまで、', '幅に合わせて UI がしなやかに組み変わる。'], go: 'responsive', more: 'レスポンシブ表示を見る', demo: <ResponsiveDemo /> },
-    { icon: ico(IconAccessible), title: '誰にでも見やすく', text: ['見づらさを感じる人にも届くように。', 'コントラストと文字の大きさを、このページで試せる。'], go: 'settings', more: '設定の画面を見る', demo: <AssistDemo /> },
+    { title: 'シンプルでモダン', text: ['クセがなく、ひと目で使い方がわかる。', '色は主要色ひとつ、あとは灰色と余白で分ける。'], go: 'actions', more: '部品を見る', demo: <SimpleDemo /> },
+    { title: 'テーマで色を着せ替え', text: ['テーマカラーを選ぶだけで、全体の色がそろって変わる。', 'ライトとダークにも標準で対応。'], go: 'color', more: '色を見る', demo: <ThemeDemo theme={theme} onTheme={onTheme} /> },
+    { title: '遊び心のあるアニメーション', text: ['数字は転がり、スイッチは弾む。', '小さな動きの手ざわりで、触るのが楽しくなる。'], go: 'motion', more: '動きを見る', demo: <MotionDemo /> },
+    { title: 'どんな幅にもフィット', text: ['PC からスマホまで、', '幅に合わせて UI がしなやかに組み変わる。'], go: 'responsive', more: 'レスポンシブ表示を見る', demo: <ResponsiveDemo /> },
+    { title: '誰にでも見やすく', text: ['見づらさを感じる人にも届くように。', 'コントラストと文字の大きさを、このページで試せる。'], go: 'settings', more: '設定の画面を見る', demo: <AssistDemo /> },
   ]
   return (
-    <Board>
+    <section className="cat-bare">
       <div className="cat-wrap">
         <div className="cat" ref={ref}>
           <div className="cat-main cat-lp cat-fx-wrap">
@@ -206,14 +206,11 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
             </section>
 
             <section className="cat-band">
-              <Lead eyebrow="特徴" title="毎日さわる画面を、もっと気持ちよく">
-                <span>見本は、どれも本物の部品。押して試せる。</span>
-              </Lead>
+              <Lead eyebrow="特徴" title="毎日さわる画面を、もっと気持ちよく" />
               <div className="cat-features">
-                {features.map((f, i) => (
+                {features.map((f) => (
                   <div className="cat-feature" key={f.title}>
                     <div className="cat-feature-b">
-                      <span className="cat-feature-n"><IconBox>{f.icon}</IconBox><span className="num">{String(i + 1).padStart(2, '0')}</span></span>
                       <span className="cat-feature-t" role="heading" aria-level={3}>{f.title}</span>
                       <span className="cat-feature-s">{f.text.map((l) => <span key={l}>{l}</span>)}</span>
                       <LinkButton className="cat-pillar-go" onClick={() => onOpen(f.go)}>{f.more}{ico(IconArrowRight)}</LinkButton>
@@ -252,6 +249,6 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
           </div>
         </div>
       </div>
-    </Board>
+    </section>
   )
 }

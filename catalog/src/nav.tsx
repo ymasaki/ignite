@@ -91,7 +91,7 @@ export const PAGES: PageDef[] = [
     { id: 'progress', title: '進み具合', parts: ['Spinner', 'ProgressBar'] },
     { id: 'empty', title: '空の状態', parts: ['EmptyState'] },
   ] },
-  { key: 'marks', label: '人と印', group: '部品', icon: icon(IconUsers), specs: [
+  { key: 'marks', label: 'アイコンとタグ', group: '部品', icon: icon(IconUsers), specs: [
     { id: 'avatar', title: '顔アイコン', parts: ['Avatar'] },
     { id: 'avatars', title: '顔の並び', parts: ['AvatarGroup', 'AvatarStack', 'IconBox'] },
     { id: 'tag', title: 'タグ', parts: ['Tag'] },
