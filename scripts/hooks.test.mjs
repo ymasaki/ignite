@@ -107,6 +107,17 @@ test('導入は原子的・冪等で、同時導入と公開前失敗でも既�
   assert.deepEqual((await fs.readdir(path.dirname(target))).filter(name => name.startsWith('.ignite-hook-')), [])
   await Promise.all([installHook(f.root), installHook(f.root), installHook(f.root)])
   assert.equal(await fs.readFile(target, 'utf8'), hook)
+  if (process.platform !== 'win32') {
+    await fs.chmod(target, 0o640)
+    await assert.rejects(installHook(f.root), /既存のpre-commit/)
+    if (process.getuid?.() !== 0) {
+      // 他者の実行bitがあっても、所有者に実行権限がなければGitはhookを使えない。
+      await fs.chmod(target, 0o641)
+      await assert.rejects(installHook(f.root), /既存のpre-commit/)
+    }
+    await fs.chmod(target, 0o755)
+    await installHook(f.root)
+  }
   await fs.writeFile(target, '#!/bin/sh\nexit 17\n')
   await assert.rejects(installHook(f.root), /既存のpre-commit/)
   assert.equal(await fs.readFile(target, 'utf8'), '#!/bin/sh\nexit 17\n')

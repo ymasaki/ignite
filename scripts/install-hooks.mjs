@@ -1,5 +1,6 @@
 // 共通hookは、完成済みの薄い入口だけを排他的に公開する。
 import fs from 'node:fs/promises'
+import { constants } from 'node:fs'
 import path from 'node:path'
 import { execFileSync, spawnSync } from 'node:child_process'
 import { pathToFileURL } from 'node:url'
@@ -44,7 +45,8 @@ export async function installHook(root, { beforePublish = async () => {} } = {})
     try { await fs.link(source, target) } catch (error) {
       if (error.code !== 'EEXIST') throw error
       const stat = await fs.lstat(target)
-      if (!stat.isFile() || !(stat.mode & 0o111) || await fs.readFile(target, 'utf8') !== hook) {
+      const executable = await fs.access(target, constants.X_OK).then(() => true, () => false)
+      if (!stat.isFile() || !executable || await fs.readFile(target, 'utf8') !== hook) {
         throw new Error('既存のpre-commitを保護して導入を止めます（上書きしません）')
       }
     }
