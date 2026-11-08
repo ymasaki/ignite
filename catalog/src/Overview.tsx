@@ -1,4 +1,4 @@
-import { IconAccessible, IconArrowRight, IconBell, IconBrandGithub, IconDevices, IconEyeCheck, IconLayout, IconPalette, IconRefresh, IconRocket, IconSparkles } from '@tabler/icons-react'
+import { IconAccessible, IconArrowRight, IconBell, IconBrandGithub, IconDevices, IconEyeCheck, IconLayout, IconPalette, IconRefresh, IconRocket, IconSparkles, IconChartBar, IconHome, IconMenu2, IconSettings, IconUsers } from '@tabler/icons-react'
 import { Avatar, Board, Button, Checkbox, CodeBlock, currentAssist, Delta, EntityRow, IconBox, LinkButton, ProgressBar, RollingNumber, Segmented, SettingGroup, SettingRow, setAssist, Sparkline, Stat, Steps, Switch, Tag, TextField, ThemeSettings, useScrollFocus, withFade, type Assist, type Theme } from '@ymasaki/ignite'
 import { useRef, useState, type ReactNode } from 'react'
 import { version } from '../../package.json'
@@ -10,8 +10,8 @@ const GROUPS = ['基礎', '部品', '画面の型']
 const REPO = 'https://github.com/ymasaki/ignite'
 const ico = (I: typeof IconBell) => <I size={18} stroke={1.8} />
 
-/** 特徴のカード。上に見出しと短い説明、下に本物の部品の見本（demo）。go は詳しく見るページ、size はカードの幅（12 列のうち 5・7・12） */
-type Feature = { icon: ReactNode; title: string; text: string[]; go: string; more: string; demo: ReactNode; size: 'w5' | 'w7' | 'w12' }
+/** 特徴のカード（1 行に 1 つ）。左に番号・見出し・説明、右に本物の部品の見本（demo）。go は詳しく見るページ */
+type Feature = { icon: ReactNode; title: string; text: string[]; go: string; more: string; demo: ReactNode }
 
 const TEXT_OPTIONS: { value: Assist['text']; label: string }[] = [{ value: 'normal', label: '標準' }, { value: 'large', label: '大' }, { value: 'larger', label: '特大' }]
 const CONTRAST_OPTIONS: { value: Assist['contrast']; label: string }[] = [{ value: 'auto', label: '端末に合わせる' }, { value: 'more', label: '強く' }]
@@ -155,7 +155,12 @@ function MotionDemo() {
 const WIDTHS = [{ value: 'pc', label: 'PC' }, { value: 'tab', label: 'タブレット' }, { value: 'sp', label: 'スマホ' }] as const
 type Width = (typeof WIDTHS)[number]['value']
 
-/** レスポンシブ: 枠の幅を変えると、中の部品が並びを組み変える */
+const DEMO_NAV = [{ icon: IconHome, label: 'ホーム' }, { icon: IconChartBar, label: 'レポート' }, { icon: IconUsers, label: 'メンバー' }, { icon: IconSettings, label: '設定' }]
+
+/**
+ * レスポンシブ: 枠の幅を変えると、中の小さなアプリ画面が組み変わる（枠の幅で決まる container query）。
+ * 広いと文字付きの左メニュー、狭まるとアイコンだけ、スマホの幅ではメニューのボタンになり数字が縦に並ぶ。枠の高さは変えない
+ */
 function ResponsiveDemo() {
   const [w, setW] = useState<Width>('pc')
   return (
@@ -163,11 +168,19 @@ function ResponsiveDemo() {
       <Segmented fill label="画面の幅" value={w} onChange={setW} options={[...WIDTHS]} />
       <div className="cat-demo-stage">
         <div className={`cat-demo-frame ${w}`}>
-          <div className="cat-demo-grid">
-            <Stat label="訪問" value={1280} />
-            <Stat label="登録" value={86} />
-            <Stat label="継続率" value={92} unit="%" />
-            <Stat label="問い合わせ" value={14} />
+          <div className="cat-demo-app">
+            <div className="cat-demo-side" aria-hidden="true">
+              {DEMO_NAV.map((n, i) => (
+                <span className={`cat-demo-nav${i === 0 ? ' on' : ''}`} key={n.label}><n.icon size={16} stroke={1.8} /><span className="cat-demo-nav-l">{n.label}</span></span>
+              ))}
+            </div>
+            <div className="cat-demo-main">
+              <span className="cat-demo-top"><IconMenu2 className="cat-demo-menu" size={16} stroke={1.8} aria-hidden="true" />ホーム</span>
+              <div className="cat-demo-grid">
+                <Stat label="訪問" value={1280} />
+                <Stat label="登録" value={86} />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -189,11 +202,11 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
   const ref = useRef<HTMLDivElement>(null)
   useScrollFocus(ref, '概要')
   const features: Feature[] = [
-    { size: 'w5', icon: ico(IconLayout), title: 'シンプルでモダン', text: ['クセがなく、ひと目で使い方がわかる。', '色は主要色ひとつ、あとは灰色と余白で分ける。'], go: 'actions', more: '部品を見る', demo: <SimpleDemo /> },
-    { size: 'w7', icon: ico(IconPalette), title: 'テーマで色を着せ替え', text: ['テーマカラーを選ぶだけで、全体の色がそろって変わる。', 'ライトとダークにも標準で対応。'], go: 'color', more: '色を見る', demo: <ThemeDemo theme={theme} onTheme={onTheme} /> },
-    { size: 'w5', icon: ico(IconSparkles), title: '遊び心のあるアニメーション', text: ['数字は転がり、スイッチは弾む。', '小さな動きの手ざわりで、触るのが楽しくなる。'], go: 'motion', more: '動きを見る', demo: <MotionDemo /> },
-    { size: 'w7', icon: ico(IconDevices), title: 'どんな幅にもフィット', text: ['PC からスマホまで、', '幅に合わせて UI がしなやかに組み変わる。'], go: 'responsive', more: 'レスポンシブ表示を見る', demo: <ResponsiveDemo /> },
-    { size: 'w12', icon: ico(IconAccessible), title: '誰にでも見やすく', text: ['見づらさを感じる人にも届くように。', 'コントラストと文字の大きさを、このページで試せる。'], go: 'settings', more: '設定の画面を見る', demo: <AssistDemo /> },
+    { icon: ico(IconLayout), title: 'シンプルでモダン', text: ['クセがなく、ひと目で使い方がわかる。', '色は主要色ひとつ、あとは灰色と余白で分ける。'], go: 'actions', more: '部品を見る', demo: <SimpleDemo /> },
+    { icon: ico(IconPalette), title: 'テーマで色を着せ替え', text: ['テーマカラーを選ぶだけで、全体の色がそろって変わる。', 'ライトとダークにも標準で対応。'], go: 'color', more: '色を見る', demo: <ThemeDemo theme={theme} onTheme={onTheme} /> },
+    { icon: ico(IconSparkles), title: '遊び心のあるアニメーション', text: ['数字は転がり、スイッチは弾む。', '小さな動きの手ざわりで、触るのが楽しくなる。'], go: 'motion', more: '動きを見る', demo: <MotionDemo /> },
+    { icon: ico(IconDevices), title: 'どんな幅にもフィット', text: ['PC からスマホまで、', '幅に合わせて UI がしなやかに組み変わる。'], go: 'responsive', more: 'レスポンシブ表示を見る', demo: <ResponsiveDemo /> },
+    { icon: ico(IconAccessible), title: '誰にでも見やすく', text: ['見づらさを感じる人にも届くように。', 'コントラストと文字の大きさを、このページで試せる。'], go: 'settings', more: '設定の画面を見る', demo: <AssistDemo /> },
   ]
   return (
     <Board>
@@ -231,15 +244,16 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
               <Lead eyebrow="特徴" title="毎日さわる画面を、もっと気持ちよく">
                 <span>見本は、どれも本物の部品。押して試せる。</span>
               </Lead>
-              <div className="cat-bento">
-                {features.map((f) => (
-                  <div className={`cat-bento-c ${f.size}`} key={f.title}>
-                    <div className="cat-bento-h">
-                      <span className="cat-bento-t" role="heading" aria-level={3}><IconBox>{f.icon}</IconBox>{f.title}</span>
-                      <span className="cat-bento-s">{f.text.map((l) => <span key={l}>{l}</span>)}</span>
+              <div className="cat-features">
+                {features.map((f, i) => (
+                  <div className="cat-feature" key={f.title}>
+                    <div className="cat-feature-b">
+                      <span className="cat-feature-n"><IconBox>{f.icon}</IconBox><span className="num">{String(i + 1).padStart(2, '0')}</span></span>
+                      <span className="cat-feature-t" role="heading" aria-level={3}>{f.title}</span>
+                      <span className="cat-feature-s">{f.text.map((l) => <span key={l}>{l}</span>)}</span>
                       <LinkButton className="cat-pillar-go" onClick={() => onOpen(f.go)}>{f.more}{ico(IconArrowRight)}</LinkButton>
                     </div>
-                    <div className="cat-bento-demo">{f.demo}</div>
+                    <div className="cat-feature-demo">{f.demo}</div>
                   </div>
                 ))}
               </div>
