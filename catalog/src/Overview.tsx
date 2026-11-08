@@ -1,5 +1,5 @@
 import { IconAccessible, IconArrowRight, IconBell, IconBrandGithub, IconDevices, IconEyeCheck, IconLayout, IconPalette, IconRefresh, IconRocket, IconSparkles, IconChartBar, IconHome, IconMenu2, IconSettings, IconUsers } from '@tabler/icons-react'
-import { Avatar, Board, Button, Checkbox, CodeBlock, currentAssist, Delta, EntityRow, IconBox, LinkButton, ProgressBar, RollingNumber, Segmented, SettingGroup, SettingRow, setAssist, Sparkline, Stat, Steps, Switch, Tag, TextField, ThemeSettings, useScrollFocus, withFade, type Assist, type Theme } from '@ymasaki/ignite'
+import { Avatar, Board, Button, CodeBlock, currentAssist, Delta, EntityRow, IconBox, LinkButton, ProgressBar, RollingNumber, Segmented, SettingGroup, SettingRow, setAssist, Sparkline, Stat, Switch, Tag, TextField, ThemeSettings, useScrollFocus, withFade, type Assist, type Theme } from '@ymasaki/ignite'
 import { useRef, useState, type ReactNode } from 'react'
 import { version } from '../../package.json'
 import { HeroLogo } from './logo'
@@ -29,40 +29,6 @@ function Lead({ eyebrow, title, children }: { eyebrow: string; title: ReactNode;
       <span className="cat-eyebrow">{eyebrow}</span>
       <span className="cat-lead-t" role="heading" aria-level={2}>{title}</span>
       {children && <span className="cat-lead-s">{children}</span>}
-    </div>
-  )
-}
-
-/** ヒーローの右に置く、本物の部品で組んだ小さな画面 */
-function Showcase() {
-  const [notify, setNotify] = useState(true)
-  const [digest, setDigest] = useState(false)
-  const [freq, setFreq] = useState<'day' | 'week' | 'month'>('week')
-  const [step, setStep] = useState(1)
-  return (
-    <div className="cat-show">
-      <div className="cat-mock">
-        <div className="cat-mock-h">
-          <IconBox>{ico(IconBell)}</IconBox>
-          <span className="cat-mock-t">通知の設定</span>
-          <Tag variant={notify ? 'ok' : 'default'}>{notify ? '受け取る' : '止めている'}</Tag>
-        </div>
-        <Switch label="新着を知らせる" checked={notify} onChange={setNotify} />
-        <Checkbox label="週の要約も送る" checked={digest} onChange={setDigest} />
-        <Segmented fill label="頻度" value={freq} onChange={setFreq} options={[{ value: 'day', label: '毎日' }, { value: 'week', label: '毎週' }, { value: 'month', label: '毎月' }]} />
-        <div className="cat-end">
-          <Button>取り消す</Button>
-          <Button variant="primary">保存</Button>
-        </div>
-      </div>
-      <div className="cat-mock sub">
-        <Steps label="導入の進み" steps={['取得', '初期化', '検査']} current={step} />
-        <ProgressBar label="導入の進み" value={Math.round(((step + 1) / 3) * 100)} showValue />
-        <div className="cat-end">
-          <Button disabled={step === 0} onClick={() => setStep((s) => Math.max(0, s - 1))}>戻る</Button>
-          <Button variant="primary" disabled={step === 2} onClick={() => setStep((s) => Math.min(2, s + 1))}>次へ</Button>
-        </div>
-      </div>
     </div>
   )
 }
@@ -237,7 +203,6 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
                   <Stat label="外部の UI ライブラリ" value={0} />
                 </div>
               </div>
-              <Showcase />
             </section>
 
             <section className="cat-band">
