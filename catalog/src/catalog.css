@@ -1,7 +1,5 @@
 /* カタログの配置。色・文字・枠は部品に任せる */
 .cat-wrap{container-type:inline-size;height:100%}
-/* 面を持たない画面（概要）。Board と同じく本体の残りの高さを占め、枠・地は付けない */
-.cat-bare{display:flex;flex:1;flex-direction:column;min-width:0;min-height:0}
 .cat{display:grid;grid-template-columns:minmax(0,1fr);gap:32px;align-items:start;height:100%;padding:24px;overflow-y:auto;scroll-padding-top:24px}
 .cat-main{display:grid;grid-template-columns:minmax(0,1fr);min-width:0}
 /* まとまりの 1 段。線 1 本だけで区切る。左の見出しは長い段でも見えるよう、面の上端に留める */
@@ -71,10 +69,10 @@
 .cat-icons{display:flex;flex-wrap:wrap;gap:20px;color:var(--ink-2)}
 
 /* 概要（LP の構成。段ごとに見出し → 中身。色は役割のトークンだけ）。
-   上のヘッダーのほかは、ヒーロー・段の見出しも含めてすべて角丸の枠のカードの上に置く（ページの地に中身を直接置かない） */
-.cat-lp{gap:32px}
-.cat-card.cat-hero{position:relative;padding:40px;isolation:isolate}
-@container (max-width:480px){.cat-card.cat-hero{padding:24px 18px}}
+   ほかのページと同じ 1 枚の面（Board）に載せ、中はカードに割らず、余白と罫線で区切る（角丸の枠を重ねない。7 章） */
+.cat-lp{gap:0;padding:8px 24px 0}
+@container (max-width:599px){.cat-lp{padding:0}}
+.cat-hero{position:relative;padding:24px 0 48px;isolation:isolate}
 /* 背景は熱を帯びた炎の色の面。赤・橙・黄の大きな面を強くぼかして重ね、ゆっくり途切れずにうねらせる。
    本文全体を器にして敷き、.cat の中で本文と一緒にスクロールする。段や文字の列では切らない。
    文字を邪魔しないよう薄く敷くだけにし、文字の背後にベールは置かない。
@@ -86,7 +84,7 @@
   --flame-a:oklch(from var(--pri) l c calc(h + 18));
   --flame-b:oklch(from var(--pri) calc(l + .1) c calc(h + 40));
   --flame-c:oklch(from var(--pri) .92 .14 calc(h + 70))}
-/* 概要は面を持たず、炎はページの地（白より暗い）に重なる。小さな文字が 4.5:1 を保つよう、白い面の上より薄くする */
+/* 炎は面（Board）の中の文字の背後に重なる。小さな文字が 4.5:1 を保つよう薄く敷く */
 .cat-fx>span{position:absolute;border-radius:50%;filter:blur(90px);opacity:.06;mix-blend-mode:multiply}
 .cat-fx>span:nth-child(1){width:60%;height:60%;left:-10%;top:45%;background:var(--pri)}
 .cat-fx>span:nth-child(2){width:50%;height:55%;left:35%;top:55%;background:var(--flame-b)}
@@ -143,38 +141,32 @@
 .cat-hero-s{display:flex;flex-wrap:wrap;gap:16px 32px;padding-top:20px;border-top:1px solid var(--line)}
 .cat-mock-h{display:flex;align-items:center;gap:10px}
 .cat-mock-t{flex:1;font-size:var(--fs-14);font-weight:700;color:var(--ink)}
-/* 段どうしはカードの格子と余白で分かれるので、線は引かない */
-/* 段。見出しのカードの下に中身のカードを、カードの間と同じ間隔で並べる */
-.cat-band{display:grid;gap:16px}
-/* 段の見出しのカード。左に印・見出し、右に段全体への操作 */
-.cat-card.cat-lead{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 24px;padding:20px 24px}
-.cat-lead-b{display:grid;gap:4px;min-width:0;max-width:560px}
+/* 段。上を罫線 1 本で区切る */
+.cat-band{display:grid;gap:32px;padding:48px 0;border-top:1px solid var(--line)}
+/* 段の見出し。左に印・見出し、右に段全体への操作 */
+.cat-lead{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px}
+.cat-lead-b{display:grid;gap:6px;min-width:0;max-width:560px}
 .cat-eyebrow{font-size:var(--fs-12);font-weight:700;color:var(--pri-ink)}
 .cat-lead-t{font-size:var(--fs-24);font-weight:700;line-height:1.4;color:var(--ink);word-break:auto-phrase}
 .cat-lead-s{font-size:var(--fs-14);line-height:1.7;color:var(--ink-2);word-break:auto-phrase}
 .cat-pillar-t{font-size:var(--fs-16);font-weight:700;color:var(--ink)}
 .cat-pillar-go{justify-self:start;display:inline-flex;align-items:center;gap:4px;font-size:var(--fs-13)}
 .cat-pillar-go svg{width:14px;height:14px;transition:translate var(--dur-base) var(--ease-spring)}
-/* 概要のカード。概要は面（Board）を持たない画面なので、ダッシュボードと同じくまとまりごとに角丸の枠のカード（ChartCard と同じ枠）を格子に並べる。
-   角丸の枠を重ねないよう（7 章）、カードの中の見本・コードは枠を外し、線と余白で区切る */
-.cat-card{display:flex;flex-direction:column;gap:16px;min-width:0;padding:24px;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
-/* 特徴。広いときは 2 列、wide のカードは横いっぱい。上に見出し・説明、線の下に本物の部品の見本 */
-.cat-features{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
-.cat-feature.wide{grid-column:1/-1}
-.cat-feature-b{display:grid;justify-items:start;gap:8px;min-width:0}
-.cat-feature-t{font-size:var(--fs-24);font-weight:700;line-height:1.35;color:var(--ink);word-break:auto-phrase}
-.cat-feature-s{font-size:var(--fs-14);line-height:1.8;color:var(--ink-2);word-break:auto-phrase}
-.cat-feature-b .cat-pillar-go{margin-top:4px}
-.cat-feature-demo{flex:1;display:grid;place-items:center;min-width:0;padding-top:20px;border-top:1px solid var(--line)}
+/* 特徴。1 行に 1 つ、左に見出し・説明、右に本物の部品の見本。行の間は罫線で区切る。狭いときは説明 → 見本の順に縦に積む */
+.cat-features{display:grid}
+.cat-feature{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,6fr);align-items:center;gap:56px;padding:40px 0;border-top:1px solid var(--line)}
+.cat-feature:first-child{padding-top:0;border-top:0}
+.cat-feature:last-child{padding-bottom:0}
+.cat-feature-b{display:grid;justify-items:start;align-content:center;gap:14px;min-width:0}
+/* 見出しは段の見出し（24px）より大きくし、行の中で最初に目に入るようにする */
+.cat-feature-t{font-size:var(--fs-32);font-weight:700;line-height:1.3;letter-spacing:-.01em;color:var(--ink);word-break:auto-phrase}
+.cat-feature-s{max-width:400px;font-size:var(--fs-16);line-height:1.9;color:var(--ink-2);word-break:auto-phrase}
+.cat-feature-b .cat-pillar-go{margin-top:6px}
+.cat-feature-demo{display:grid;place-items:center;min-width:0}
 .cat-feature-demo>*{width:100%;max-width:520px}
-.cat-feature.wide .cat-feature-demo>*{max-width:760px}
-/* 横いっぱいのカードは、説明を左・見本を右に並べ、間を縦の線で区切る */
-@container (min-width:840px){
-  .cat-feature.wide{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);align-items:center;gap:24px}
-  .cat-feature.wide .cat-feature-demo{align-self:stretch;padding:0 0 0 24px;border-top:0;border-left:1px solid var(--line)}
-}
-@container (max-width:839px){.cat-features{grid-template-columns:minmax(0,1fr)}}
-@container (max-width:480px){.cat-card{padding:18px}.cat-feature-t{font-size:var(--fs-20)}}
+@container (max-width:899px){.cat-feature{grid-template-columns:minmax(0,1fr);gap:24px;padding:32px 0}}
+@container (max-width:480px){.cat-feature-t{font-size:var(--fs-24)}}
+/* 見本は面の中に置くので、枠・影を付けない */
 .cat-demo-card{display:grid;gap:14px;min-width:0}
 .cat-demo-col{display:grid;gap:14px;min-width:0}
 .cat-demo-split{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));align-items:center;gap:20px}
@@ -183,7 +175,7 @@
 /* 幅の見本。枠の幅を変えると、中の小さなアプリ画面が組み変わる（枠を container にして、枠の幅だけで決める）。
    枠の高さはどの幅でも同じにし、切り替えでカードの高さを変えない */
 .cat-demo-stage{display:grid;justify-items:center}
-/* カードの中に置くので、カードに見えないよう角丸を部品の段（10px）にし、影を付けない。輪郭は幅の変化を見せるために残す */
+/* 面の中に置くので、カードに見えないよう角丸を部品の段（10px）にし、影を付けない。輪郭は幅の変化を見せるために残す */
 .cat-demo-frame{container-type:inline-size;width:100%;height:210px;overflow:hidden;background:var(--panel);border:1px solid var(--line-2);border-radius:10px;transition:width var(--dur-slow) var(--ease-spring)}
 .cat-demo-frame.tab{width:72%}
 .cat-demo-frame.sp{width:44%;min-width:170px}
@@ -201,27 +193,43 @@
 @media (hover:hover){.cat-pillar-go:hover svg{translate:3px 0}}
 .cat-split{grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));align-items:start;gap:32px}
 .cat-note{gap:6px;font-size:var(--fs-12);color:var(--ink-3)}
-/* 3 枚を 1 行に。2 枚と 1 枚に割れて穴が空かないよう、入らない幅では 1 列に積む */
-.cat-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
-@container (max-width:719px){.cat-steps{grid-template-columns:minmax(0,1fr)}}
-/* 手順のカード。コードはカードの下半分に線 1 本で区切って収め、コードの枠をカードの枠に重ねない */
-.cat-step{gap:6px;padding:0;overflow:hidden}
-.cat-step-h{display:grid;gap:4px;padding:20px 24px 14px}
-.cat-step-n{font-size:var(--fs-20);font-weight:700;line-height:1.2;color:var(--pri-ink)}
-.cat-step .cb{flex:1;border:0;border-top:1px solid var(--line);border-radius:0}
-/* カタログ。まとまり（基礎・部品・画面の型）ごとに 1 枚のカード */
-/* 広いときは 4 列にし、ページの多いまとまり（部品）は 2 列分の幅で中を 2 列に並べて、カードの高さをそろえる */
-.cat-groups{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+/* 手順。3 つを 1 行に並べ、間を縦の罫線で区切る。入らない幅では 1 列に積み、横の罫線で区切る */
+.cat-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.cat-step{display:grid;align-content:start;gap:8px;min-width:0;padding:0 24px}
+.cat-step:first-child{padding-left:0}
+.cat-step:last-child{padding-right:0}
+.cat-step + .cat-step{border-left:1px solid var(--line)}
+.cat-step-h{display:grid;gap:4px}
+.cat-step-n{font-size:var(--fs-24);font-weight:700;color:var(--pri-ink)}
+@container (max-width:899px){
+  .cat-steps{grid-template-columns:minmax(0,1fr)}
+  .cat-step{padding:0}
+  .cat-step + .cat-step{margin-top:24px;padding-top:24px;border-left:0;border-top:1px solid var(--line)}
+}
+/* カタログ。まとまり（基礎・部品・画面の型）を列に並べ、間を縦の罫線で区切る。
+   広いときは 4 列にし、ページの多い部品は 2 列分の幅で中を 2 列に並べて、列の長さをそろえる */
+.cat-groups{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+.cat-group{display:grid;align-content:start;gap:8px;min-width:0;padding:0 24px}
+.cat-group:first-child{padding-left:0}
+.cat-group:last-child{padding-right:0}
+.cat-group + .cat-group{border-left:1px solid var(--line)}
 .cat-group.wide{grid-column:span 2}
-.cat-group.wide .cat-tiles{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:16px}
-/* 2 列では、横いっぱいの部品を最後に回し、残りの 2 枚を 1 行に並べる */
-@container (max-width:1079px){.cat-groups{grid-template-columns:repeat(2,minmax(0,1fr))}.cat-group.wide{grid-column:1/-1;order:1}}
-@container (max-width:599px){.cat-groups{grid-template-columns:minmax(0,1fr)}.cat-group.wide .cat-tiles{grid-template-columns:minmax(0,1fr)}}
-.cat-group{gap:8px;padding:20px 16px 16px}
 .cat-group-h{display:flex;align-items:baseline;gap:8px;padding:0 8px}
 .cat-group-t{font-size:var(--fs-16);font-weight:700;color:var(--ink)}
 .cat-group-n{font-size:var(--fs-12);color:var(--ink-3)}
 .cat-tiles{display:grid;gap:2px}
+.cat-group.wide .cat-tiles{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:16px}
+/* 2 列では、横いっぱいの部品を最後に回して下の段にし、横の罫線で区切る */
+@container (max-width:1079px){
+  .cat-groups{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cat-group.wide{grid-column:1/-1;order:1;margin-top:24px;padding:24px 0 0;border-left:0;border-top:1px solid var(--line)}
+}
+@container (max-width:599px){
+  .cat-groups{grid-template-columns:minmax(0,1fr)}
+  .cat-group{padding:0}
+  .cat-group + .cat-group{margin-top:24px;padding-top:24px;border-left:0;border-top:1px solid var(--line)}
+  .cat-group.wide .cat-tiles{grid-template-columns:minmax(0,1fr)}
+}
 
 /* 画面の型 */
 .cat-filter{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:var(--shell-gap);padding-inline:var(--shell-x);font-size:var(--fs-12);color:var(--ink-2)}

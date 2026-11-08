@@ -81,6 +81,7 @@ defineIgniteAudit({
   reveals: [],       // 重ねた詳細の中の操作の結果が見えることを測る
   rows: [], overflow: [], bars: [], frames: [],  // アプリの部品の分の測定対象
   nestOk: [],        // 角丸の枠を重ねてよい、部品そのものの枠（DESIGN.md 7 章の例外）
+  bareOk: [],        // 角丸の枠の外に置いてよい中身（DESIGN.md 1 章の例外）
   contrastRules: [], // アプリのトークンの組
   exceptions: [],    // 文書に書いた例外
 })

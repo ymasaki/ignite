@@ -137,3 +137,21 @@ test('角丸の枠の中の角丸の枠を拾い、ボタン・丸い部品・�
   expect(nested(await measure(page, args))).toEqual(['div.face の中の div.card.nested', 'div.face の中の div.card.sample'])
   expect(nested(await measure(page, { ...args, nestOk: '.sample' }))).toEqual(['div.face の中の div.card.nested'])
 })
+
+test('本体の中で角丸の枠の外に置いた中身を拾い、枠・帯・ヘッダー・読み上げだけの文字・除いた見本は拾わない', async ({ page }) => {
+  await page.setContent(`<style>
+    body{margin:0;font-size:16px} .card{border:1px solid #ccc;border-radius:12px;padding:10px}
+    .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  </style><div class="mainwrap"><header class="top"><span>画面名</span></header><main class="shell-main">
+    <h2 class="bare">見出し</h2>
+    <div class="loose"><button>押す</button><span>補足</span></div>
+    <span class="sr">読み上げだけ</span>
+    <div class="frame"><span>内容の枠の中</span></div>
+    <div class="bar"><button>帯の操作</button></div>
+    <div class="card"><button>カードの中</button></div>
+    <div class="sample"><span>見本の補足</span></div>
+  </main></div>`)
+  const bare = (f: Awaited<ReturnType<typeof measure>>) => f.filter((x) => x.rule === '中身は角丸の枠の上に置く（1 章）').map((x) => x.where)
+  expect(bare(await measure(page, args))).toEqual(['h2.bare の中の h2.bare', 'div.loose の中の button', 'div.sample の中の span'])
+  expect(bare(await measure(page, { ...args, bareOk: '.sample' }))).toEqual(['h2.bare の中の h2.bare', 'div.loose の中の button'])
+})

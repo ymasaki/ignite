@@ -71,6 +71,8 @@ export interface IgniteAuditConfig {
   frames?: string[]
   /** 角丸の枠を重ねてよい枠（7 章の例外。アプリの部品・見本そのものが持つ枠）。先に文書へ書く */
   nestOk?: string[]
+  /** 角丸の枠の外に置いてよい中身（1 章の例外。アプリの帯など）。先に文書へ書く */
+  bareOk?: string[]
   /** アプリのトークンの組（DESIGN.md 2 章） */
   contrastRules?: ContrastRule[]
   /** 決まりに書いてある例外。キーは「決まり どこ 期待 実際」。足すときは先に文書へ書く */
@@ -169,6 +171,7 @@ export function defineIgniteAudit(config: IgniteAuditConfig): void {
     frames: ['.board', '.pslot > *', '.kpis', '.popover-body', '.drawer', ...(config.frames ?? [])].join(', '),
     // 7 章の例外: 部品そのものが持つ枠（コード・表・アイコンの箱・図の節点）
     nestOk: ['.cb', 'table', '.ico', '.tree-card', ...(config.nestOk ?? [])].join(', '),
+    bareOk: [...(config.bareOk ?? [])].join(', '),
   }
 
   // 指摘はテストごとの記録に書き、判定で定義順に集計する。worker を分けて並列に測っても同じ結果になる

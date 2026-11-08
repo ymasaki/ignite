@@ -1,5 +1,5 @@
 import { IconArrowRight, IconBell, IconBrandGithub, IconEyeCheck, IconRefresh, IconRocket, IconChartBar, IconHome, IconMenu2, IconSettings, IconUsers } from '@tabler/icons-react'
-import { Avatar, Button, CodeBlock, currentAssist, Delta, EntityRow, IconBox, LinkButton, ProgressBar, RollingNumber, Segmented, SettingGroup, SettingRow, setAssist, Sparkline, Stat, Switch, Tag, TextField, ThemeSettings, useScrollFocus, withFade, type Assist, type Theme } from '@ymasaki/ignite'
+import { Avatar, Board, Button, CodeBlock, currentAssist, Delta, EntityRow, IconBox, LinkButton, ProgressBar, RollingNumber, Segmented, SettingGroup, SettingRow, setAssist, Sparkline, Stat, Switch, Tag, TextField, ThemeSettings, useScrollFocus, withFade, type Assist, type Theme } from '@ymasaki/ignite'
 import { useRef, useState, type ReactNode } from 'react'
 import { version } from '../../package.json'
 import { HeroLogo } from './logo'
@@ -10,8 +10,8 @@ const GROUPS = ['基礎', '部品', '画面の型']
 const REPO = 'https://github.com/ymasaki/ignite'
 const ico = (I: typeof IconBell) => <I size={18} stroke={1.8} />
 
-/** 特徴のカード。上に見出し・説明、線の下に本物の部品の見本（demo）。go は詳しく見るページ、wide は格子の横いっぱい */
-type Feature = { title: string; text: string[]; go: string; more: string; demo: ReactNode; wide?: boolean }
+/** 特徴の行。左に見出し・説明、右に本物の部品の見本（demo）。go は詳しく見るページ */
+type Feature = { title: string; text: string[]; go: string; more: string; demo: ReactNode }
 
 const TEXT_OPTIONS: { value: Assist['text']; label: string }[] = [{ value: 'normal', label: '標準' }, { value: 'large', label: '大' }, { value: 'larger', label: '特大' }]
 const CONTRAST_OPTIONS: { value: Assist['contrast']; label: string }[] = [{ value: 'auto', label: '端末に合わせる' }, { value: 'more', label: '強く' }]
@@ -22,10 +22,10 @@ const STEPS = [
   { title: '検査する', code: '$ npx ignite check\n$ npm run ignite:audit' },
 ]
 
-/** LP の段の見出しのカード。小さな印・大きな見出し・短い補足と、右端に段全体への操作（action） */
+/** LP の段の見出し。小さな印・大きな見出し・短い補足と、右端に段全体への操作（action） */
 function Lead({ eyebrow, title, children, action }: { eyebrow: string; title: ReactNode; children?: ReactNode; action?: ReactNode }) {
   return (
-    <div className="cat-card cat-lead">
+    <div className="cat-lead">
       <div className="cat-lead-b">
         <span className="cat-eyebrow">{eyebrow}</span>
         <span className="cat-lead-t" role="heading" aria-level={2}>{title}</span>
@@ -172,18 +172,18 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
   useScrollFocus(ref, '概要')
   const features: Feature[] = [
     { title: 'シンプルでモダン', text: ['クセがなく、ひと目で使い方がわかる。', '色は主要色ひとつ、あとは灰色と余白で分ける。'], go: 'actions', more: '部品を見る', demo: <SimpleDemo /> },
+    { title: 'テーマで色を着せ替え', text: ['テーマカラーを選ぶだけで、全体の色がそろって変わる。', 'ライトとダークにも標準で対応。'], go: 'color', more: '色を見る', demo: <ThemeDemo theme={theme} onTheme={onTheme} /> },
     { title: '遊び心のあるアニメーション', text: ['数字は転がり、スイッチは弾む。', '小さな動きの手ざわりで、触るのが楽しくなる。'], go: 'motion', more: '動きを見る', demo: <MotionDemo /> },
-    { title: 'テーマで色を着せ替え', text: ['テーマカラーを選ぶだけで、全体の色がそろって変わる。', 'ライトとダークにも標準で対応。'], go: 'color', more: '色を見る', demo: <ThemeDemo theme={theme} onTheme={onTheme} />, wide: true },
     { title: 'どんな幅にもフィット', text: ['PC からスマホまで、', '幅に合わせて UI がしなやかに組み変わる。'], go: 'responsive', more: 'レスポンシブ表示を見る', demo: <ResponsiveDemo /> },
     { title: '誰にでも見やすく', text: ['見づらさを感じる人にも届くように。', 'コントラストと文字の大きさを、このページで試せる。'], go: 'settings', more: '設定の画面を見る', demo: <AssistDemo /> },
   ]
   return (
-    <section className="cat-bare">
+    <Board>
       <div className="cat-wrap">
         <div className="cat" ref={ref}>
           <div className="cat-main cat-lp cat-fx-wrap">
             <div className="cat-fx" aria-hidden="true"><span /><span /><span /><span /></div>
-            <section className="cat-card cat-hero">
+            <section className="cat-hero">
               <div className="cat-hero-b">
                 <HeroLogo>
                   <Tag>v{version}</Tag>
@@ -212,7 +212,7 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
               <Lead eyebrow="特徴" title="毎日さわる画面を、もっと気持ちよく" />
               <div className="cat-features">
                 {features.map((f) => (
-                  <div className={`cat-card cat-feature${f.wide ? ' wide' : ''}`} key={f.title}>
+                  <div className="cat-feature" key={f.title}>
                     <div className="cat-feature-b">
                       <span className="cat-feature-t" role="heading" aria-level={3}>{f.title}</span>
                       <span className="cat-feature-s">{f.text.map((l) => <span key={l}>{l}</span>)}</span>
@@ -228,7 +228,7 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
               <Lead eyebrow="はじめかた" title="取得から検査までの手順" action={<Button icon={ico(IconArrowRight)} onClick={() => onOpen('setup')}>手順をすべて見る</Button>} />
               <div className="cat-steps">
                 {STEPS.map((s, i) => (
-                  <div className="cat-card cat-step" key={s.title}>
+                  <div className="cat-step" key={s.title}>
                     <div className="cat-step-h">
                       <span className="cat-step-n num">{String(i + 1).padStart(2, '0')}</span>
                       <span className="cat-pillar-t" role="heading" aria-level={3}>{s.title}</span>
@@ -245,7 +245,7 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
                 {GROUPS.map((g) => {
                   const pages = PAGES.filter((p) => p.group === g)
                   return (
-                    <div className={`cat-card cat-group${g === '部品' ? ' wide' : ''}`} key={g}>
+                    <div className={`cat-group${g === '部品' ? ' wide' : ''}`} key={g}>
                       <div className="cat-group-h">
                         <span className="cat-group-t" role="heading" aria-level={3}>{g}</span>
                         <span className="cat-group-n num">{pages.length}ページ</span>
@@ -261,6 +261,6 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
           </div>
         </div>
       </div>
-    </section>
+    </Board>
   )
 }

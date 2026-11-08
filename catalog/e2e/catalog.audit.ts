@@ -14,6 +14,8 @@ defineIgniteAudit({
   outDir: path.join(import.meta.dirname, '../test-results-audit'),
   // 7 章の例外: 部品を見せるための見本の枠（角丸の見本・端末の枠・面の中に並べた KPI とキャンバスの見本）
   nestOk: ['.cat-box', '.cat-phone', '.cat-demo-frame', '.cat-canvas', '.kpis'],
+  // 1 章の例外: ログインの型は、アプリでは AppShell の外（測らない場所）に置く。カタログは見本として本体の中に出すので、面の下の補足（見本の形の切り替え）を除く
+  bareOk: ['.auth-foot'],
   screens: [
     { name: '概要', path: '/' },
     { name: 'セットアップ', path: '/?nav=setup' },

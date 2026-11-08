@@ -17,13 +17,15 @@ export interface MeasureArgs {
   frames: string
   /** 角丸の枠を重ねてよい枠（部品そのものが持つ枠・見本の枠）。この中と、これ自身は測らない */
   nestOk?: string
+  /** 角丸の枠の外に置いてよい中身（1 章の例外）。この中と、これ自身は測らない */
+  bareOk?: string
   panRegions?: AuditPanRegion[]
   skipLayout?: LayoutMeasurement[]
 }
 export type Measured = { rule: string; where: string; expected: string; actual: string }
 
 export function measure(page: Page, args: MeasureArgs): Promise<Measured[]> {
-  return page.evaluate(({ FONT_SIZES, FONT_WEIGHTS, RADII, SHELL, rows: rowSel, overflow, bars, frames, nestOk = '', panRegions = [], skipLayout = [] }) => {
+  return page.evaluate(({ FONT_SIZES, FONT_WEIGHTS, RADII, SHELL, rows: rowSel, overflow, bars, frames, nestOk = '', bareOk = '', panRegions = [], skipLayout = [] }) => {
     const out: Measured[] = []
     const root = getComputedStyle(document.querySelector('.mainwrap') || document.documentElement)
     const px = (v: string) => parseFloat(root.getPropertyValue(v))
@@ -287,6 +289,35 @@ export function measure(page: Page, args: MeasureArgs): Promise<Measured[]> {
         if (!card(a)) continue
         out.push({ rule: '角丸の枠を重ねない（7 章）', where: `${who(a)} の中の ${who(el)}`, expected: '角丸の枠の中は見出し・線・余白で区切る', actual: `角丸 ${parseFloat(getComputedStyle(a).borderTopLeftRadius)}px の枠の中に、角丸 ${parseFloat(getComputedStyle(el).borderTopLeftRadius)}px の枠` })
         break
+      }
+    }
+
+    // 1 章: 上のヘッダーのほかは、中身を角丸の枠の上に置く（ページの地に直接置かない）。
+    // 本体（.shell-main）の中の見える文字・操作・画像を拾い、祖先に角丸の枠（上の card）か、内容の枠・帯（frames・bars）がなければ指摘する。
+    // 読み上げだけの文字（1px 以下）は見えないので除く。同じ枠の外の塊は 1 回だけ書く
+    const shellMain = document.querySelector('.shell-main')
+    if (shellMain) {
+      const surface = [frames, bars].filter(Boolean).join(', ')
+      const onSurface = new Map<Element, boolean>()
+      const covered = (el: Element): boolean => {
+        const known = onSurface.get(el)
+        if (known !== undefined) return known
+        const ok = el === shellMain || !el.parentElement ? false : (surface && el.matches(surface)) || card(el) || covered(el.parentElement)
+        onSurface.set(el, ok)
+        return ok
+      }
+      const reported = new Set<Element>()
+      for (const el of shellMain.querySelectorAll('*')) {
+        const content = el.matches('button, input, select, textarea, img, svg, canvas, video') || [...el.childNodes].some((n) => n.nodeType === Node.TEXT_NODE && n.textContent?.trim())
+        if (!content || !visible(el) || (bareOk && el.closest(bareOk))) continue
+        const r = el.getBoundingClientRect()
+        if (r.width <= 1 || r.height <= 1 || el.parentElement?.closest('svg') || covered(el)) continue
+        // 枠の外にある一番外側の塊（本体の直下）で 1 回にまとめる
+        let top: Element = el
+        while (top.parentElement && top.parentElement !== shellMain) top = top.parentElement
+        if (reported.has(top)) continue
+        reported.add(top)
+        out.push({ rule: '中身は角丸の枠の上に置く（1 章）', where: `${who(top)} の中の ${who(el)}`, expected: '上のヘッダーのほかは、内容の枠（Board など）・カード・帯の上に置く', actual: `角丸の枠の外に「${(el.textContent || el.getAttribute('aria-label') || el.tagName).trim().slice(0, 20)}」` })
       }
     }
 
