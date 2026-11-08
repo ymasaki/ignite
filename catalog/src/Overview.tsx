@@ -113,7 +113,7 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
                 <span className="cat-hero-t" role="heading" aria-level={2}>使いやすさと楽しさを、<em>誰にでも</em></span>
                 <div className="cat-hero-p">
                   <span>すっきり見やすくて、触るとちょっと楽しい。</span>
-                  <span>Ignite は、そんな画面を React ですぐ形にできる</span>
+                  <span>Ignite は、そんな画面をすぐ形にできる</span>
                   <span>デザインシステムです。</span>
                 </div>
                 <div className="cat-row">
