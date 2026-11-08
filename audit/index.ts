@@ -12,6 +12,7 @@ import { measure, type AuditPanRegion, type LayoutMeasurement, type Measured } f
 import { withPreparation } from './lifecycle'
 import { waitForVisualState } from './settle'
 import { prepareOfflinePage } from './network'
+import { hasVerdict, markRunning, markVerdict, recordsDir, runningRecords, startRun, summarize, writeAtomic, writeRecord, type AuditRecord, type Finding } from './records'
 
 export type { AuditPanRegion, LayoutMeasurement } from './measure'
 export type AuditFinding = Measured
@@ -109,7 +110,9 @@ const BASE_HOVER_SKIP = ['[data-chart-tip][role="img"]', '[data-chart-tip][role=
 // 測るあいだに消える部品（時間で消える知らせなど）を待ち続けず、飛ばす
 const GONE = { timeout: 1000 }
 
-type Finding = { rule: string; where: string; expected: string; actual: string }
+/** 監査の判定のテスト名。並列で動かすときは、このテストだけを測定に依存するプロジェクトへ分ける */
+export const VERDICT_TITLE = '決まりから外れたところがない'
+type AuditLog = AuditRecord & { record: (key: string, finding: Finding, screen: string) => void }
 
 const withParams = (p: string, params: Record<string, string>) => {
   const u = new URL(p, 'http://x')
@@ -164,19 +167,35 @@ export function defineIgniteAudit(config: IgniteAuditConfig): void {
     frames: ['.board', '.pslot > *', '.kpis', '.popover-body', '.drawer', ...(config.frames ?? [])].join(', '),
   }
 
-  const findings = new Map<string, Finding & { count: number; screens: Set<string> }>()
-  const shots: string[] = []
-  const hovered = new Map<string, string>()
-  const record = (key: string, f: Finding, screen: string) => {
-    const cur = findings.get(key) ?? { ...f, count: 0, screens: new Set<string>() }
-    cur.count++
-    cur.screens.add(screen)
-    findings.set(key, cur)
-  }
-
-  const test = base.extend<{ pageErrors: string[] }>({
+  // 指摘はテストごとの記録に書き、判定で定義順に集計する。worker を分けて並列に測っても同じ結果になる
+  const titles: string[] = []
+  let started: Promise<void> | undefined
+  const test = base.extend<{ auditLog: AuditLog; pageErrors: string[] }, { auditReport: void }>({
+    // 判定を含めずに一部だけ測った実行でも、worker の終わりにレポートを残す。
+    // afterAll だと Playwright が並列のテストを連続した塊にまとめて割り振るので、worker の後始末で書く
+    auditReport: [
+      async ({}, use, workerInfo) => {
+        await use()
+        writeReport(workerInfo.project.outputDir, false)
+      },
+      { scope: 'worker', auto: true },
+    ],
+    auditLog: [
+      async ({}, use, testInfo) => {
+        const dir = recordsDir(testInfo.project.outputDir)
+        // 前回の画像とレポートは、この実行で一度だけ消す（番号が変わると取り違えるため）
+        await (started ??= startRun(outDir, dir))
+        const index = titles.indexOf(testInfo.title)
+        const log: AuditLog = { findings: [], shots: [], hovered: [], record: (key, finding, screen) => log.findings.push({ key, screen, finding }) }
+        if (index >= 0) markRunning(dir, index)
+        await use(log)
+        if (index >= 0) writeRecord(dir, index, { findings: log.findings, shots: log.shots, hovered: log.hovered })
+      },
+      { auto: true },
+    ],
     pageErrors: [
-      async ({ page }, use) => {
+      async ({ page, auditLog }, use) => {
+        const record = auditLog.record
         const errors: string[] = []
         page.on('console', (m) => {
           if (m.type() === 'error') errors.push(`console: ${m.text()}`)
@@ -186,7 +205,7 @@ export function defineIgniteAudit(config: IgniteAuditConfig): void {
         // 外には出ず 1px の画像を返す（ネットワークの有無で結果が変わらないように）
         await prepareOfflinePage(page)
         await use(errors)
-        // 落とすと直列の残りの画面が測られないので、指摘として記録して最後まで測る
+        // テストを落とさず指摘として記録し、ほかの指摘と一緒に判定・レポートへ出す
         for (const e of errors) record(`エラー ${e}`, { rule: 'コンソールのエラー', where: page.url().replace(/^https?:\/\/[^/]+/, ''), expected: 'エラーが出ない', actual: e.split('\n')[0].slice(0, 200) }, page.url())
       },
       { auto: true },
@@ -199,13 +218,19 @@ export function defineIgniteAudit(config: IgniteAuditConfig): void {
     await expect(page.locator('#boot')).toHaveCount(0)
   })
 
-  test.describe.configure({ mode: 'serial' })
-  // 前回のスクリーンショットを残さない（番号が変わると取り違えるため）
-  test.beforeAll(() => fs.rmSync(outDir, { recursive: true, force: true }))
+  // 並べ方は Playwright の設定に任せる（fullyParallel なら worker に分けて測る）。判定は最後に定義し、
+  // 並列のときは判定だけを測定に依存するプロジェクトへ分ける（docs/adopting.md「監査を並列で動かす」）
+  const audit = (title: string, body: Parameters<typeof test>[2]) => {
+    titles.push(title)
+    test(title, body)
+  }
+  let shotCount = 0
 
   for (const w of widths) {
     for (const s of screens.filter((s) => !w.screens || w.screens.includes(s.name))) {
-      test(`${s.name}（${w.name}）`, async ({ page }) => {
+      // 画像の番号は定義順で決める（並列でも、一部だけ測っても同じ画面は同じ名前）
+      const shotNo = ++shotCount
+      audit(`${s.name}（${w.name}）`, async ({ page, auditLog: { record, shots } }) => {
         await page.setViewportSize({ width: w.width, height: w.height })
         if (s.assist) await page.addInitScript((a) => localStorage.setItem('ds.assist', JSON.stringify(a)), s.assist)
         await open(page, s.path)
@@ -224,7 +249,7 @@ export function defineIgniteAudit(config: IgniteAuditConfig): void {
           record(`${f.rule} ${f.where} ${f.expected} ${f.actual}`, f, `${s.name}（${w.name}）`)
         }
         fs.mkdirSync(outDir, { recursive: true })
-        const file = `${String(shots.length + 1).padStart(2, '0')}-${s.name}-${w.name}.png`.replace(/[（）\s/]/g, '_')
+        const file = `${String(shotNo).padStart(2, '0')}-${s.name}-${w.name}.png`.replace(/[（）\s/]/g, '_')
         await page.screenshot({ path: path.join(outDir, file) })
         shots.push(`${file}（${s.name}・${w.name}）`)
       })
@@ -233,7 +258,7 @@ export function defineIgniteAudit(config: IgniteAuditConfig): void {
 
   // 窓を連続で変えて測る。開き直さないので、大きさが変わったときに追従できるかも確かめる。操作して開く画面は上の固定の幅で測る
   for (const s of screens.filter((s) => !s.act && !s.assist && !config.sweepSkip?.includes(s.name))) {
-    test(`${s.name}（連続で大きさを変える）`, async ({ page }) => {
+    audit(`${s.name}（連続で大きさを変える）`, async ({ page, auditLog: { record } }) => {
       test.setTimeout(120000)
       await page.setViewportSize({ width: 1440, height: 800 })
       await open(page, s.path)
@@ -251,7 +276,7 @@ export function defineIgniteAudit(config: IgniteAuditConfig): void {
 
   for (const w of widths.filter((w) => !w.screens)) {
     for (const s of states) {
-      test(`${s.name}（${w.name}）`, async ({ page }) => {
+      audit(`${s.name}（${w.name}）`, async ({ page, auditLog: { record } }) => {
         await page.setViewportSize({ width: w.width, height: w.height })
         await open(page, s.path)
         await page.waitForTimeout(800)
@@ -277,7 +302,7 @@ export function defineIgniteAudit(config: IgniteAuditConfig): void {
   const inDrawer = 'button:visible:not([aria-label*="閉じる"]):not([role="tab"]):not([inert] *)'
   for (const w of widths.filter((w) => w.width <= 600 && !w.screens)) {
     for (const r of reveals) {
-      test(`${r.name}: 裏の画面を変える操作の結果が見える（${w.name}）`, async ({ page }) => {
+      audit(`${r.name}: 裏の画面を変える操作の結果が見える（${w.name}）`, async ({ page, auditLog: { record } }) => {
         test.setTimeout(240000)
         await page.setViewportSize({ width: w.width, height: w.height })
         await open(page, r.path)
@@ -301,7 +326,7 @@ export function defineIgniteAudit(config: IgniteAuditConfig): void {
 
   // 3 章: タッチの端末では入力欄の文字を 16px 以上にする
   for (const s of screens.filter((s) => (config.touchScreens ? config.touchScreens.includes(s.name) : !s.assist))) {
-    test(`${s.name}（タッチの端末の入力欄）`, async ({ browser, baseURL }) => {
+    audit(`${s.name}（タッチの端末の入力欄）`, async ({ browser, baseURL, auditLog: { record } }) => {
       const ctx = await browser.newContext({ baseURL, viewport: { width: 375, height: 812 }, hasTouch: true, isMobile: true, locale: 'ja-JP', timezoneId: 'Asia/Tokyo' })
       const page = await ctx.newPage()
       await prepareOfflinePage(page)
@@ -318,7 +343,7 @@ export function defineIgniteAudit(config: IgniteAuditConfig): void {
 
   // 8 章「ホバー」「押している間」: 押せる要素は、載せると変わり、押している間はもう一段変わる。:active は DevTools の仕組みで作る
   for (const s of [...screens.filter((s) => !s.assist), ...(config.hoverScreens ?? [])]) {
-    test(`${s.name}（ホバー）`, async ({ page }) => {
+    audit(`${s.name}（ホバー）`, async ({ page, auditLog: { record, hovered } }) => {
       test.setTimeout(240000)
       await page.setViewportSize({ width: 1440, height: 900 })
       await open(page, s.path)
@@ -374,7 +399,7 @@ export function defineIgniteAudit(config: IgniteAuditConfig): void {
           return [...up, el, ...el.querySelectorAll('*')].flatMap((e) => [pick(getComputedStyle(e)), pick(getComputedStyle(e, '::before'))]).join('\n')
         }, undefined, GONE)
       for (const t of targets) {
-        hovered.set(t.where, hovered.get(t.where) || t.label)
+        hovered.push([t.where, t.label])
         const el = page.locator(`[data-hover-audit="${t.i}"]`)
         const box = await el.boundingBox(GONE).catch(() => null)
         if (!box) continue
@@ -407,7 +432,7 @@ export function defineIgniteAudit(config: IgniteAuditConfig): void {
     for (const mode of ['light', 'dark'] as const) {
       for (const more of [false, true]) {
         const label = `${skin}・${mode}${more ? '・強く' : ''}`
-        test(`色のコントラスト（${label}）`, async ({ page }) => {
+        audit(`色のコントラスト（${label}）`, async ({ page, auditLog: { record } }) => {
           if (more) await page.addInitScript(() => localStorage.setItem('ds.assist', JSON.stringify({ contrast: 'more' })))
           await open(page, withParams(screens[0].path, { skin, mode }))
           if (more) await expect(page.locator('html')).toHaveAttribute('data-contrast', 'more')
@@ -442,12 +467,12 @@ export function defineIgniteAudit(config: IgniteAuditConfig): void {
     }
   }
 
-  test('決まりから外れたところがない', () => {
-    expect([...findings.values()].map((r) => `${r.rule} ${r.where}: 期待 ${r.expected} / 実際 ${r.actual}（${r.count} 件）`), 'test-results-audit/report.md を見る').toEqual([])
-  })
-
-  test.afterAll(() => {
-    const rows = [...findings.values()].sort((a, b) => a.rule.localeCompare(b.rule) || b.count - a.count)
+  /** この実行の記録を定義順に集計してレポートを書く。判定が済んでいれば、あとから終わった worker は書き直さない */
+  const writeReport = (outputDir: string, verdict: boolean) => {
+    const dir = recordsDir(outputDir)
+    if (!verdict && hasVerdict(dir)) return undefined
+    const { findings, shots, hovered } = summarize(dir)
+    const rows = findings.sort((a, b) => a.rule.localeCompare(b.rule) || b.count - a.count)
     const lines = [
       '# Ignite のデザイン監査（描いた画面の測定）',
       '',
@@ -468,8 +493,23 @@ export function defineIgniteAudit(config: IgniteAuditConfig): void {
       ...shots.map((s) => `- ${s}`),
       '',
     ]
-    fs.mkdirSync(outDir, { recursive: true })
-    fs.writeFileSync(path.join(outDir, 'report.md'), lines.join('\n'))
-    console.log(`\nIgnite の監査: 決まりから外れたところ ${rows.length} 種類 → ${path.relative(process.cwd(), path.join(outDir, 'report.md'))}`)
+    writeAtomic(path.join(outDir, 'report.md'), lines.join('\n'))
+    if (verdict) markVerdict(dir)
+    const where = path.relative(process.cwd(), path.join(outDir, 'report.md'))
+    // 判定の前に worker が書くレポートは、ほかの worker の測定が残っていることがあるので、判定の結果と見分けられるようにする
+    console.log(verdict ? `\nIgnite の監査: 決まりから外れたところ ${rows.length} 種類 → ${where}` : `\nIgnite の監査（判定前・ここまでの記録）: ${rows.length} 種類 → ${where}`)
+    return rows
+  }
+
+  test(VERDICT_TITLE, ({}, testInfo) => {
+    // 測定の途中で判定すると、残りの指摘を見落として合格にしてしまう
+    if (testInfo.config.workers > 1 && testInfo.config.fullyParallel && testInfo.project.dependencies.length === 0) {
+      throw new Error(`並列（fullyParallel）で監査するときは「${VERDICT_TITLE}」を、測定のプロジェクトに依存する別のプロジェクトへ分けてください（docs/adopting.md「監査を並列で動かす」）`)
+    }
+    const running = runningRecords(recordsDir(testInfo.project.outputDir)).map((i) => titles[i])
+    if (running.length) throw new Error(`測定が終わる前に判定しました（${running.slice(0, 3).join('・')}${running.length > 3 ? ` ほか ${running.length - 3}` : ''}）。判定を測定に依存する別のプロジェクトへ分けてください（docs/adopting.md「監査を並列で動かす」）`)
+    const rows = writeReport(testInfo.project.outputDir, true)!
+    expect(rows.map((r) => `${r.rule} ${r.where}: 期待 ${r.expected} / 実際 ${r.actual}（${r.count} 件）`), 'test-results-audit/report.md を見る').toEqual([])
   })
+
 }

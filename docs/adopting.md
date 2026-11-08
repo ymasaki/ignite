@@ -94,6 +94,26 @@ npx ignite check        # ソースの検査。pre-commit では --staged
 npm run ignite:audit    # 描いた画面の監査。結果は test-results-audit/report.md
 ```
 
+### 監査を並列で動かす（1.10.0以降）
+
+ひな形の `playwright.ignite.config.ts`（`workers: 1`）のままなら、画面を順に測り、最後の「決まりから外れたところがない」で判定します。画面が多く時間がかかるときは、測定を worker に分け、判定だけを測定に依存するプロジェクトへ分けます。各テストの指摘は Playwright の `outputDir` の下に記録し、判定はテストを定義した順に集計するので、レポートの内容と画像の番号は並列でも同じです。
+
+```ts
+import { VERDICT_TITLE } from '@ymasaki/ignite/audit'
+const verdict = new RegExp(`(?:^|\\s)${VERDICT_TITLE}$`)
+
+export default defineConfig({
+  // testDir・outputDir・use・webServer はひな形のまま。fullyParallel はプロジェクト側で指定する
+  workers: 4,
+  projects: [
+    { name: 'measure', fullyParallel: true, grepInvert: verdict },
+    { name: 'verdict', grep: verdict, dependencies: ['measure'] },
+  ],
+})
+```
+
+両プロジェクトは同じ `outputDir` を使います。判定を同じプロジェクトに置いたまま `fullyParallel` にすると、測定の途中で判定が走るおそれがあるため、判定は合格にせず失敗します。判定を `--grep` で選ぶと、依存する測定はすべて動きます。
+
 ### 特殊な画面の測定を接続する（1.2.0以降）
 
 共通規則と監査実装はIgniteが管理し、採用側は画面URL・操作・測定対象と固有の測定を管理します。アプリ固有のスクロールや業務操作のテストは採用側に残します。
