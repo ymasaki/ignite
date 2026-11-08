@@ -2,7 +2,7 @@ import { IconAccessible, IconArrowRight, IconBell, IconBrandGithub, IconDevices,
 import { Board, Button, Checkbox, CodeBlock, EntityRow, IconBox, ProgressBar, Segmented, Stat, Steps, Switch, Tag, ThemeSettings, useScrollFocus, type Theme } from '@ymasaki/ignite'
 import { useRef, useState, type ReactNode } from 'react'
 import { version } from '../../package.json'
-import { LOGO } from './logo'
+import { HeroLogo } from './logo'
 import { PAGES, PART_COUNT } from './nav'
 
 // カタログの入口。Ignite が何をしてくれるかを、本物の部品で見せる（見本の部品は押して試せる）
@@ -79,10 +79,7 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
             <div className="cat-fx" aria-hidden="true"><span /><span /><span /><span /></div>
             <section className="cat-hero">
               <div className="cat-hero-b">
-                <div className="cat-hero-brand">
-                  {LOGO}
-                  <span className="cat-hero-name">Ignite</span>
-                </div>
+                <HeroLogo />
                 <div role="heading" aria-level={2}>
                   <span className="cat-hero-t">使いやすさと楽しさを、</span>
                   <span className="cat-hero-t em">誰にでも</span>

@@ -103,6 +103,33 @@
 .cat-hero-brand{display:flex;align-items:center;gap:16px}
 .cat-hero-brand .brand-mark{width:64px;height:64px}
 .cat-hero-name{font-size:var(--fs-32);font-weight:700;line-height:1.2;color:var(--ink)}
+/* 動くロゴ（概要の先頭。#64 の D「熱の流れ」）。止まった形はヘッダーのロゴと同じ単色の炎と文字。
+   動いてよいときだけ、炎の形で切り抜いた熱の面（根元は主要色・先端は黄）を上下させ、先端から火の粉を昇らせ、文字に時々光を通す。
+   色は背景の炎（.cat-fx）と同じく --pri の色相を回して作るので、スキンとダークに従う。
+   動きを減らす設定（端末・設定の画面のどちらも <html data-motion="reduce">）では重ねた面ごと出さず、止まったロゴだけにする */
+.cat-logo{--flame-b:oklch(from var(--pri) calc(l + .1) c calc(h + 40));--flame-c:oklch(from var(--pri) .92 .14 calc(h + 70))}
+.cat-logo .brand-mark{overflow:visible}
+.cat-logo-s0{stop-color:var(--pri)}.cat-logo-s1{stop-color:var(--flame-b)}.cat-logo-s2{stop-color:var(--flame-c)}
+.cat-logo-fx{display:none}
+.cat-logo-heat{transform-box:view-box;transform-origin:0 0}
+.cat-logo-ember{fill:var(--flame-b);opacity:0;transform-box:fill-box;transform-origin:center}
+.cat-hero-name[data-text]{position:relative}
+@media (prefers-reduced-motion:no-preference){
+  :root:not([data-motion="reduce"]) .cat-logo-fx{display:inline}
+  :root:not([data-motion="reduce"]) .cat-logo-heat{animation:cat-logo-heat 1.5s ease-in-out infinite alternate}
+  :root:not([data-motion="reduce"]) .cat-logo-ember:nth-child(1){animation:cat-logo-ember-r 1.8s ease-out infinite}
+  :root:not([data-motion="reduce"]) .cat-logo-ember:nth-child(2){animation:cat-logo-ember-l 2.3s ease-out .6s infinite}
+  :root:not([data-motion="reduce"]) .cat-logo-ember:nth-child(3){animation:cat-logo-ember-r 2.1s ease-out 1.2s infinite}
+  /* 文字の光は写しの上に通す。写しは光の帯の外を透明にし、本物の文字（--ink）をそのまま見せる */
+  :root:not([data-motion="reduce"]) .cat-hero-name[data-text]::after{content:attr(data-text);position:absolute;inset:0;pointer-events:none;color:transparent;
+    background:linear-gradient(90deg,transparent 40%,var(--pri) 46%,var(--flame-c) 50%,var(--pri) 54%,transparent 60%) 100% 0/250% 100% no-repeat;
+    -webkit-background-clip:text;background-clip:text;animation:cat-logo-shine 4s var(--ease-in-out) 1s infinite}
+}
+/* 熱の面を上へ伸ばして、先端の黄を炎の外へ押し出す（根元 y=64 → 44・先端 y=0 → -40） */
+@keyframes cat-logo-heat{to{transform:translate(0,-40px) scale(1,1.3125)}}
+@keyframes cat-logo-ember-r{0%{opacity:0;transform:none}15%{opacity:.9}100%{opacity:0;transform:translate(6px,-26px) scale(.3)}}
+@keyframes cat-logo-ember-l{0%{opacity:0;transform:none}15%{opacity:.9}100%{opacity:0;transform:translate(-7px,-22px) scale(.3)}}
+@keyframes cat-logo-shine{0%{background-position:100% 0}35%,100%{background-position:0 0}}
 .cat-hero-t{display:block;font-size:var(--fs-24);font-weight:700;line-height:1.35;color:var(--ink);word-break:auto-phrase}
 .cat-hero-t.em{color:var(--pri-ink)}
 .cat-hero-b{position:relative;display:grid;gap:20px;min-width:0}
