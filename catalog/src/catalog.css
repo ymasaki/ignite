@@ -177,9 +177,8 @@
 .cat-demo-chart{display:flex;flex-direction:column;justify-content:center;min-width:0;min-height:190px}
 .cat-demo-chart .gauge{align-self:center}
 .cat-demo-foot{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
-/* シンプルの見本: 個人の設定。部品は枠を重ねず、余白と罫線で分ける。色は主要色だけ */
+/* シンプルの見本: 個人の設定。部品は枠を重ねず、余白と罫線で分ける */
 .cat-demo-me{gap:18px}
-.cat-demo-av{background:var(--pri-soft);color:var(--pri-ink)}
 .cat-demo-cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 24px;padding-bottom:16px;border-bottom:1px solid var(--line)}
 .cat-demo-col{align-content:start}
 .cat-demo-tags{display:flex;flex-wrap:wrap;gap:6px}

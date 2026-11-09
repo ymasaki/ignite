@@ -58,11 +58,11 @@ function AssistTry() {
 
 type View = 'list' | 'board' | 'cal'
 const VIEWS: { value: View; label: string }[] = [{ value: 'list', label: 'リスト' }, { value: 'board', label: 'ボード' }, { value: 'cal', label: 'カレンダー' }]
-const TEAM = [{ key: 'k', initial: '鈴', tip: '鈴木' }, { key: 't', initial: '田', tip: '田中' }, { key: 'h', initial: '高', tip: '高橋' }, { key: 'y', initial: '山', tip: '山本' }, { key: 'i', initial: '伊', tip: '伊藤' }].map((m) => ({ ...m, tone: 'cat-demo-av' }))
+const TEAM = [{ key: 'k', initial: '鈴', tip: '鈴木' }, { key: 't', initial: '田', tip: '田中' }, { key: 'h', initial: '高', tip: '高橋' }, { key: 'y', initial: '山', tip: '山本' }, { key: 'i', initial: '伊', tip: '伊藤' }].map((m, i) => ({ ...m, tone: `c${i + 1}` }))
 
 /**
  * シンプル: 個人の設定。トグルボタン・説明付きのチェックボックス・スイッチ・日付・札・重ねた顔アイコンを、
- * 色は主要色ひとつと灰色だけで、余白と罫線で分けて並べる
+ * 余白と罫線で分けて並べる。操作は主要色、状態の札と顔アイコンは見分けやすいよう色分けする
  */
 function SimpleDemo() {
   const [away, setAway] = useState(false)
@@ -76,8 +76,8 @@ function SimpleDemo() {
       <div className="cat-demo-cols">
         <div className="cat-demo-col">
           <Segmented fill label="表示" value={view} onChange={setView} options={VIEWS} />
-          <Checkbox label="週のまとめを受け取る" hint="毎週月曜の朝に届きます" checked={digest} onChange={setDigest} />
-          <Checkbox label="予定をチームに公開" hint="空いている時間だけ見せます" checked={share} onChange={setShare} />
+          <Checkbox label="週のまとめを受け取る" checked={digest} onChange={setDigest} />
+          <Checkbox label="予定をチームに公開" checked={share} onChange={setShare} />
         </div>
         <div className="cat-demo-col">
           <Switch label="おやすみモード" checked={away} onChange={setAway} />
@@ -86,8 +86,8 @@ function SimpleDemo() {
         </div>
       </div>
       <div className="cat-demo-foot">
-        <span className="cat-demo-tags"><Tag>デザイン</Tag><Tag>リサーチ</Tag><Tag variant="dashed">＋ 追加</Tag></span>
-        <AvatarGroup stack size="sm" max={4} items={TEAM} label="同じチーム" />
+        <span className="cat-demo-tags"><Tag variant="accent">新着</Tag><Tag variant="ok">公開済み</Tag><Tag variant="warn">レビュー待ち</Tag><Tag variant="danger">期限切れ</Tag><Tag>保留</Tag><Tag variant="dashed">＋ 追加</Tag></span>
+        <AvatarGroup stack size="md" items={TEAM} label="同じチーム" />
       </div>
     </div>
   )
@@ -214,7 +214,7 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
   const ref = useRef<HTMLDivElement>(null)
   useScrollFocus(ref, '概要')
   const features: Feature[] = [
-    { title: 'シンプルでモダン', text: ['クセがなく、ひと目で使い方がわかる。', '色は主要色ひとつ、あとは灰色と余白で分ける。'], go: 'actions', more: '部品を見る', demo: <SimpleDemo /> },
+    { title: 'シンプルでモダン', text: ['クセがなく、ひと目で使い方がわかる。', '操作は主要色ひとつ、状態や人は色で見分ける。'], go: 'actions', more: '部品を見る', demo: <SimpleDemo /> },
     { title: 'テーマで色を着せ替え', text: ['テーマカラーを選ぶだけで、全体の色がそろって変わる。', 'ライトとダークにも標準で対応。'], go: 'color', more: '色を見る', demo: <ThemeDemo theme={theme} onTheme={onTheme} /> },
     { title: '遊び心のあるアニメーション', text: ['数字は転がり、スイッチは弾む。', '小さな動きの手ざわりで、触るのが楽しくなる。'], go: 'motion', more: '動きを見る', demo: <MotionDemo /> },
     { title: 'どんな幅にもフィット', text: ['PC からスマホまで、', '幅に合わせて UI がしなやかに組み変わる。'], go: 'responsive', more: 'レスポンシブ表示を見る', demo: <ResponsiveDemo /> },
