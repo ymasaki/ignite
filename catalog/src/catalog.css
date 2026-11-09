@@ -182,7 +182,6 @@
 .cat-demo-me{gap:20px}
 .cat-demo-opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto auto;grid-auto-flow:column;align-items:center;gap:14px 24px}
 .cat-demo-meet{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;padding-top:20px;border-top:1px solid var(--line)}
-.cat-demo-tags{display:flex;flex-wrap:wrap;gap:8px}
 @media (max-width:600px){.cat-demo-opts{grid-template-columns:minmax(0,1fr);grid-auto-flow:row}}
 .cat-demo-t{font-size:var(--fs-14);font-weight:700;color:var(--ink)}
 /* 幅の見本。枠の幅を変えると、中の小さなアプリ画面が組み変わる（枠を container にして、枠の幅だけで決める）。
