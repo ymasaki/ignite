@@ -14,6 +14,6 @@
     "types": ["node"],
     "paths": { "@ymasaki/ignite": ["./src/index.ts"], "@ymasaki/ignite/audit": ["./audit/index.ts"] }
   },
-  "include": ["src", "cli", "audit", "catalog", "tests"],
+  "include": ["src", "cli", "audit", "catalog", "tests", "scripts/health/benchmarks.ts"],
   "exclude": ["catalog/vite.config.ts"]
 }

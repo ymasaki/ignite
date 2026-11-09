@@ -130,8 +130,10 @@ export function useFocusShortcut(ref: { current: HTMLInputElement | null }, enab
       window.addEventListener('keydown', (e) => {
         const typing = isTyping()
         // F だけのショートカットは、設定で 1 文字のショートカットを切っていれば受けない（Ctrl+K / ⌘K は残す）
-        const plainF = e.key.toLowerCase() === 'f' && !e.metaKey && !e.ctrlKey && !e.altKey && !e.isComposing && shortcutsOn()
-        if (!((plainF && !typing) || (e.key.toLowerCase() === 'k' && (e.metaKey || e.ctrlKey)))) return
+        // ブラウザの自動入力は key の無い keydown を出すことがある
+        const key = (e.key ?? '').toLowerCase()
+        const plainF = key === 'f' && !e.metaKey && !e.ctrlKey && !e.altKey && !e.isComposing && shortcutsOn()
+        if (!((plainF && !typing) || (key === 'k' && (e.metaKey || e.ctrlKey)))) return
         const input = shortcutTarget()?.ref.current
         if (!input) return
         e.preventDefault()
@@ -266,9 +268,6 @@ export function Select<T extends string>({ value, options, onChange, label: labe
 
 /**
  * パネル内の表示の切り替え（概要／メンバー）。count はラベルの右に小さく出す件数。
- * キーボードはタブの決まった型（WAI-ARIA の tablist）: Tab で入るのは選んでいるタブだけ、←→（Home・End で端）で隣のタブへ移って切り替える
- */
-/**
  * タブ（WAI-ARIA の tabs。選んでいるタブだけ Tab で入り、← → / Home / End で切り替える）。label はタブの並びの名前。
  * id を渡すと、中身と結び付ける（中身の側は tabPanelProps(id, value) を付けた要素で包む）
  */

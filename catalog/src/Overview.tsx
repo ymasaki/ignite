@@ -61,7 +61,7 @@ const VIEWS: { value: View; label: string }[] = [{ value: 'list', label: 'リス
 const TEAM = [{ key: 'k', initial: '鈴', tip: '鈴木' }, { key: 't', initial: '田', tip: '田中' }, { key: 'h', initial: '高', tip: '高橋' }, { key: 'y', initial: '山', tip: '山本' }, { key: 'i', initial: '伊', tip: '伊藤' }, { key: 'w', initial: '渡', tip: '渡辺' }].map((m, i) => ({ ...m, tone: `c${i + 1}` }))
 
 /**
- * シンプル: 個人の設定。トグルボタン・説明付きのチェックボックス・スイッチ・日付・札・重ねた顔アイコンを、
+ * シンプル: 個人の設定。トグルボタン・説明付きのチェックボックス・スイッチ・日付・重ねた顔アイコンを、
  * 余白と罫線で分けて並べる。操作は主要色、顔アイコンは見分けやすいよう色分けし、入りきらない人は「+N」にまとめる
  */
 function SimpleDemo() {

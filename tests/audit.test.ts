@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterAll, describe, expect, it } from 'vitest'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
@@ -20,7 +20,10 @@ describe('axe の前処理と復元', () => {
 })
 
 describe('監査の記録（worker をまたいだ集計）', () => {
-  const temp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'ignite-records-'))
+  const temps: string[] = []
+  const temp = () => { const d = fs.mkdtempSync(path.join(os.tmpdir(), 'ignite-records-')); temps.push(d); return d }
+  // 一時フォルダを残さない（残すと実行のたびに OS の一時領域へ溜まる）
+  afterAll(() => { for (const d of temps) fs.rmSync(d, { recursive: true, force: true }) })
   const finding = (where: string) => ({ rule: '文字の大きさ（3 章）', where, expected: '13px', actual: '15px' })
 
   it('同時に始めても前回の画像は一度だけ消し、片付けのあとに書いた画像と記録の置き場は残す', async () => {

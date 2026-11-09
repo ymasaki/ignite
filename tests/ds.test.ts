@@ -120,7 +120,7 @@ describe('顔の並びの決め方（fitAvatars・keepVisible）', () => {
   })
 })
 
-describe('詰める段階の選び方（@ds の pickFitStep）', () => {
+describe('詰める段階の選び方（pickFitStep）', () => {
   it('入る最初の段階を選び、どれも入らなければ最後の段階', () => {
     const widths = [650, 620, 560, 315, 275, 230]
     expect(pickFitStep(700, widths)).toBe(0)
@@ -137,8 +137,8 @@ describe('KPI の帯の畳み方（KpiBand）', () => {
     expect(kpiVariants(2)).toEqual([[true, true], [true, false], [false, true], [false, false]])
     expect(kpiVariants(0)).toEqual([[]])
   })
-  // [両方開く, 組織格だけ開く, 拠点だけ開く, 両方畳む]
-  it('入るもののうち幅をいちばん使うものを選ぶ（組織格を畳んでも拠点が入るなら拠点を開く）', () => {
+  // [両方開く, 1 つ目だけ開く, 2 つ目だけ開く, 両方畳む]
+  it('入るもののうち幅をいちばん使うものを選ぶ（1 つ目を畳んでも 2 つ目が入るなら 2 つ目を開く）', () => {
     expect(pickWidestFit([900, 700, 560, 420], 1000)).toBe(0)
     expect(pickWidestFit([900, 700, 560, 420], 800)).toBe(1)
     expect(pickWidestFit([900, 500, 640, 420], 700)).toBe(2)

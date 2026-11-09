@@ -205,7 +205,7 @@ function PhoneDemo() {
 
 export function ResponsivePage({ target }: { target?: string | null }) {
   // 埋め込んだ画面の中でこのページを開くと入れ子が続くので、中では見本を描かない
-  if (inFrame()) return <Page page="responsive" target={target}><Notice tone="info">埋め込みの中では見本を表示しません。</Notice></Page>
+  if (inFrame()) return <Page page="responsive" target={target}><Notice tone="info">埋め込みの中では見本を表示しません</Notice></Page>
   return (
     <Page page="responsive" target={target}>
       <Spec page="responsive" id="window"><WindowDemo /></Spec>

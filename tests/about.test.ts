@@ -15,6 +15,10 @@ describe('バージョン履歴（CHANGELOG.md から作る）', () => {
   it('すべての版を新しい順に載せる', () => {
     expect(RELEASES.map((r) => r.version)).toEqual([...md.matchAll(/^## (\S+)（/gm)].map((m) => m[1]))
   })
+  it('日付は版の順と逆転しない（新しい版ほど日付が新しいか同じ）', () => {
+    const dates = RELEASES.map((r) => r.date)
+    expect(dates).toEqual([...dates].sort().reverse())
+  })
   it('すべての項目を載せ、空の版がない', () => {
     expect(RELEASES.flatMap((r) => r.items)).toHaveLength([...md.matchAll(/^- /gm)].length - [...md.slice(0, md.indexOf('\n## ')).matchAll(/^- /gm)].length)
     expect(RELEASES.filter((r) => r.items.length === 0)).toEqual([])

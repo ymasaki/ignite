@@ -1,5 +1,5 @@
 // 一覧の 1 行と、検索語の強調。見た目は styles/components/list.css。
-// 行はホバーで --panel-2 の地、選択中（active）は --pri-soft の地。押すと詳しい中身を開く。
+// 行はホバーで --hover の地、選択中（active）は --pri-soft の地。押すと詳しい中身を開く。
 
 import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from 'react'
 

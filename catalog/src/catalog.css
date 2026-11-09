@@ -43,7 +43,6 @@
 .cat-sheet{min-width:0}
 .pb > .cat-row{margin-top:16px}
 .cat-detail{display:flex;flex-direction:column;gap:16px;padding:0 18px 18px}
-.cat-pop{display:grid;gap:12px;min-width:220px;padding:14px}
 .cat-end{display:flex;justify-content:flex-end;align-items:center;gap:8px}
 
 /* 基礎 */
@@ -183,7 +182,6 @@
 .cat-demo-opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto auto;grid-auto-flow:column;align-items:center;gap:14px 24px}
 .cat-demo-meet{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;padding-top:20px;border-top:1px solid var(--line)}
 @media (max-width:600px){.cat-demo-opts{grid-template-columns:minmax(0,1fr);grid-auto-flow:row}}
-.cat-demo-t{font-size:var(--fs-14);font-weight:700;color:var(--ink)}
 /* 幅の見本。枠の幅を変えると、中の小さなアプリ画面が組み変わる（枠を container にして、枠の幅だけで決める）。
    枠の高さはどの幅でも同じにし、切り替えでカードの高さを変えない */
 .cat-demo-stage{display:grid;justify-items:center}
@@ -203,7 +201,6 @@
 @container (max-width:380px){.cat-demo-app{grid-template-columns:44px minmax(0,1fr)}.cat-demo-nav{justify-content:center;padding:6px}.cat-demo-nav-l{display:none}}
 @container (max-width:240px){.cat-demo-app{grid-template-columns:minmax(0,1fr)}.cat-demo-side{display:none}.cat-demo-menu{display:block}.cat-demo-grid{grid-template-columns:minmax(0,1fr)}}
 @media (hover:hover){.cat-pillar-go:hover svg{translate:3px 0}}
-.cat-split{grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));align-items:start;gap:32px}
 .cat-note{gap:6px;font-size:var(--fs-12);color:var(--ink-3)}
 /* 手順。3 つを 1 行に並べ、間を縦の罫線で区切る。入らない幅では 1 列に積み、横の罫線で区切る */
 .cat-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}

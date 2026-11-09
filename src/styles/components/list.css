@@ -1,6 +1,6 @@
 /* 一覧の行（ui/List.tsx の EntityRow） */
 
-/* 一覧の行。ホバーで --panel-2、選択中は --pri-soft。.lg はメンバー検索の大きい行（格子に並べる） */
+/* 一覧の行。ホバーで --hover、選択中は --pri-soft。.lg はメンバー検索の大きい行（格子に並べる） */
 .erow{display:flex;align-items:center;gap:10px;width:100%;padding:7px 8px;border-radius:8px;text-align:left;color:var(--ink)}
 .erow:hover{background:var(--hover)}
 .erow.static:hover{background:none}

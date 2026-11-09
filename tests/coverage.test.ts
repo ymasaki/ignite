@@ -24,7 +24,7 @@ describe('部品の一覧（AGENTS.md「部品を足す・変えるときは一�
     Toaster: 'AppShell が置く',
     FitBar: '帯の幅に合わせて組むので、Stepper などの修飾の組み合わせとして使う',
   }
-  it('部品は 1 つ以上ある', () => expect(parts.length).toBeGreaterThan(50))
+  it('部品を 50 個より多く拾えている', () => expect(parts.length).toBeGreaterThan(50))
   it.each(parts)('%s は DESIGN.md に書いてある', (p) => expect(design).toContain(p))
   it.each(parts.filter((p) => !(p in NOT_IN_CATALOG)))('%s はカタログにある', (p) => expect(catalog).toMatch(new RegExp(`\\b${p}\\b`)))
 })

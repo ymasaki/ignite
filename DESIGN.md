@@ -79,7 +79,8 @@
 | `--warn` / `--warn-soft` | `#946000` / `#fff6ec` | 注意（ダミーデータ表示など） |
 | `--danger` / `--danger-soft` | `#c01f3a` / `#ffecee`（ダークは `#ff8a98` / `#4a1a22`） | エラーの文・枠、危険な操作の項目 / 危険の知らせ・タグの地 |
 | `--danger-solid` / `--danger-solid-hover` / `--danger-solid-press` / `--on-danger` | `#c01f3a` / `#9d1830` / ホバーに黒を 22% / `#ffffff` | 取り消せない操作のボタン（`Button variant="danger"`）。スキンで変えない |
-| `--hl` | `#ffeacf` | 検索語のハイライト |
+| `--hl` | `#ffe08a` | 検索語のハイライト |
+| `--hl-line` | `#f2a31b` | 検索語の下線 |
 | `--scrim` | `rgba(0,0,0,.3)` | 引き出しの背面 |
 
 - **アバター色**（`.c1`〜`.c6`）：顔写真がないときの頭文字の地。見分けるための例外で、ここだけ 6 色を使う（スキン・モードで変えない）。
@@ -332,7 +333,7 @@
 | `NumberField` | 同上 | 数の欄。↑↓ と − ＋ で増減（変えた直後だけ欄の数字を `RollingNumber` と同じように桁で回す。打ち込みの途中は回さない。回る数字は飾りで、読み上げは欄の値）、全角の数字も読む、欄を離れるときに `min`・`max` へ収める。`step` の桁で端数を出さない。`unit` は欄の右の単位。読めない文字は欄を離れると空に戻す |
 | `Combobox` | 同上 | 打って絞り込み、候補から 1 つを選ぶ。候補が 10 を超えるとき（少なければ `Select`）。候補の見た目は `Select` と同じ。変換の確定の Enter では選ばない。欄を空にして離れると選択を外す。候補は `SelectOption` |
 | `DatePicker` | `DatePicker.tsx`（計算は `calendar.ts`）/ `form.css` | 1 日を選ぶカレンダー。開いた面は日付の表に合う幅に収め、フォームの幅には引き伸ばさない。値は `2026-09-27` の文字列で、表記は 9 章の `fmtDate`。`min`・`max`、`clearable`（選択を外す）、`weekStart`（週の始まり、既定は日曜）。週末・祝日を色で塗り分けない。キーは ←→↑↓・Home・End・PageUp・PageDown（Shift で年） |
-| `Select` | 同上 | 1 つを選ぶプルダウン。選択肢は `lead`（アイコン・ロゴ）と `meta`（件数など）を持てる。`fit` で幅が足りないとき `meta` → `lead` の順に隠す。ブラウザ標準の `<select>` は使わない。文字列・数値の補足（`meta`）はボタンの読み上げ名にも含める |
+| `Select` | `Controls.tsx` / `controls.css` | 1 つを選ぶプルダウン。選択肢は `lead`（アイコン・ロゴ）と `meta`（件数など）を持てる。`fit` で幅が足りないとき `meta` → `lead` の順に隠す。ブラウザ標準の `<select>` は使わない。文字列・数値の補足（`meta`）はボタンの読み上げ名にも含める |
 | `Tabs` | 同上 | パネル内の表示の切り替え。`count` で件数。`fit` で置き場所の幅に等分する |
 | `Menu` | `Navigation.tsx` / `navigation.css` | ボタンから開く操作の一覧（値を選ぶなら `Select`）。ボタンは文字か `iconOnly`。項目は `icon`・`danger`（文字が `--danger`）・`disabled`・`separator`。↑↓・Home・End で移り、押せない項目は飛ばす。実行すると閉じて元のボタンへ戻る |
 | `Pagination` | 同上 | 長い一覧のページ送り（読み込み中も今のページを保つ）。最初・最後・今の前後の番号を残す。枠が 320px 以下なら「3 / 20」にする。1 ページなら出さない |
@@ -341,7 +342,7 @@
 | `Toast` | `Toast.tsx` / `overlay.css` | `toast(文, { tone, action, duration })` で出す操作の結果の知らせ。部品は `Toaster`（`AppShell` が置く）。8 章「知らせの選び方」。右下（スマホ幅は下）に 3 つまで。`info` と `ok` は 5 秒（`action` があれば 8 秒）で消え、載せている・フォーカスがあるあいだは止まる。`danger` は × で閉じるまで残る（4 つ目が出ると、種類によらず古いものから消える）。`action` は 1 つだけ（「元に戻す」など）。`Dialog` の背面に出るので、窓を閉じてから出す |
 | `Spinner` / `ProgressBar` | `Progress.tsx` / `progress.css` | 待ち時間の読めない処理の回転（ボタンの中・小さな更新。領域の読み込みは `Skeleton`）/ 進み具合の棒（`value` は 0〜100、`null` は測れない処理。`showValue` で %） |
 | `Steps` | 同上 | 順に進む手続きの今いる段階。枠が 600px 以下なら縦に並ぶ。段を押して戻る操作は持たない |
-| `Popover` / `Drawer` | 同上 | 小さなパネル（外側のクリック・Esc で閉じる。開いている間は呼び出し口の吹き出しを出さない。下・右で切れるなら反対側へ開き、上下どちらにも入らなければ窓の中央に重ねて中でスクロールする）/ 狭い画面のパネル（右から、スマホ幅は下から）。`peek` と `minimized` で下の 1 行に畳む（5 章「操作の結果を見える場所に出す」。ふつうは `AppShell` の `useShell().revealMain()` が畳む） |
+| `Popover` / `Drawer` | `Controls.tsx` / `controls.css` | 小さなパネル（外側のクリック・Esc で閉じる。開いている間は呼び出し口の吹き出しを出さない。下・右で切れるなら反対側へ開き、上下どちらにも入らなければ窓の中央に重ねて中でスクロールする）/ 狭い画面のパネル（右から、スマホ幅は下から）。`peek` と `minimized` で下の 1 行に畳む（5 章「操作の結果を見える場所に出す」。ふつうは `AppShell` の `useShell().revealMain()` が畳む） |
 | `Tag` / `Chip` / `Badge` | `Chip.tsx` / `chip.css` | 状態の印（`variant`: `accent` / `dashed` / `ok` / `warn` / `danger`。良し悪しのある状態だけ意味の色）/ × で取り消せるタグ（絞り込みの差分）/ ボタンの中の数字（通知・未処理にだけ使う。消えない数に付けない）。`count` を渡し、0 なら幅を畳んで隠す（出し入れ・数の変化でボタンの幅がなめらかに動く） |
 | `Avatar` | `Avatar.tsx` / `avatar.css` | 顔アイコン（`xs` 20 / `sm` 26 / `md` 32 / `lg` 44 / `xl` 72px）。頭文字・画像・色の番号を受け取る。写真を読み込むあいだは淡い丸、読めたら 0.35s でフェードイン。重ねて並べるときは `.avstack`（縁・薄さは置き場所で `--av-ring` / `--av-opacity`、最後の 1 つは `-last`）。選んでいる・ホバーした顔の輪は、どこでも `--av-ring-on`（地の色のすき間 1px ＋ 主要色 1px） |
 | `AvatarStack` / `fitAvatars` / `keepVisible` | 同上（決め方は `avatarFit.ts`） | 重ねた顔の列。顔は `render` で描き、`onPick` で押せる、`activeId` の顔は印を付けて「+N」に隠さない。`fit` は置き場所の幅に合わせ、間を空ける → 重ねる → 「+N」の順に詰める。押せる顔は押せる範囲 24px を残す分だけ重ねる（`pressOverlap`） |
@@ -546,7 +547,7 @@
 - 大きさの区切り（全層の `@media` と `.ts`・`.tsx` の `matchMedia`）：5 章の区切りの表のメディアクエリの値（860 / 720 / 600px、高さ 500px）にない幅・高さ。★ の幅（`shellLayout` の計算）はメディアクエリに書かない
 - Ignite の部品の上書き（アプリの CSS）：部品のクラスを含むセレクタに見た目（余白・文字・色・枠）を書く。既存のものは警告だけで、コミットで新しく足した行を止める（幅・位置の配置はよい）。1.1 で足した部品のクラスは、アプリの独自のクラスと名前が重なることがあるので、次の major までは注意だけ
 - アプリの語：`forbiddenWords` に書いた語（`ignite.config.json`）
-- ブラウザ標準の UI（画面の `.tsx`）：`alert`・`confirm`・`prompt`、`<dialog>`・`<progress>`、チェック・ラジオ・日付・数の `<input>`。今は注意として出すだけで止めない（次の major で止める。`docs/releasing.md`）
+- ブラウザ標準の UI（画面の `.tsx`）：`alert`・`confirm`・`prompt`、`<dialog>`・`<progress>`、チェック・ラジオ・日付・数の `<input>`。今は注意として出すだけで止めない（次の major で止める。`docs/coverage.md`）
 - 書体（注意にとどめる）：CSS の `font-family` の直書き。`index.html` が Google Fonts の書体を読んでいない（自前で配るときは、その HTML に `design-ok: 理由` を書く）
 - 骨組み（アプリの CSS とコード）：アプリの枠の部品（`.app`・`.mainwrap`・`.side`・`.side-handle`・`.side-scrim`・`.pslot`・`.panel`）を対象にした CSS の規則（枠の中身の状態に合わせた規則はよい）と、窓の幅・高さを見る `matchMedia`。枠の大きさへの対応は `AppShell`、部品の中はコンテナクエリか `useFitStep`
 

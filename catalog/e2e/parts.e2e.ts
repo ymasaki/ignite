@@ -129,7 +129,7 @@ test('Combobox: 打って絞り、↓ と Enter で選ぶ。変換の確定の E
   await expect(box).toHaveValue('')
 })
 
-test('DatePicker: 矢印と PageDown で動かし、Enter で選んでボタンへ戻る。範囲の外は選べない', async ({ page }) => {
+test('DatePicker: 矢印と PageDown で動かし、Enter で選んでボタンへ戻る', async ({ page }) => {
   await open(page, 'forms')
   const btn = page.getByRole('button', { name: /^期限/ })
   await btn.focus()

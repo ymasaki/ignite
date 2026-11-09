@@ -37,7 +37,7 @@ Web アプリで同じ見た目・使い勝手・UX をそろえるデザイン�
 ## 開発
 
 ```sh
-npm ci
+bash scripts/setup.sh # 依存と共通の pre-commit を導入する
 npm run catalog -- --port 15222 --strictPort # worktree 用。空いているポートを選び、終了後に止める
 bash scripts/test.sh   # 型・単体テスト・検査・監査・配布から更新までの通し確認
 ```

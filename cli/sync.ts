@@ -15,7 +15,8 @@ const block = (pkg: Pkg) => `<!-- ignite:begin ${pkg.version} -->\n${fs.readFile
 
 /** 書き換え後の中身。節が無ければ末尾に足す。節の外は変えない */
 export function withBlock(text: string, section: string): string {
-  if (BEGIN.test(text)) return text.replace(BEGIN, section)
+  // 置換文字列の $& などを解釈させない（規約の文に $ が入っても壊さない）
+  if (BEGIN.test(text)) return text.replace(BEGIN, () => section)
   return text ? `${text.trimEnd()}\n\n${section}` : section
 }
 

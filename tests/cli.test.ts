@@ -28,6 +28,11 @@ describe('AI エージェント向けの決まりの同期', () => {
     expect(two).not.toContain('A\n')
     expect(two).toContain('後ろの文')
   })
+  it('節の文に $& などがあっても、そのまま書く', () => {
+    const one = withBlock('# app\n', '<!-- ignite:begin 1 -->\nA\n<!-- ignite:end -->\n')
+    const section = "<!-- ignite:begin 2 -->\n$& と $' と $1\n<!-- ignite:end -->\n"
+    expect(withBlock(one, section)).toBe(`# app\n\n${section}`)
+  })
   it('sync のあとは --check が空で、手で崩すと古いと返す', () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ignite-sync-'))
     try {

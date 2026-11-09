@@ -27,7 +27,7 @@ GROUP BY month
 ORDER BY month DESC;`
 const CODE_SHELL = `# 検査してから更新する
 $ npx ignite check --staged
-$ npm run ignite:upgrade -- --yes`
+$ npx ignite upgrade ./vendor/次の版.tgz`
 const CODE_LOG = `2026-11-02 09:14:03 INFO  同期を始めました
 2026-11-02 09:14:05 WARN  応答が遅れています（2,140ms）
 2026-11-02 09:14:09 ERROR 接続できませんでした code=ETIMEDOUT

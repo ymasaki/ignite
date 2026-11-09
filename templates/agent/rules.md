@@ -8,4 +8,4 @@
 - 書体はトークンで選ぶ。金額・KPI などの数字は `.num`、コードは `Code`・`CodeBlock` を使い、`font-family` を直接書かない。
 - 枠は `AppShell` に任せ、窓の幅を `matchMedia` で見ない。
 - コミットの前に `npx ignite check`、大きな UI の変更のあとに `npm run ignite:audit` を実行する。監査は `ignite-audit` スキルで行える。
-- Ignite の更新は `npx ignite upgrade` で取り込む。この節と `ignite-audit` スキルは Ignite が管理するので、手で直さない（アプリ固有の決まりはこの節の外に書く）。
+- Ignite の更新は、取得した次の版のアーカイブを渡して `npx ignite upgrade ./vendor/次の版.tgz` で取り込む（引数なしはレジストリ配布のときだけ）。この節と `ignite-audit` スキルは Ignite が管理するので、手で直さない（アプリ固有の決まりはこの節の外に書く）。

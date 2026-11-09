@@ -62,4 +62,3 @@
 .avgroup.stack > .avg-i + .avg-i{margin-left:-6px}
 .avgroup.stack > .avg-more{margin-left:6px}
 .avgroup.muted > .avg-i{opacity:.45}
-@media (prefers-reduced-motion: reduce){.avg-i{transition:none}}

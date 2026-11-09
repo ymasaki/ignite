@@ -104,7 +104,7 @@ export function checkCss(file: string, text: string): Problem[] {
     }
     for (const m of line.matchAll(/border-radius:\s*([^;}]+)/g)) {
       const bad = m[1].trim().split(/\s+/).filter((v) => !RADII.has(v) && !v.startsWith('var('))
-      if (bad.length) out.push({ path: file, line: i, message: `角丸 ${bad.join(' ')} は目盛り（6 / 8 / 10 / 12 / 14 / 99px / 50%）にない` })
+      if (bad.length) out.push({ path: file, line: i, message: `角丸 ${bad.join(' ')} は目盛り（0 / 3 / 6 / 8 / 10 / 12 / 14 / 99px / 50%）にない` })
     }
   })
   return out
@@ -204,7 +204,7 @@ export function checkShellCss(file: string, text: string): Problem[] {
 
 /** コメントを空にした行（行番号は保つ） */
 function codeLines(text: string): string[] {
-  const noBlock = text.replace(/\/\*[\s\S]*?\*\//g, (m) => '\n'.repeat(m.split('\n').length - 1)).replace(/\{\/\*.*?\*\/\}/g, '')
+  const noBlock = text.replace(/\/\*[\s\S]*?\*\//g, (m) => '\n'.repeat(m.split('\n').length - 1))
   return noBlock.split('\n').map((ln) => ln.replace(/(^|\s)\/\/.*$/, ''))
 }
 
@@ -255,7 +255,7 @@ export function checkDate(file: string, text: string): Problem[] {
   return codeLines(text).flatMap((line, i) => (!OK.test(raw[i] ?? '') && DATE_FMT.test(line) ? [{ path: file, line: i + 1, message: '日付を直接整形しない。fmtDate / fmtDateTime / fmtMonth / fmtAsOf を使う（DESIGN.md 9 章）' }] : []))
 }
 
-// 部品で置き換えられるブラウザ標準の UI。既存の書き方を止めないよう、次の major までは警告にとどめる（docs/releasing.md）
+// 部品で置き換えられるブラウザ標準の UI。既存の書き方を止めないよう、次の major までは警告にとどめる（docs/coverage.md）
 const NATIVE_UI: [RegExp, string][] = [
   [/(?<![\w.])(?:window\.)?(?:alert|confirm|prompt)\(/, 'alert / confirm / prompt を使わない。ConfirmDialog か toast を使う'],
   [/<dialog[\s>]/, '<dialog> を直接書かない。Dialog を使う'],
@@ -281,13 +281,14 @@ export function checkSideFoot(file: string, text: string): Problem[] {
     const at = code.slice(m.index, end).search(/<SettingsButton\b/)
     if (at < 0) continue
     const line = code.slice(0, m.index + at).split('\n').length
-    if (!OK.test(raw[line - 1] ?? '')) out.push({ path: file, line, message: 'SettingsButton は foot に入れない。side の SideNav の直後に置き、collapsed と close を渡す' })
+    if (!OK.test(raw[line - 1] ?? '')) out.push({ path: file, line, message: 'SettingsButton は foot に入れない。side の SideNav の直後に置き、collapsed を渡して onClick で close() を呼ぶ' })
   }
   return out
 }
 
 export function checkWords(file: string, text: string, rule: ForbiddenWords): Problem[] {
-  const re = new RegExp(rule.pattern, rule.flags)
+  // g・y 付きの RegExp は test のたびに lastIndex が進み、次の行の先頭側を見落とすので外す
+  const re = new RegExp(rule.pattern, rule.flags?.replace(/[gy]/g, ''))
   return text.split('\n').flatMap((line, i) => (!OK.test(line) && re.test(line) ? [{ path: file, line: i + 1, message: rule.message }] : []))
 }
 

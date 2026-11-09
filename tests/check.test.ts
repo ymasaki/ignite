@@ -51,6 +51,8 @@ describe('ignite check のコードの検査', () => {
   })
   it('設定した語を止める', () => {
     expect(checkWords('a.ts', 'const a = "社員"', { pattern: '社員', message: 'x' })).toHaveLength(1)
+    // flags に g を書いても、続く行を見落とさない
+    expect(checkWords('a.ts', '社員\n社員\n社員', { pattern: '社員', flags: 'g', message: 'x' }).map((p) => p.line)).toEqual([1, 2, 3])
   })
 })
 

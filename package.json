@@ -25,7 +25,7 @@
     "prepack": "node scripts/build.mjs",
     "prepare": "node scripts/build.mjs",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "vitest run --dir tests",
     "catalog": "vite catalog",
     "check:design": "node dist/cli.js check",
     "audit:design": "node scripts/audit-design.mjs",
