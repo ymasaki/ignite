@@ -131,7 +131,10 @@
 @media (prefers-reduced-motion: reduce){.fn-col > i{animation:none}}
 
 /* ホバーした要素を強調し、ほかを薄くする */
-.bl-f,.sc-col{transition:opacity .15s,filter .15s,background-color .15s}
+.sc-col{transition:opacity .15s,filter .15s,background-color .15s}
+/* 横棒は長さの変化（.6s）も残す（ここで transition を上書きすると、値が変わっても棒が伸び縮みしなくなる） */
+.bl-f{transition:width .6s var(--ease-spring),opacity .15s,filter .15s,background-color .15s}
+@media (prefers-reduced-motion: reduce){.bl-f{transition:opacity .15s,filter .15s,background-color .15s}}
 @media (hover:hover){
   .barlist:hover .bl:not(:hover){opacity:.5}
   .bl:hover .bl-f{filter:saturate(1.25) brightness(.92)}

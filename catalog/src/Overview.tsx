@@ -1,5 +1,5 @@
-import { IconArrowRight, IconBell, IconBrandGithub, IconChevronRight, IconEyeCheck, IconFileText, IconNotes, IconPresentation, IconRocket, IconChartBar, IconHome, IconMenu2, IconSettings, IconTable, IconUsers } from '@tabler/icons-react'
-import { AnimatedList, BarList, Board, Button, CodeBlock, ColumnChart, currentAssist, Delta, EntityRow, FormField, Gauge, IconBox, LinkButton, NumberField, reducedMotion, RollingNumber, Segmented, SettingGroup, SettingRow, setAssist, Stat, Switch, Tag, ThemeSettings, useScrollFocus, withFade, type Assist, type Theme } from '@ymasaki/ignite'
+import { IconArrowRight, IconBell, IconBrandGithub, IconEyeCheck, IconRocket, IconChartBar, IconHome, IconMenu2, IconSettings, IconUsers } from '@tabler/icons-react'
+import { AvatarGroup, BarList, Board, Button, Checkbox, CodeBlock, ColumnChart, currentAssist, Delta, EntityRow, FormField, Gauge, IconBox, LinkButton, NumberField, ProgressBar, reducedMotion, RollingNumber, Segmented, SettingGroup, SettingRow, setAssist, Stat, Switch, Tag, ThemeSettings, useScrollFocus, withFade, type Assist, type Theme } from '@ymasaki/ignite'
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
 import { version } from '../../package.json'
 import { HeroLogo } from './logo'
@@ -56,33 +56,36 @@ function AssistTry() {
   )
 }
 
-type Scope = 'all' | 'team' | 'me'
-const SCOPES: { value: Scope; label: string }[] = [{ value: 'all', label: '全員' }, { value: 'team', label: 'チーム' }, { value: 'me', label: '自分だけ' }]
-const FILES: { name: string; sub: string; icon: typeof IconBell; scope: Scope[] }[] = [
-  { name: '四半期の振り返り', sub: '佐藤 · 2 時間前', icon: IconPresentation, scope: ['all'] },
-  { name: '採用の計画', sub: '鈴木 · 昨日', icon: IconFileText, scope: ['all', 'team'] },
-  { name: '週次の数字', sub: '田中 · 3 日前', icon: IconTable, scope: ['all', 'team'] },
-  { name: '定例の議事録', sub: '高橋 · 先週', icon: IconNotes, scope: ['team'] },
-  { name: '自分用のメモ', sub: '自分 · 5 分前', icon: IconNotes, scope: ['all', 'me'] },
-  { name: '下書き: 告知文', sub: '自分 · 1 時間前', icon: IconFileText, scope: ['me'] },
-  { name: '旅費の精算', sub: '自分 · 昨日', icon: IconTable, scope: ['me'] },
-]
+const TODOS = ['画面の下書きを作る', '文言をそろえる', '数字の検証', 'リリースノートを書く', '社内に告知する']
+const MEMBERS = [{ key: 's', initial: '佐', tip: '佐藤' }, { key: 'k', initial: '鈴', tip: '鈴木' }, { key: 't', initial: '田', tip: '田中' }, { key: 'h', initial: '高', tip: '高橋' }].map((m) => ({ ...m, tone: 'cat-demo-av' }))
 
-/** シンプル: 灰色の濃さと余白で分け、色は主要色ひとつだけ。範囲を切り替えると一覧が入れ替わる */
+/**
+ * シンプル: 1 枚のプロジェクトのカード。色は主要色ひとつ（札・進み・チェック・ボタン）、あとは灰色の濃さと余白で分ける。
+ * 項目をチェックすると、進みの数字が回り、棒が伸び、項目に線が引かれる
+ */
 function SimpleDemo() {
-  const [scope, setScope] = useState<Scope>('team')
-  const shown = FILES.filter((f) => f.scope.includes(scope))
+  const [done, setDone] = useState<boolean[]>([true, true, true, false, false])
+  const count = done.filter(Boolean).length
+  const pct = Math.round((count / TODOS.length) * 100)
   return (
-    <div className="cat-demo-card">
+    <div className="cat-demo-card cat-demo-proj">
       <div className="cat-demo-head">
-        <span className="cat-demo-t" role="heading" aria-level={4}>最近のファイル</span>
-        <span className="cat-demo-l num">{shown.length} 件</span>
+        <Tag variant="accent">{count === TODOS.length ? '完了' : '進行中'}</Tag>
+        <span className="cat-demo-l">11月20日 まで</span>
       </div>
-      <Segmented fill label="表示する範囲" value={scope} onChange={setScope} options={SCOPES} />
-      <div className="cat-demo-list">
-        <AnimatedList items={shown} keyOf={(f) => f.name}>
-          {(f) => <EntityRow lead={<IconBox><f.icon size={18} stroke={1.8} /></IconBox>} title={f.name} sub={f.sub} trailing={<IconChevronRight className="cat-demo-go" size={16} stroke={1.8} aria-hidden="true" />} />}
-        </AnimatedList>
+      <div className="cat-demo-title">
+        <span className="cat-demo-h" role="heading" aria-level={4}>新しいダッシュボードの公開</span>
+        <AvatarGroup stack size="sm" items={MEMBERS} label="担当" />
+      </div>
+      <div className="cat-demo-prog">
+        <div className="cat-demo-num">
+          <span className="cat-demo-v num"><RollingNumber value={pct} />%</span>
+          <span className="cat-demo-l num">{count} / {TODOS.length} 完了</span>
+        </div>
+        <ProgressBar value={pct} label="進み" />
+      </div>
+      <div className="cat-demo-todo">
+        {TODOS.map((t, i) => <Checkbox key={t} label={t} checked={done[i]} onChange={(v) => setDone((d) => d.map((x, j) => (j === i ? v : x)))} />)}
       </div>
     </div>
   )
@@ -128,7 +131,8 @@ function MotionDemo() {
   const [chart, setChart] = useState<ChartKind>('column')
   const total = sum(data.days)
   useTicker(auto, ref, () => setData(({ days }) => {
-    const next = days.map((v, i) => Math.min(300, Math.max(80, Math.round(v + (Math.random() - 0.5) * 60 + (BASE_DAYS[i] - v) * 0.3))))
+    // 動きが見てわかるよう大きめに揺らす（1 日あたり ±90 ほど。基準値へ 4 割引き戻すので、張り付かない）
+    const next = days.map((v, i) => Math.min(290, Math.max(40, Math.round(v + (Math.random() - 0.5) * 180 + (BASE_DAYS[i] - v) * 0.4))))
     return { days: next, delta: sum(next) - sum(days) }
   }))
   const target = goal ?? 0

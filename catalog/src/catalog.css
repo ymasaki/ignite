@@ -177,9 +177,16 @@
 .cat-demo-chart{display:flex;flex-direction:column;justify-content:center;min-width:0;min-height:190px}
 .cat-demo-chart .gauge{align-self:center}
 .cat-demo-foot{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
-.cat-demo-list{display:grid;min-height:150px;align-content:start}
+/* シンプルの見本: プロジェクトのカード。大きな見出しと数字、灰色の濃さと余白で分け、色は主要色だけ */
+.cat-demo-proj{gap:18px}
+.cat-demo-title{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.cat-demo-h{font-size:var(--fs-20);font-weight:700;line-height:1.35;color:var(--ink);letter-spacing:-.01em}
+.cat-demo-av{background:var(--pri-soft);color:var(--pri-ink)}
+.cat-demo-prog{display:grid;gap:8px}
+.cat-demo-todo{display:grid;gap:10px;padding-top:14px;border-top:1px solid var(--line)}
+.cat-demo-todo .check-t{transition:color var(--dur-fast) ease-out}
+.cat-demo-todo .check:has(input:checked) .check-t{color:var(--ink-3);text-decoration:line-through;text-decoration-color:var(--ink-3)}
 .cat-demo-t{font-size:var(--fs-14);font-weight:700;color:var(--ink)}
-.cat-demo-go{color:var(--ink-3)}
 /* 幅の見本。枠の幅を変えると、中の小さなアプリ画面が組み変わる（枠を container にして、枠の幅だけで決める）。
    枠の高さはどの幅でも同じにし、切り替えでカードの高さを変えない */
 .cat-demo-stage{display:grid;justify-items:center}

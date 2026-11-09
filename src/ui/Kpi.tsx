@@ -197,11 +197,12 @@ export function KpiBand({ groups, resetKey }: { groups: KpiGroup[]; resetKey?: s
 
 /**
  * 前の期間との差（「＋15名」）。better は増えて良い指標か減って良い指標か（良くなった差を緑、悪くなった差を茶で示す。0 は薄い文字）。
- * 良し悪しを色だけで伝えないよう、読み上げには「（改善）」「（悪化）」を添える（1.4.1）。value が null（比べる相手がない）ときは何も出さない
+ * 良し悪しを色だけで伝えないよう、読み上げには「（改善）」「（悪化）」を添える（1.4.1）。value が null（比べる相手がない）ときは何も出さない。
+ * 差が変わると、数字の桁は RollingNumber で回す（符号は文字のまま）
  */
 export function Delta({ value, unit = '', decimals = 0, better = 'up' }: { value: number | null; unit?: string; decimals?: number; better?: 'up' | 'down' }) {
   if (value === null || !Number.isFinite(value)) return null
   const v = Number(value.toFixed(decimals))
   const tone = v === 0 ? 'flat' : (v > 0) === (better === 'up') ? 'good' : 'bad'
-  return <span className={`delta ${tone} num`}>{v > 0 ? '＋' : v < 0 ? '−' : '±'}{Math.abs(v).toFixed(decimals)}{unit}{tone !== 'flat' && <span className="sr-only">{tone === 'good' ? '（改善）' : '（悪化）'}</span>}</span>
+  return <span className={`delta ${tone} num`}>{v > 0 ? '＋' : v < 0 ? '−' : '±'}<RollingNumber value={Math.abs(v)} decimals={decimals} />{unit}{tone !== 'flat' && <span className="sr-only">{tone === 'good' ? '（改善）' : '（悪化）'}</span>}</span>
 }

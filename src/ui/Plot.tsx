@@ -5,9 +5,48 @@ import { ChartTooltip, chartTip } from './ChartTooltip'
 
 import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 
+import { reducedMotion } from './Motion'
+
 import { SrTable, seriesSummary } from './Chart'
 
 // ---- 共通 ----
+
+/** 値の変化を動かす長さ（DESIGN.md 4 章の「数字・棒の長さの変化」0.6s。RollingNumber と同じ） */
+const TWEEN_MS = 600
+/** --ease-spring（cubic-bezier(.34,1.32,.5,1)）に近い、少し行き過ぎて戻る動き */
+const springOut = (t: number) => 1 + 2.2 * (t - 1) ** 3 + 1.2 * (t - 1) ** 2
+
+/**
+ * 数の並びが変わったとき、前の値から新しい値へ TWEEN_MS かけて近づけた値を返す（SVG の棒の高さは CSS では動かせないため）。
+ * 初めの表示と、動きを減らす設定のときは新しい値をそのまま返す。並びの長さが変わったときも動かさない
+ */
+export function useTween(target: number[]): number[] {
+  const [shown, setShown] = useState(target)
+  const from = useRef(target)
+  const key = target.join(',')
+  useLayoutEffect(() => {
+    const start = from.current
+    if (start.length !== target.length || start.every((v, i) => v === target[i]) || reducedMotion()) {
+      from.current = target
+      setShown(target)
+      return
+    }
+    const t0 = performance.now()
+    let f = 0
+    const step = (now: number) => {
+      const p = Math.min(1, (now - t0) / TWEEN_MS)
+      const e = springOut(p)
+      const cur = target.map((v, i) => start[i] + (v - start[i]) * e)
+      from.current = cur
+      setShown(cur)
+      if (p < 1) f = requestAnimationFrame(step)
+    }
+    f = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(f)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key])
+  return shown.length === target.length ? shown : target
+}
 
 /** 枠の実際の幅（決まった幅で描いて拡大すると、目盛りの文字まで大きくなるため） */
 function useWidth(init = 640) {
@@ -134,13 +173,18 @@ export function ColumnChart({ labels, series, line, unit = '', lineUnit = '', hi
   const rStep = niceFine(Math.max(1e-9, ...lineVals) / Math.max(1, ticks.length - 1))
   const rTicks = !line ? [] : Math.min(0, ...lineVals) < 0 ? axisTicks(Math.min(0, ...lineVals), Math.max(0, ...lineVals)) : ticks.map((_, i) => clean(i * rStep))
   const H = height, L = 40, R = line ? 44 : 12, T = 10, B = 20
+  // 値が変わったら、棒の高さ・線の点・目盛りの範囲を前の値から動かす（欠けた値は 0 として動かし、描かない）
+  const flat = [...ss.flatMap((s) => labels.map((_, i) => s.values[i] ?? 0)), ...(line ? labels.map((_, i) => line.values[i] ?? 0) : []), ticks[0], ticks.at(-1)!, rTicks[0] ?? 0, rTicks.at(-1) ?? 0]
+  const tw = useTween(flat)
+  const at = (k: number, i: number) => tw[k * n + i]
+  const [lo, hi, rlo, rhi] = tw.slice(-4)
   const band = (W - L - R) / n
-  const y = (v: number) => T + (1 - (v - ticks[0]) / (ticks.at(-1)! - ticks[0])) * (H - T - B)
-  const ry = (v: number) => T + (1 - (v - rTicks[0]) / (rTicks.at(-1)! - rTicks[0])) * (H - T - B)
+  const y = (v: number) => T + (1 - (v - lo) / (hi - lo)) * (H - T - B)
+  const ry = (v: number) => T + (1 - (v - rlo) / (rhi - rlo)) * (H - T - B)
   const cx = (i: number) => L + band * (i + 0.5)
   const groupW = histogram ? band - 1 : Math.min(band * 0.64, 40 * ss.length)
   const barW = histogram ? groupW : (groupW - 2 * (ss.length - 1)) / ss.length
-  const linePts = line ? line.values.map((v, i) => [i, v] as const).filter((p): p is readonly [number, number] => p[1] != null) : []
+  const linePts = line ? line.values.map((v, i) => [i, v == null ? null : at(ss.length, i)] as const).filter((p): p is readonly [number, number] => p[1] != null) : []
   const showLegend = legend ?? (ss.length > 1 || !!line)
   // 折れ線を重ねるときは、棒を薄い段（--chart-3 から）にして線を見せる
   const tone = line ? 3 : 1
@@ -152,7 +196,7 @@ export function ColumnChart({ labels, series, line, unit = '', lineUnit = '', hi
         {line && rTicks.map((v) => <text key={v} className="line-ax" x={W - R + 6} y={ry(v) + 4}>{tick(v)}</text>)}
         <XLabels labels={labels} cx={cx} y={H - 4} W={W} current={current} />
         {ss.map((s, k) => s.values.map((v, i) => v == null || v === 0 ? null : (
-          <path key={`${k}-${i}`} className={`plot-bar chart-f${k + tone}`} d={barPath(cx(i) - groupW / 2 + k * (barW + 2), barW, y(0), y(v), histogram ? 2 : 6)} />
+          <path key={`${k}-${i}`} className={`plot-bar chart-f${k + tone}`} d={barPath(cx(i) - groupW / 2 + k * (barW + 2), barW, y(0), y(at(k, i)), histogram ? 2 : 6)} />
         )))}
         {linePts.length > 1 && <path className="line-p" d={linePts.map(([i, v], k) => `${k ? 'L' : 'M'}${cx(i).toFixed(1)} ${ry(v).toFixed(1)}`).join('')} />}
         {linePts.map(([i, v]) => <circle key={i} className="line-dot" cx={cx(i)} cy={ry(v)} r={4} />)}
