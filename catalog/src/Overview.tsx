@@ -97,6 +97,8 @@ const CHARTS = [{ value: 'column', label: '縦棒' }, { value: 'bar', label: '�
 type ChartKind = (typeof CHARTS)[number]['value']
 const DAYS = ['月', '火', '水', '木', '金', '土', '日']
 const TICK_MS = 2400
+/** 訪問の基準値。毎回この近くへ引き戻しながら揺らすので、長く開いていても上限・下限に張り付かない */
+const BASE_DAYS = [152, 188, 171, 204, 196, 232, 137]
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0)
 
 /**
@@ -120,13 +122,13 @@ function useTicker(on: boolean, ref: RefObject<HTMLElement | null>, fn: () => vo
 /** アニメーション: 数字がひとりでに転がり、グラフは切り替えると伸びる。＋−で目標を変えると残りの数字も回る */
 function MotionDemo() {
   const ref = useRef<HTMLDivElement>(null)
-  const [data, setData] = useState({ days: [152, 188, 171, 204, 196, 232, 137], delta: 100 })
+  const [data, setData] = useState({ days: BASE_DAYS, delta: 100 })
   const [auto, setAuto] = useState(true)
   const [goal, setGoal] = useState<number | null>(1400)
   const [chart, setChart] = useState<ChartKind>('column')
   const total = sum(data.days)
   useTicker(auto, ref, () => setData(({ days }) => {
-    const next = days.map((v) => Math.min(300, Math.max(80, v + Math.round((Math.random() - 0.45) * 60))))
+    const next = days.map((v, i) => Math.min(300, Math.max(80, Math.round(v + (Math.random() - 0.5) * 60 + (BASE_DAYS[i] - v) * 0.3))))
     return { days: next, delta: sum(next) - sum(days) }
   }))
   const target = goal ?? 0
@@ -139,7 +141,7 @@ function MotionDemo() {
             <span className="cat-demo-v num"><RollingNumber value={total} /></span>
             <Delta value={data.delta} />
           </span>
-          <span className="cat-demo-l">目標まで あと <span className="num"><RollingNumber value={Math.max(0, target - total)} /></span></span>
+          <span className="cat-demo-l">{total < target ? '目標まで あと ' : '目標を '}<span className="num"><RollingNumber value={Math.abs(target - total)} /></span>{total < target ? '' : ' 上回った'}</span>
         </div>
         <Segmented label="グラフの種類" value={chart} onChange={setChart} options={[...CHARTS]} />
       </div>
