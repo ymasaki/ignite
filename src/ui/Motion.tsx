@@ -296,3 +296,18 @@ export function RollingNumber({ value, decimals = 0 }: { value: number; decimals
   )
 }
 const DIGITS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+
+/**
+ * 文字の中の数字の部分だけを RollingNumber で回す（「12 件」「45.5%」「−3」など）。数でも文字でもない中身（要素）はそのまま出す。
+ * 部品の件数・値の表示はこれを通し、値が変われば必ず桁が回るようにする（部品ごとに回す・回さないを分けない）
+ */
+export function RollingText({ children }: { children: ReactNode }) {
+  if (typeof children === 'number') {
+    if (!Number.isFinite(children)) return <>{String(children)}</>
+    const t = String(Math.abs(children))
+    return <>{children < 0 && '−'}{/e/.test(t) ? t : <RollingNumber value={Math.abs(children)} decimals={t.split('.')[1]?.length ?? 0} />}</>
+  }
+  if (typeof children !== 'string') return <>{children}</>
+  const parts = children.split(/(\d+(?:\.\d+)?)/)
+  return <>{parts.map((x, i) => (i % 2 ? <RollingNumber key={i} value={Number(x)} decimals={x.split('.')[1]?.length ?? 0} /> : x))}</>
+}

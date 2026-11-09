@@ -2,6 +2,8 @@
 
 import { IconCheck } from '@tabler/icons-react'
 
+import { RollingNumber } from './Motion'
+
 /** 待ち時間が読めない処理の印。領域の読み込みには Skeleton を使い、これはボタンの中や小さな更新に使う。label が空なら飾り（読み上げない） */
 export function Spinner({ label = '読み込み中', size = 'sm' }: { label?: string; size?: 'sm' | 'lg' }) {
   return <span className={`spinner ${size}`} {...(label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true })} />
@@ -15,7 +17,7 @@ export function ProgressBar({ value, label, showValue = false }: { value: number
       <div className={`pg-track${v == null ? ' unknown' : ''}`} role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={v ?? undefined}>
         <span style={v == null ? undefined : { width: `${v}%` }} />
       </div>
-      {showValue && v != null && <span className="num">{Math.round(v)}%</span>}
+      {showValue && v != null && <span className="num"><RollingNumber value={Math.round(v)} />%</span>}
     </div>
   )
 }

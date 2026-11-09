@@ -5,7 +5,7 @@ import { ChartTooltip, chartTip } from './ChartTooltip'
 
 import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 
-import { reducedMotion } from './Motion'
+import { reducedMotion, RollingText } from './Motion'
 
 import { SrTable, seriesSummary } from './Chart'
 
@@ -534,15 +534,15 @@ export function PieChart({ items, donut = false, unit = '', center, centerLabel 
             return <path key={i} className={`pie-s chart-f${s.tone}${on === i ? ' on' : ''}`} d={arcPath(c, c, r0, r1, a0, a)} data-chart-tip={`${s.label}　${clean(s.value)}${unit}　${pct(s.share)}`} onMouseEnter={() => setOn(i)} onMouseLeave={restoreFocus} />
           })}
         </svg>
-        {donut && <span className="pie-c"><span className="num">{center ?? `${clean(total)}${unit}`}</span><small>{centerLabel}</small></span>}
+        {donut && <span className="pie-c"><span className="num"><RollingText>{center ?? `${clean(total)}${unit}`}</RollingText></span><small>{centerLabel}</small></span>}
       </div>
       <ul className="pie-legend">
         {slices.map((s, i) => (
           <li key={i} className={on === i ? 'on' : ''} {...chartTip(`${s.label}　${clean(s.value)}${unit}　${pct(s.share)}`)} role="listitem" onFocus={() => setOn(i)} onMouseEnter={() => setOn(i)} onMouseLeave={restoreFocus}>
             <i className={`sc-key ${s.tone === 'm' ? 'chart-muted' : `chart-c${s.tone}`}`} />
             <span className="pie-l">{s.label}</span>
-            <span className="pie-v num">{clean(s.value)}{unit}</span>
-            <span className="pie-p num">{pct(s.share)}</span>
+            <span className="pie-v num"><RollingText>{clean(s.value)}</RollingText>{unit}</span>
+            <span className="pie-p num"><RollingText>{pct(s.share)}</RollingText></span>
           </li>
         ))}
       </ul>
@@ -573,7 +573,7 @@ export function Gauge({ value, label, min = 0, max = 100, unit = '', target, dec
         {value !== null && f(value) > 0 && <path className="gauge-fill" d={d} strokeWidth={sw} pathLength={100} strokeDasharray={`${f(value) * 100} 100`} />}
         {target != null && <line className="gauge-target" x1={pt(f(target), r - sw / 2 - 3)[0]} y1={pt(f(target), r - sw / 2 - 3)[1]} x2={pt(f(target), r + sw / 2 + 3)[0]} y2={pt(f(target), r + sw / 2 + 3)[1]} />}
       </svg>
-      <span className="gauge-v num" aria-hidden="true">{text}{value !== null && unit && <small>{unit}</small>}</span>
+      <span className="gauge-v num" aria-hidden="true">{value === null ? text : <RollingText>{text}</RollingText>}{value !== null && unit && <small>{unit}</small>}</span>
       <span className="gauge-ends num" aria-hidden="true"><span>{clean(min)}</span><span>{clean(max)}</span></span>
     </div>
     </ChartTooltip>

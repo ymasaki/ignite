@@ -4,6 +4,13 @@ import { createPortal } from 'react-dom'
 
 /** 読み取り用の図の確認口。選択ボタン・凡例・meter は呼び出し側で役割を上書きする */
 export const chartTip = (text: string) => ({ role: 'img' as const, 'data-chart-tip': text, tabIndex: 0, 'aria-label': text })
+/** 名前の元の要素の、読み上げと同じ文字（aria-hidden の中は除く。回る数字の 0〜9 の帯を拾わないため） */
+const spokenText = (el: Element | null) => {
+  if (!el) return ''
+  const copy = el.cloneNode(true) as Element
+  copy.querySelectorAll('[aria-hidden="true"]').forEach((n) => n.remove())
+  return copy.textContent ?? ''
+}
 const targetOf = (node: EventTarget | null) => node instanceof Element ? node.closest<HTMLElement | SVGElement>('[data-chart-tip]') : null
 
 let dismissCurrent: (() => void) | undefined
@@ -90,7 +97,7 @@ export function ChartTooltip({ children, inline = false }: { children: ReactNode
       {children}
       {target && createPortal(
         <div ref={tip} className="chart-tip" role="tooltip" popover="manual" onMouseLeave={leave}>
-          {target.getAttribute('aria-labelledby')?.split(/\s+/).map(id => document.getElementById(id)?.textContent).filter(Boolean).join('　') || target.getAttribute('data-chart-tip')}
+          {target.getAttribute('aria-labelledby')?.split(/\s+/).map(id => spokenText(document.getElementById(id))).filter(Boolean).join('　') || target.getAttribute('data-chart-tip')}
         </div>, target.closest('dialog') ?? document.body,
       )}
     </Tag>

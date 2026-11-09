@@ -288,7 +288,7 @@ export function Tabs<T extends string>({ value, tabs, onChange, fit = false, lab
       {tabs.map((t) => (
         <button key={t.value} type="button" role="tab" id={id && `${id}-tab-${t.value}`} aria-controls={id && t.value === value ? `${id}-panel` : undefined} aria-selected={t.value === value} tabIndex={t.value === value ? 0 : -1} onClick={() => onChange(t.value)}>
           {t.label}
-          {t.count != null && <span className="n num">{t.count}</span>}
+          {t.count != null && <span className="n num"><RollingNumber value={t.count} /></span>}
         </button>
       ))}
     </div>

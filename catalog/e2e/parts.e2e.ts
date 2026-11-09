@@ -974,7 +974,8 @@ for (const [name, selector] of [
     await open(page, 'charts')
     const item = page.locator(selector).first()
     await item.scrollIntoViewIfNeeded()
-    const text = await item.evaluate(el => el.getAttribute('aria-labelledby')?.split(/\s+/).map(id => document.getElementById(id)?.textContent).join('　') || el.getAttribute('data-chart-tip'))
+    // 読み上げと同じ文字（aria-hidden の中、回る数字の 0〜9 の帯は除く）
+    const text = await item.evaluate(el => el.getAttribute('aria-labelledby')?.split(/\s+/).map(id => { const c = document.getElementById(id)?.cloneNode(true) as Element | undefined; c?.querySelectorAll('[aria-hidden="true"]').forEach(n => n.remove()); return c?.textContent }).join('　') || el.getAttribute('data-chart-tip'))
     expect(text).toBeTruthy()
     await item.hover()
     const tip = page.getByRole('tooltip')

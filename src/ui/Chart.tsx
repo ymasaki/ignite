@@ -5,7 +5,7 @@ import { ChartTooltip, chartTip } from './ChartTooltip'
 import { useId, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 
 import { announce } from './A11y'
-import { RollingNumber } from './Motion'
+import { RollingNumber, RollingText } from './Motion'
 import { squarify } from './squarify'
 
 /**
@@ -47,7 +47,7 @@ export function BarList({ items, max }: { items: BarItem[]; max?: number }) {
           <span className="bl-t">
             <span className={`bl-f ${it.muted ? 'muted' : ''}`} style={{ width: `${Math.min(100, (it.value / top) * 100)}%` }} />
           </span>
-          <span id={`${id}-${i}-value`} className="bl-v num">{it.text ?? it.value}</span>
+          <span id={`${id}-${i}-value`} className="bl-v num"><RollingText>{it.text ?? it.value}</RollingText></span>
         </div>
       ))}
     </div>

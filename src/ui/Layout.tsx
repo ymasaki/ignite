@@ -3,6 +3,8 @@
 import { IconAlertCircle, IconCircleCheck, IconInfoCircle } from '@tabler/icons-react'
 import { Fragment, useEffect, useRef, type ReactNode } from 'react'
 
+import { RollingText } from './Motion'
+
 const NOTICE_ICONS = { danger: IconAlertCircle, ok: IconCircleCheck, info: IconInfoCircle }
 
 /**
@@ -60,7 +62,7 @@ export function ScreenBar({ count, children }: { count?: ReactNode; children: Re
     <div className="lscreen-bar">
       {children}
       {/* 件数は絞るたびに変わるので、読み上げにも知らせる（status） */}
-      {count != null && <span className="lscreen-n num" role="status">{count}</span>}
+      {count != null && <span className="lscreen-n num" role="status"><RollingText>{count}</RollingText></span>}
     </div>
   )
 }
@@ -96,7 +98,7 @@ export function Section({ title, count, action, level = 3, children }: { title: 
         {/* 見出しの段。詳細パネルの中は h2 の下なので既定は h3、画面の直下に置くときは level={2}。見た目は .section-h のまま */}
         <Heading className="section-t">
           {title}
-          {count != null && <span className="section-c num">{count}</span>}
+          {count != null && <span className="section-c num"><RollingText>{count}</RollingText></span>}
         </Heading>
         {action}
       </div>
@@ -119,7 +121,7 @@ export function SubHeading({ lead, count, inset = false, onClick, children }: { 
           children
         )}
       </span>
-      {count != null && <span className="sh-c num">{count}</span>}
+      {count != null && <span className="sh-c num"><RollingText>{count}</RollingText></span>}
     </div>
   )
 }
