@@ -1,6 +1,6 @@
-import { IconArrowRight, IconBell, IconBrandGithub, IconEyeCheck, IconRefresh, IconRocket, IconChartBar, IconHome, IconMenu2, IconSettings, IconUsers } from '@tabler/icons-react'
-import { Avatar, Board, Button, CodeBlock, currentAssist, Delta, EntityRow, IconBox, LinkButton, ProgressBar, RollingNumber, Segmented, SettingGroup, SettingRow, setAssist, Sparkline, Stat, Switch, Tag, TextField, ThemeSettings, useScrollFocus, withFade, type Assist, type Theme } from '@ymasaki/ignite'
-import { useRef, useState, type ReactNode } from 'react'
+import { IconArrowRight, IconBell, IconBrandGithub, IconChevronRight, IconEyeCheck, IconFileText, IconNotes, IconPresentation, IconRocket, IconChartBar, IconHome, IconMenu2, IconSettings, IconTable, IconUsers } from '@tabler/icons-react'
+import { AnimatedList, BarList, Board, Button, CodeBlock, ColumnChart, currentAssist, Delta, EntityRow, FormField, Gauge, IconBox, LinkButton, NumberField, reducedMotion, RollingNumber, Segmented, SettingGroup, SettingRow, setAssist, Stat, Switch, Tag, ThemeSettings, useScrollFocus, withFade, type Assist, type Theme } from '@ymasaki/ignite'
+import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
 import { version } from '../../package.json'
 import { HeroLogo } from './logo'
 import { PAGES, PART_COUNT } from './nav'
@@ -56,67 +56,102 @@ function AssistTry() {
   )
 }
 
-/** シンプル: 灰色の濃さと余白で分け、色は主要色ひとつだけ */
+type Scope = 'all' | 'team' | 'me'
+const SCOPES: { value: Scope; label: string }[] = [{ value: 'all', label: '全員' }, { value: 'team', label: 'チーム' }, { value: 'me', label: '自分だけ' }]
+const FILES: { name: string; sub: string; icon: typeof IconBell; scope: Scope[] }[] = [
+  { name: '四半期の振り返り', sub: '佐藤 · 2 時間前', icon: IconPresentation, scope: ['all'] },
+  { name: '採用の計画', sub: '鈴木 · 昨日', icon: IconFileText, scope: ['all', 'team'] },
+  { name: '週次の数字', sub: '田中 · 3 日前', icon: IconTable, scope: ['all', 'team'] },
+  { name: '定例の議事録', sub: '高橋 · 先週', icon: IconNotes, scope: ['team'] },
+  { name: '自分用のメモ', sub: '自分 · 5 分前', icon: IconNotes, scope: ['all', 'me'] },
+  { name: '下書き: 告知文', sub: '自分 · 1 時間前', icon: IconFileText, scope: ['me'] },
+  { name: '旅費の精算', sub: '自分 · 昨日', icon: IconTable, scope: ['me'] },
+]
+
+/** シンプル: 灰色の濃さと余白で分け、色は主要色ひとつだけ。範囲を切り替えると一覧が入れ替わる */
 function SimpleDemo() {
-  const [name, setName] = useState('山田 花子')
-  const [scope, setScope] = useState<'all' | 'team' | 'me'>('team')
+  const [scope, setScope] = useState<Scope>('team')
+  const shown = FILES.filter((f) => f.scope.includes(scope))
   return (
     <div className="cat-demo-card">
-      <div className="cat-mock-h">
-        <Avatar initial="山" />
-        <span className="cat-mock-t">プロフィール</span>
-        <Tag variant="ok">公開中</Tag>
+      <div className="cat-demo-head">
+        <span className="cat-demo-t" role="heading" aria-level={4}>最近のファイル</span>
+        <span className="cat-demo-l num">{shown.length} 件</span>
       </div>
-      <TextField label="表示名" value={name} onChange={setName} />
-      <Segmented fill label="公開範囲" value={scope} onChange={setScope} options={[{ value: 'all', label: '全員' }, { value: 'team', label: 'チーム' }, { value: 'me', label: '自分だけ' }]} />
-      <div className="cat-end">
-        <Button>取り消す</Button>
-        <Button variant="primary">保存</Button>
+      <Segmented fill label="表示する範囲" value={scope} onChange={setScope} options={SCOPES} />
+      <div className="cat-demo-list">
+        <AnimatedList items={shown} keyOf={(f) => f.name}>
+          {(f) => <EntityRow lead={<IconBox><f.icon size={18} stroke={1.8} /></IconBox>} title={f.name} sub={f.sub} trailing={<IconChevronRight className="cat-demo-go" size={16} stroke={1.8} aria-hidden="true" />} />}
+        </AnimatedList>
       </div>
     </div>
   )
 }
 
-/** テーマ: 選ぶとページ全体が切り替わる。隣の部品で、主要色がどこに効くかを見せる */
+/** テーマ: 選ぶとページ全体が切り替わる。見本はテーマの設定だけにし、効き目はページそのもので見せる */
 function ThemeDemo({ theme, onTheme }: { theme: Theme; onTheme: (t: Theme) => void }) {
-  const [on, setOn] = useState(true)
-  return (
-    <div className="cat-demo-split">
-      <ThemeSettings value={theme} onChange={onTheme} />
-      <div className="cat-demo-card">
-        <Switch label="新着を知らせる" checked={on} onChange={setOn} />
-        <ProgressBar label="進み" value={68} showValue />
-        <div className="cat-end">
-          <Tag variant="ok">受け取る</Tag>
-          <Button variant="primary">保存</Button>
-        </div>
-      </div>
-    </div>
-  )
+  return <ThemeSettings value={theme} onChange={onTheme} />
 }
 
-/** アニメーション: 数字が転がり、スイッチと開閉が弾む */
+const CHARTS = [{ value: 'column', label: '縦棒' }, { value: 'bar', label: '横棒' }, { value: 'gauge', label: 'メーター' }] as const
+type ChartKind = (typeof CHARTS)[number]['value']
+const DAYS = ['月', '火', '水', '木', '金', '土', '日']
+const TICK_MS = 2400
+const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0)
+
+/**
+ * 決まった間隔で fn を呼ぶ。見本が画面の外・タブが裏・動きを減らす設定のあいだは呼ばない
+ * （見ていないところで数字を回さない。監査やテストの撮影中に勝手に動き続けないためでもある）
+ */
+function useTicker(on: boolean, ref: RefObject<HTMLElement | null>, fn: () => void) {
+  const latest = useRef(fn)
+  latest.current = fn
+  useEffect(() => {
+    const el = ref.current
+    if (!on || !el) return
+    let seen = false
+    const io = new IntersectionObserver(([e]) => { seen = e.isIntersecting })
+    io.observe(el)
+    const t = window.setInterval(() => { if (seen && !document.hidden && !reducedMotion()) latest.current() }, TICK_MS)
+    return () => (window.clearInterval(t), io.disconnect())
+  }, [on, ref])
+}
+
+/** アニメーション: 数字がひとりでに転がり、グラフは切り替えると伸びる。＋−で目標を変えると残りの数字も回る */
 function MotionDemo() {
-  const [n, setN] = useState(1280)
-  const [prev, setPrev] = useState(1180)
-  const [hist, setHist] = useState([9, 12, 10, 14, 13, 16, 15])
-  const [on, setOn] = useState(false)
-  const bump = () => {
-    const next = Math.max(800, n + Math.round((Math.random() - 0.35) * 300))
-    setPrev(n)
-    setN(next)
-    setHist((h) => [...h.slice(1), Math.round(next / 80)])
-  }
+  const ref = useRef<HTMLDivElement>(null)
+  const [data, setData] = useState({ days: [152, 188, 171, 204, 196, 232, 137], delta: 100 })
+  const [auto, setAuto] = useState(true)
+  const [goal, setGoal] = useState<number | null>(1400)
+  const [chart, setChart] = useState<ChartKind>('column')
+  const total = sum(data.days)
+  useTicker(auto, ref, () => setData(({ days }) => {
+    const next = days.map((v) => Math.min(300, Math.max(80, v + Math.round((Math.random() - 0.45) * 60))))
+    return { days: next, delta: sum(next) - sum(days) }
+  }))
+  const target = goal ?? 0
   return (
-    <div className="cat-demo-card">
-      <span className="cat-demo-l">今週の訪問</span>
-      <div className="cat-demo-num">
-        <span className="cat-face-v num"><RollingNumber value={n} /></span>
-        <Delta value={n - prev} />
+    <div className="cat-demo-card" ref={ref}>
+      <div className="cat-demo-head">
+        <div className="cat-demo-stat">
+          <span className="cat-demo-l">今週の訪問</span>
+          <span className="cat-demo-num">
+            <span className="cat-demo-v num"><RollingNumber value={total} /></span>
+            <Delta value={data.delta} />
+          </span>
+          <span className="cat-demo-l">目標まで あと <span className="num"><RollingNumber value={Math.max(0, target - total)} /></span></span>
+        </div>
+        <Segmented label="グラフの種類" value={chart} onChange={setChart} options={[...CHARTS]} />
       </div>
-      <Sparkline label="訪問の推移" values={hist} />
-      <Switch label="自動で更新する" checked={on} onChange={setOn} />
-      <div className="cat-end"><Button variant="primary" icon={ico(IconRefresh)} onClick={bump}>数字を変える</Button></div>
+      <div className="cat-demo-chart" key={chart}>
+        {chart === 'column' && <ColumnChart unit="件" labels={DAYS} series={[{ label: '訪問', values: data.days }]} current={6} height={170} />}
+        {chart === 'bar' && <BarList max={300} items={DAYS.map((d, i) => ({ label: d, value: data.days[i] }))} />}
+        {chart === 'gauge' && <Gauge label="目標の達成率" value={target ? Math.round((total / target) * 100) : null} unit="%" target={100} max={120} size={190} />}
+      </div>
+      <div className="cat-demo-foot">
+        <Switch label="自動で更新する" checked={auto} onChange={setAuto} />
+        <FormField label="週の目標"><NumberField value={goal} onChange={setGoal} min={500} max={3000} step={100} unit="件" /></FormField>
+      </div>
     </div>
   )
 }

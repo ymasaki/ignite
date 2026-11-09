@@ -140,8 +140,6 @@
 .cat-hero-b{position:relative;display:grid;gap:20px;min-width:0}
 .cat-hero-p{max-width:520px;margin:0;font-size:var(--fs-16);line-height:1.8;color:var(--ink-2);word-break:auto-phrase}
 .cat-hero-s{display:flex;flex-wrap:wrap;gap:16px 32px;padding-top:20px;border-top:1px solid var(--line)}
-.cat-mock-h{display:flex;align-items:center;gap:10px}
-.cat-mock-t{flex:1;font-size:var(--fs-14);font-weight:700;color:var(--ink)}
 /* 段。上を罫線 1 本で区切る */
 .cat-band{display:grid;gap:32px;padding:48px 0;border-top:1px solid var(--line)}
 /* 段の見出し。左に印・見出し、右に段全体への操作 */
@@ -170,9 +168,18 @@
 /* 見本は面の中に置くので、枠・影を付けない */
 .cat-demo-card{display:grid;gap:14px;min-width:0}
 .cat-demo-col{display:grid;gap:14px;min-width:0}
-.cat-demo-split{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));align-items:center;gap:20px}
 .cat-demo-l{font-size:var(--fs-12);color:var(--ink-3)}
 .cat-demo-num{display:flex;align-items:baseline;gap:12px}
+.cat-demo-v{font-size:var(--fs-32);font-weight:700;line-height:1.2;color:var(--ink)}
+.cat-demo-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:12px}
+.cat-demo-stat{display:grid;gap:2px}
+/* 種類を変えても高さを変えない（下の操作が跳ねないように） */
+.cat-demo-chart{display:flex;flex-direction:column;justify-content:center;min-width:0;min-height:190px}
+.cat-demo-chart .gauge{align-self:center}
+.cat-demo-foot{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.cat-demo-list{display:grid;min-height:150px;align-content:start}
+.cat-demo-t{font-size:var(--fs-14);font-weight:700;color:var(--ink)}
+.cat-demo-go{color:var(--ink-3)}
 /* 幅の見本。枠の幅を変えると、中の小さなアプリ画面が組み変わる（枠を container にして、枠の幅だけで決める）。
    枠の高さはどの幅でも同じにし、切り替えでカードの高さを変えない */
 .cat-demo-stage{display:grid;justify-items:center}
