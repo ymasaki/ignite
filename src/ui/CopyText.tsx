@@ -1,22 +1,27 @@
 // 値そのものをコピーのボタンにする（メールアドレスなど）。ホバーで全体が押せる見た目になり、右にコピーのアイコンが出る。見た目は styles/components/button.css。
 
 import { IconCheck, IconCopy } from '@tabler/icons-react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { announce } from './A11y'
 
 /** 文字列をコピーし、結果を読み上げる。copied はコピーの直後だけ true（アイコンと吹き出しを変える） */
 export function useCopy(text: string) {
   const [copied, setCopied] = useState(false)
-  const copy = () =>
-    navigator.clipboard?.writeText(text).then(
-      () => {
-        setCopied(true)
-        setTimeout(() => setCopied(false), 1500)
-        announce('コピーしました')
-      },
-      () => announce('コピーできませんでした', { assertive: true }),
-    )
+  const timer = useRef(0)
+  useEffect(() => () => window.clearTimeout(timer.current), [])
+  const fail = () => announce('コピーできませんでした', { assertive: true })
+  const copy = () => {
+    // http など、コピーの機能が無い環境でも黙って終わらせない
+    if (!navigator.clipboard) return fail()
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true)
+      // 続けて押したら、あとに押した分から数え直す
+      window.clearTimeout(timer.current)
+      timer.current = window.setTimeout(() => setCopied(false), 1500)
+      announce('コピーしました')
+    }, fail)
+  }
   return { copied, copy }
 }
 

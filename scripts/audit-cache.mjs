@@ -69,6 +69,12 @@ function environment(root, env) {
     'CODEX_APPLY_PATCH_PRESERVE_LINE_ENDINGS', 'CODEX_CI', 'CODEX_SANDBOX',
     'CODEX_SANDBOX_NETWORK_DISABLED', 'CODEX_SESSION_ID', 'CODEX_THREAD_ID',
     'CODEX_TOOL_CALL_ID', 'CODEX_VERSION', 'CLAUDE_CODE_ENABLE_TODO_TOOLS',
+    // Claude Code のセッションごとに変わる識別・通信・実行制御と、起動元の印。描画には使わない。
+    'AI_AGENT', 'CLAUDECODE', 'CLAUDE_CODE_CHILD_SESSION', 'CLAUDE_CODE_ENABLE_TELEMETRY', 'CLAUDE_CODE_ENTRYPOINT',
+    'CLAUDE_CODE_EXECPATH', 'CLAUDE_CODE_MESSAGING_SOCKET', 'CLAUDE_CODE_MESSAGING_TOKEN', 'CLAUDE_CODE_SESSION_ATTENDED',
+    'CLAUDE_CODE_SESSION_ID', 'CLAUDE_CODE_SILENT_TURN_REMINDER_TEXT', 'CLAUDE_EFFORT', 'CLAUDE_PID',
+    // macOS のログイン・起動ごとに変わる識別と、鍵エージェントの通信先。
+    'LaunchInstanceID', 'SECURITYSESSIONID', 'SSH_AUTH_SOCK',
   ])
   return Object.entries(env).filter(([name]) => !omit.has(name)).sort(([a], [b]) => a.localeCompare(b))
     .map(([name, value]) => [name, String(value) === root ? '<ROOT>' : String(value).replaceAll(root + path.sep, '<ROOT>/')])
@@ -181,6 +187,49 @@ async function acquire(file, interrupted) {
   } catch (error) { closeSync(fd); throw error }
   finally { console.log(`harness-metric: stage=audit-input-lock seconds=${((performance.now() - started) / 1000).toFixed(3)}`) }
 }
+// 期限切れの成功結果と、保存途中の残り・使われていないロックを消す（鍵は入力と環境ごとに変わるので、消さないと溜まり続ける）。
+// 期限内の成功結果は残す。消せなくても監査は続ける。
+export async function pruneAuditCache(store, keep, now = Date.now()) {
+  let removed = 0
+  for (const name of (await fs.readdir(store)).sort()) {
+    if (name === keep || name === `${keep}.lock`) continue
+    const file = path.join(store, name)
+    try {
+      const stat = await fs.lstat(file)
+      if (stat.isDirectory()) {
+        // 成功結果は記録の時刻、保存途中の残り（.audit-save-*）や壊れた項目は更新時刻で数える。
+        let createdAt = stat.mtimeMs
+        if (!name.startsWith('.')) {
+          try { createdAt = JSON.parse(await fs.readFile(path.join(file, 'success.json'), 'utf8')).createdAt } catch { /* 更新時刻で数える */ }
+        }
+        const age = now - createdAt
+        if (Number.isFinite(age) && age < MAX_AGE) continue
+        await fs.rm(file, { recursive: true, force: true }); removed++
+      } else if (stat.isFile() && name.endsWith('.lock') && now - stat.mtimeMs >= MAX_AGE) {
+        try { await fs.access(file.slice(0, -'.lock'.length)); continue } catch { /* 成功結果がない鍵のロックだけを消す */ }
+        // 実行中・待機中の監査が持っていないことを確かめてから消す。
+        const fd = openSync(file, 'a')
+        try {
+          if (spawnSync('/usr/bin/lockf', ['-s', '-t', '0', '3'], { stdio: ['ignore', 'ignore', 'ignore', fd] }).status !== 0) continue
+          await fs.rm(file, { force: true }); removed++
+        } finally { closeSync(fd) }
+      }
+    } catch { /* ほかの監査が同時に消した項目などは次回に回す */ }
+  }
+  return removed
+}
+// 同じソースの直近の成功と、どの条件が違ったかを返す（再利用が当たらない理由を追えるようにする）。
+async function changedSince(store, input) {
+  if (!input.fingerprints) return null
+  let latest
+  for (const name of await fs.readdir(store)) {
+    try {
+      const record = JSON.parse(await fs.readFile(path.join(store, name, 'success.json'), 'utf8'))
+      if (record.fingerprints?.source === input.fingerprints.source && (!latest || record.createdAt > latest.createdAt)) latest = record
+    } catch { /* 成功結果でない項目 */ }
+  }
+  return latest ? Object.keys(input.fingerprints).filter(name => input.fingerprints[name] !== latest.fingerprints[name]) : null
+}
 export async function openAuditCache(root, args, interrupted, options = {}) {
   const env = options.env ?? process.env
   const snapshot = options.snapshot ?? (() => auditInput(root, env))
@@ -196,6 +245,10 @@ export async function openAuditCache(root, args, interrupted, options = {}) {
   const close = () => { if (!closed) { closed = true; closeSync(fd) } }
   let restore
   try {
+    try {
+      const removed = await pruneAuditCache(input.store, input.key, now())
+      if (removed) console.log(`[audit-cache] 期限切れの保存結果を${removed}件消しました`)
+    } catch { /* 掃除できなくても監査は続ける */ }
     if ((await snapshot())?.key !== input.key) { close(); return null }
     const full = args.length === 0 && !env.IGNITE_STEPPER_SCREENSHOT
     if (full && env.IGNITE_AUDIT_FRESH !== '1') {
@@ -222,6 +275,12 @@ export async function openAuditCache(root, args, interrupted, options = {}) {
         }
       }
     }
+    if (full && env.IGNITE_AUDIT_FRESH !== '1') {
+      try {
+        const changed = await changedSince(input.store, input)
+        if (changed?.length) console.log(`[audit-cache] 同じソースの直近の成功と違う条件: ${changed.join('・')}`)
+      } catch { /* 理由を出せなくても監査は続ける */ }
+    }
     // 再確認を始めた時点で、以前の成功を失効する。失敗・中断では再公開しない。
     await fs.rm(entry, { recursive: true, force: true })
     if (interrupted()) throw new Error('監査を中断しました')
@@ -242,7 +301,7 @@ export async function openAuditCache(root, args, interrupted, options = {}) {
           await fs.cp(output, path.join(temporary, 'output'), { recursive: true })
           const files = await treeFiles(path.join(temporary, 'output'))
           if (!files.some(([name]) => name === 'report.md')) throw new Error('監査レポートがありません')
-          await fs.writeFile(path.join(temporary, 'success.json'), JSON.stringify({ key: input.key, createdAt: now(), files }))
+          await fs.writeFile(path.join(temporary, 'success.json'), JSON.stringify({ key: input.key, createdAt: now(), files, fingerprints: input.fingerprints }))
           if (interrupted()) return
           await fs.rename(temporary, entry); temporary = undefined
           console.log('[audit-cache] 全件成功を保存しました（有効期間24時間）')

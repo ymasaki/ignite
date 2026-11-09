@@ -16,9 +16,13 @@ export function pageItems(page: number, count: number, around = 1): (number | '�
 }
 
 /** 長い一覧のページ送り（1 ページ目が 1）。枠が狭ければ番号の代わりに「3 / 20」を出す */
-export function Pagination({ page, count, onChange, label = 'ページ送り' }: { page: number; count: number; onChange: (page: number) => void; label?: string }) {
+export function Pagination(props: { page: number; count: number; onChange: (page: number) => void; label?: string }) {
+  // 1 ページ以下では何も出さない。地を置く処理（useThumb）は枠が現れてから動かすので、中身を分ける（件数があとから増えても地が出る）
+  return props.count <= 1 ? null : <PaginationRow {...props} />
+}
+
+function PaginationRow({ page, count, onChange, label = 'ページ送り' }: { page: number; count: number; onChange: (page: number) => void; label?: string }) {
   const { ref, thumb, ready } = useThumb(String(page))
-  if (count <= 1) return null
   return (
     <nav className="pagination" aria-label={label}>
       <div className={`pg-row${ready ? ' ready' : ''}`} ref={ref}>

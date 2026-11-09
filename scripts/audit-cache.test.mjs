@@ -8,7 +8,7 @@ import fs from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { execFileSync, spawn, spawnSync } from 'node:child_process'
-import { auditInput, openAuditCache, treeFiles, browserFiles } from './audit-cache.mjs'
+import { auditInput, openAuditCache, pruneAuditCache, treeFiles, browserFiles } from './audit-cache.mjs'
 
 const options = (store, extra = {}) => ({ snapshot: async () => ({ key: 'input', store }), ...extra })
 async function report(root, text = '成功') {
@@ -99,6 +99,7 @@ test('Gitの未保存・未追跡・ツリー・依存実体・環境変更を�
     assert.equal((await input({ IGNITE_AUDIT_FRESH: '1' })).key, first.key)
     assert.equal((await input({ DEVBOARD_PROJECT_DIR: '/main', DEVBOARD_BASE_BRANCH: 'main', DEVBOARD_COMMIT: 'commit', DEVBOARD_CHECK_PRIORITY: 'high' })).key, first.key)
     assert.equal((await input({ CODEX_TOOL_CALL_ID: 'another-call', CODEX_THREAD_ID: 'another-thread', CODEX_SESSION_ID: 'another-session', DEVBOARD_COMPUTER_TOKEN: 'not-a-real-token', DEVBOARD_DISTRIBUTED_SOCKET: '/tmp/test-socket', CODEX_VERSION: 'another-executor', CLAUDE_CODE_ENABLE_TODO_TOOLS: '1' })).key, first.key)
+    assert.equal((await input({ CLAUDE_CODE_SESSION_ID: 'another-session', CLAUDE_PID: '1', CLAUDE_CODE_MESSAGING_SOCKET: '/tmp/test-socket', CLAUDE_CODE_MESSAGING_TOKEN: 'not-a-real-token', CLAUDE_EFFORT: 'high', CLAUDECODE: '1', LaunchInstanceID: 'another-launch', SECURITYSESSIONID: 'another-login', SSH_AUTH_SOCK: '/tmp/test-agent' })).key, first.key)
     assert.notEqual((await input({ UNKNOWN_RENDER_OPTION: 'new' })).key, first.key)
     const cacheOptions = { env: {}, snapshot: () => input() }
     const saved = await openAuditCache(dir, [], () => false, cacheOptions)
@@ -364,4 +365,33 @@ test('ハッシュの読み取りは最大4個で、1件が失敗しても全wor
     syncBuiltinESMExports()
     await fs.rm(dir, { recursive: true, force: true })
   }
+})
+
+test('期限切れの成功結果・保存途中の残り・使われていないロックだけを消す', async () => {
+  const dir = await fs.mkdtemp(path.join(tmpdir(), 'ignite-prune-'))
+  const day = 24 * 60 * 60 * 1000
+  const now = Date.now()
+  const entry = async (name, createdAt) => {
+    await fs.mkdir(path.join(dir, name, 'output'), { recursive: true })
+    if (createdAt !== undefined) await fs.writeFile(path.join(dir, name, 'success.json'), JSON.stringify({ key: name, createdAt }))
+  }
+  const old = async name => { const time = new Date(now - day - 1000); await fs.utimes(path.join(dir, name), time, time) }
+  try {
+    await entry('expired', now - day)
+    await entry('fresh', now - day + 60000)
+    await entry('current', now - day * 3)
+    await entry('broken'); await old('broken')
+    await entry('.audit-save-old'); await old('.audit-save-old')
+    await entry('.audit-save-new')
+    for (const name of ['expired.lock', 'fresh.lock', 'current.lock', 'orphan.lock', 'recent.lock', 'held.lock']) await fs.writeFile(path.join(dir, name), '')
+    for (const name of ['expired.lock', 'fresh.lock', 'current.lock', 'orphan.lock', 'held.lock']) await old(name)
+    // 実行中の監査が持っているロックは、古くても消さない
+    const holder = spawn('/usr/bin/lockf', ['-k', path.join(dir, 'held.lock'), '/bin/sleep', '30'], { stdio: 'ignore' })
+    try {
+      for (let i = 0; i < 100 && spawnSync('/usr/bin/lockf', ['-k', '-s', '-t', '0', path.join(dir, 'held.lock'), '/usr/bin/true']).status === 0; i++) await new Promise(resolve => setTimeout(resolve, 20))
+      assert.equal(await pruneAuditCache(dir, 'current', now), 5)
+      assert.deepEqual((await fs.readdir(dir)).sort(), ['.audit-save-new', 'current', 'current.lock', 'fresh', 'fresh.lock', 'held.lock', 'recent.lock'])
+      assert.equal(await pruneAuditCache(dir, 'current', now), 0)
+    } finally { holder.kill() }
+  } finally { await fs.rm(dir, { recursive: true, force: true }) }
 })

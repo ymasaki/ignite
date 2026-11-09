@@ -84,6 +84,8 @@ export function SearchSuggest({ value, onChange, groups, onSelect, label, placeh
   const optId = (i: number) => `${uid}-${i}`
   usePlaced(body, shown)
   useEffect(() => setCur(0), [q])
+  // 同じ検索語のまま候補が減ったら（絞り込みを外に任せているとき）、選んでいる位置を残りの候補に収める
+  useEffect(() => setCur((c) => Math.min(c, Math.max(0, count - 1))), [count])
   useEffect(() => {
     if (shown) document.getElementById(optId(cur))?.scrollIntoView({ block: 'nearest' })
     // eslint-disable-next-line react-hooks/exhaustive-deps

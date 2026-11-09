@@ -206,6 +206,8 @@ export function AppShell({ side, foot, collapse, title, titleAfter, search, tool
   if (lastDrawer !== drawerSide) {
     setLastDrawer(drawerSide)
     setSwitching(true)
+    // 引き出しを開いたまま窓を広げたら閉じた状態に戻す（狭め直したときに開いた姿で出さない）
+    if (!drawerSide) setOpen(false)
   }
   useEffect(() => {
     if (!switching) return

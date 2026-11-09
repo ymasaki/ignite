@@ -86,7 +86,7 @@ export function stepNumber(n: number | null, delta: number, step: number, min?: 
   return clampNumber(Number(((n ?? min ?? 0) + delta).toFixed(digits)), min, max)
 }
 
-/** 数を入れる欄。↑↓ と − ＋ で増減し、欄を離れるときに上限・下限へ収める。全角の数字も読む。unit は欄の右に添える単位 */
+/** 数を入れる欄。↑↓ と − ＋ で増減し、欄を離れるとき・Enter を押したときに上限・下限へ収めて確定する。全角の数字も読む。unit は欄の右に添える単位 */
 export function NumberField({ value, onChange, label, min, max, step = 1, unit, placeholder, disabled = false }: { value: number | null; onChange: (v: number | null) => void; label?: string; min?: number; max?: number; step?: number; unit?: string; placeholder?: string; disabled?: boolean }) {
   const f = useField(label)
   const [draft, setDraft] = useState<string | null>(null)
@@ -123,7 +123,11 @@ export function NumberField({ value, onChange, label, min, max, step = 1, unit, 
     onChange(next)
   }
   const onKey = (e: KeyboardEvent) => {
-    if (e.nativeEvent.isComposing || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return
+    // 変換中のキーは欄に任せる（Safari は確定の Enter を isComposing なしの 229 で送る）
+    if (e.nativeEvent.isComposing || e.keyCode === 229) return
+    // Enter は確定する（フォームの中では、このあとの送信に打った値を渡す）
+    if (e.key === 'Enter') return commit()
+    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return
     e.preventDefault()
     const next = stepNumber(draft === null ? value : parseNumber(draft), e.key === 'ArrowUp' ? step : -step, step, min, max)
     if (draft === null) stepBy(next)

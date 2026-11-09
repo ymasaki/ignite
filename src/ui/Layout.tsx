@@ -170,7 +170,7 @@ export function Crumbs<T>({ items, label, onPick, variant = 'plain', name = '上
           </button>
         </Fragment>
       ))}
-      {variant === 'boxed' && <span className="sep">›</span>}
+      {variant === 'boxed' && !current && <span className="sep">›</span>}
       {current && (
         <>
           <span className="sep">›</span>

@@ -1339,3 +1339,96 @@ test('TreeChart: 開閉のボタンで縦に積んだ子を出し入れし、Tab
   await expect(last).toBeFocused()
   await expect.poll(async () => { const b = (await last.boundingBox())!; return b.x + b.width <= view.x + view.width && b.x >= view.x }).toBe(true)
 })
+
+// カタログの実例では作れない条件は、テスト専用の見本（fixtures.tsx）をページへ読み込んで確かめる
+const mount = async (page: import('@playwright/test').Page, name: string) => {
+  await open(page, 'overview')
+  await page.addScriptTag({ type: 'module', content: `import { mount } from '/e2e/fixtures.tsx'; mount(${JSON.stringify(name)})` })
+  await page.waitForFunction(() => !!document.getElementById('fx'))
+}
+const setFx = (page: import('@playwright/test').Page, v: string) => page.evaluate((x) => window.fx!(x), v)
+
+test('Pagination: 件数があとから増えても、今のページの地が出る', async ({ page }) => {
+  await mount(page, 'pagination')
+  await setFx(page, '20')
+  const row = page.locator('#fx .pg-row')
+  await expect(row).toHaveClass(/ready/)
+  expect(await row.locator('.thumb').evaluate((el) => el.getBoundingClientRect().width)).toBeGreaterThan(0)
+})
+
+test('NumberField: フォームの中で Enter を押すと、打った値で送信する', async ({ page }) => {
+  await mount(page, 'number')
+  const box = page.getByRole('spinbutton', { name: '数' })
+  await box.fill('7')
+  await box.press('Enter')
+  await expect(page.locator('[data-sent]')).toHaveText('7')
+})
+
+test('Select: 幅が動いている途中で同じ幅の値に変えても、動きの印を残さない', async ({ page }) => {
+  await mount(page, 'select')
+  const btn = page.locator('#fx .select-btn')
+  await setFx(page, 'b')
+  await expect(btn).toHaveClass(/resizing/)
+  await setFx(page, 'c')
+  await expect(btn).not.toHaveClass(/resizing/)
+})
+
+test('Expandable: 開く途中に中の要素の動きが終わっても、高さの動きを止めない', async ({ page }) => {
+  await mount(page, 'expand')
+  await page.getByRole('button', { name: '続きを読む' }).click()
+  const early = await page.locator('#fx .expand-body').evaluate((el) => {
+    el.querySelector('[data-inner]')!.dispatchEvent(new TransitionEvent('transitionend', { bubbles: true, propertyName: 'color' }))
+    return el.style.maxHeight
+  })
+  expect(early).not.toBe('none')
+  await expect.poll(() => page.locator('#fx .expand-body').evaluate((el) => el.style.maxHeight)).toBe('none')
+})
+
+test('SearchSuggest: 選んでいた候補が減っても、Enter で残りの候補を選べる', async ({ page }) => {
+  await mount(page, 'suggest')
+  const box = page.getByRole('combobox', { name: '検索' })
+  await box.fill('候補')
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('ArrowDown')
+  await expect(page.getByRole('option', { name: '候補3' })).toHaveAttribute('aria-selected', 'true')
+  await setFx(page, '1')
+  await expect(page.getByRole('option')).toHaveCount(1)
+  await expect(page.getByRole('option', { name: '候補1' })).toHaveAttribute('aria-selected', 'true')
+  await page.keyboard.press('Enter')
+  await expect(page.locator('[data-picked]')).toHaveText('候補1')
+})
+
+test('AppShell: 引き出しの左メニューを開いたまま窓を広げたら、狭めても閉じている', async ({ page }) => {
+  await open(page, 'overview')
+  await page.setViewportSize({ width: 500, height: 800 })
+  const menu = page.locator('.ttl-menu')
+  await menu.click()
+  await expect(menu).toHaveAttribute('aria-expanded', 'true')
+  await page.setViewportSize({ width: 1280, height: 800 })
+  // 広い幅を部品が認識する（引き出しの形でなくなる）まで待ってから狭める
+  await expect(page.locator('aside.side')).not.toHaveAttribute('role', 'dialog')
+  await page.setViewportSize({ width: 500, height: 800 })
+  await expect(menu).toBeVisible()
+  await expect(menu).toHaveAttribute('aria-expanded', 'false')
+  await expect(page.locator('aside.side')).not.toHaveClass(/open/)
+})
+
+test('CopyText: コピーの機能が無い環境では、できなかったと知らせる', async ({ page }) => {
+  await page.addInitScript(() => Object.defineProperty(Navigator.prototype, 'clipboard', { get: () => undefined }))
+  await open(page, 'actions')
+  await page.getByRole('button', { name: 'ignite 名前をコピー' }).click()
+  await expect(page.locator('[aria-live]', { hasText: 'コピーできませんでした' })).toBeAttached()
+})
+
+test('CopyText: 続けて押しても、あとに押した分の「コピーしました」が早く消えない', async ({ page, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+  await open(page, 'actions')
+  const ct = page.getByRole('button', { name: 'ignite 名前をコピー' })
+  await ct.click()
+  await expect(ct).toHaveClass(/copied/)
+  await page.waitForTimeout(1000)
+  await ct.click()
+  // 1 回目から 1.5 秒が過ぎても、2 回目の分が残っている
+  await page.waitForTimeout(800)
+  await expect(ct).toHaveClass(/copied/)
+})

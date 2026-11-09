@@ -212,7 +212,8 @@ export function Select<T extends string>({ value, options, onChange, label: labe
       b.style.width = ''
     }
     b.addEventListener('transitionend', done)
-    return () => b.removeEventListener('transitionend', done)
+    // 動きの途中で次の値に変わったら印も外す（次の幅が同じだと動きが始まらず、印だけが残って省略が効かなくなる）
+    return () => (b.removeEventListener('transitionend', done), b.classList.remove('resizing'))
   }, [value, cur?.label])
   // 開いたら選択中の選択肢にフォーカスを置き、↑↓（Home・End で端）で移る。Enter・Space で選ぶ、Esc で閉じる（どちらもボタンへ戻る）
   const onKey = (e: ReactKeyboardEvent) => {

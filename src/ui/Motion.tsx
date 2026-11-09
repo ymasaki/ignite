@@ -91,7 +91,12 @@ export function Expandable({ lines = 6, more = '続きを読む', less = '折り
     if (!open) {
       // 開く: 今の高さ → 中身の高さ。動き終わったら高さの指定を外す（幅が変わっても追従する）
       el.style.maxHeight = `${full}px`
-      const done = () => (el.removeEventListener('transitionend', done), (el.style.maxHeight = 'none'))
+      // 中の要素の動き（ホバーなど）の終わりも届くので、自分の高さの動きだけを見る
+      const done = (e?: TransitionEvent) => {
+        if (e && (e.target !== el || e.propertyName !== 'max-height')) return
+        el.removeEventListener('transitionend', done)
+        el.style.maxHeight = 'none'
+      }
       if (reducedMotion()) done()
       else el.addEventListener('transitionend', done)
       setOpen(true)
