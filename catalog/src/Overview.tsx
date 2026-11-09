@@ -1,5 +1,5 @@
-import { IconArrowRight, IconBell, IconBrandGithub, IconEyeCheck, IconRocket, IconChartBar, IconHome, IconMenu2, IconMessageCircle, IconSettings, IconUsers } from '@tabler/icons-react'
-import { Avatar, AvatarGroup, Badge, BarList, Board, Button, Checkbox, CodeBlock, ColumnChart, currentAssist, DatePicker, Delta, EntityRow, FormField, Gauge, IconBox, LinkButton, NumberField, reducedMotion, RollingNumber, Segmented, SettingGroup, SettingRow, setAssist, Stat, Switch, Tag, ThemeSettings, useScrollFocus, withFade, type Assist, type Theme } from '@ymasaki/ignite'
+import { IconArrowRight, IconBell, IconBrandGithub, IconEyeCheck, IconRocket, IconChartBar, IconHome, IconMenu2, IconSettings, IconUsers } from '@tabler/icons-react'
+import { AvatarGroup, BarList, Board, Button, Checkbox, CodeBlock, ColumnChart, currentAssist, DatePicker, Delta, EntityRow, FormField, Gauge, IconBox, LinkButton, NumberField, reducedMotion, RollingNumber, Segmented, SettingGroup, SettingRow, setAssist, Stat, Switch, Tag, ThemeSettings, useScrollFocus, withFade, type Assist, type Theme } from '@ymasaki/ignite'
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
 import { version } from '../../package.json'
 import { HeroLogo } from './logo'
@@ -61,28 +61,18 @@ const VIEWS: { value: View; label: string }[] = [{ value: 'list', label: 'リス
 const TEAM = [{ key: 'k', initial: '鈴', tip: '鈴木' }, { key: 't', initial: '田', tip: '田中' }, { key: 'h', initial: '高', tip: '高橋' }, { key: 'y', initial: '山', tip: '山本' }, { key: 'i', initial: '伊', tip: '伊藤' }].map((m) => ({ ...m, tone: 'cat-demo-av' }))
 
 /**
- * シンプル: 1 人のメンバーのカード。顔アイコン・札・バッジ付きのボタン・トグルボタン・チェックボックス・スイッチ・日付を、
- * 色は主要色ひとつと灰色だけで、余白と罫線で分けて並べる。おやすみモードで札が変わり、メッセージを押すと未読のバッジが減る
+ * シンプル: 個人の設定。トグルボタン・説明付きのチェックボックス・スイッチ・日付・札・重ねた顔アイコンを、
+ * 色は主要色ひとつと灰色だけで、余白と罫線で分けて並べる
  */
 function SimpleDemo() {
   const [away, setAway] = useState(false)
   const [notify, setNotify] = useState(true)
-  const [unread, setUnread] = useState(3)
   const [view, setView] = useState<View>('board')
   const [digest, setDigest] = useState(true)
   const [share, setShare] = useState(false)
   const [date, setDate] = useState<string | null>('2026-11-20')
   return (
     <div className="cat-demo-card cat-demo-me">
-      <div className="cat-demo-who">
-        <Avatar initial="佐" size="lg" tone="cat-demo-av" />
-        <span className="cat-demo-whob">
-          <span className="cat-demo-h" role="heading" aria-level={4}>佐藤 ひかり</span>
-          <span className="cat-demo-l">プロダクトデザイナー</span>
-        </span>
-        <Tag variant={away ? 'default' : 'accent'}>{away ? 'おやすみ中' : '対応できます'}</Tag>
-        <Button icon={<IconMessageCircle size={18} stroke={1.8} />} onClick={() => setUnread((n) => (n > 0 ? n - 1 : 3))}>メッセージ<Badge count={unread} /></Button>
-      </div>
       <div className="cat-demo-cols">
         <div className="cat-demo-col">
           <Segmented fill label="表示" value={view} onChange={setView} options={VIEWS} />
