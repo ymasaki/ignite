@@ -40,17 +40,6 @@ export function MarksPage({ target }: { target?: string | null }) {
   const [chips, setChips] = useState(['進行中', '佐藤 葵'])
   return (
     <Page page={p} target={target}>
-      <Spec page={p} id="avatar">
-        <Cases>{(['xs', 'sm', 'md', 'lg', 'xl'] as const).map((size) => <Case key={size} label={size}><Avatar initial="佐" tone="c1" size={size} /></Case>)}</Cases>
-      </Spec>
-      <Spec page={p} id="avatars">
-        <Cases>
-          <Case label="メンバー"><AvatarGroup label="メンバー" items={PROJECTS.map((x) => ({ key: x.id, initial: x.initial, tone: x.tone, tip: x.owner }))} max={4} /></Case>
-          <Case label="重ねて押せる"><AvatarStack items={PROJECTS} tip={(x) => x.owner} render={(x, size) => <Avatar initial={x.initial} tone={x.tone} size={size} />} onPick={() => {}} activeId="p3" max={3} /></Case>
-          <Case label="幅に合わせる"><div className="cat-fit-w"><AvatarStack items={PROJECTS} tip={(x) => x.owner} render={(x, size) => <Avatar initial={x.initial} tone={x.tone} size={size} />} fit /></div></Case>
-          <Case label="人以外"><div className="cat-row"><IconBox><IconFolder size={16} stroke={1.8} /></IconBox><IconBox size="lg"><IconBuilding size={18} stroke={1.8} /></IconBox></div></Case>
-        </Cases>
-      </Spec>
       <Spec page={p} id="tag">
         <Cases>
           <Case label="標準"><Tag>保留</Tag></Case>
@@ -65,6 +54,17 @@ export function MarksPage({ target }: { target?: string | null }) {
         <Cases>
           <Case label="絞り込みの差分"><div className="cat-row">{chips.map((c) => <Chip key={c} removeLabel={`${c} を外す`} removeTip="絞り込みから外す" onRemove={() => setChips(chips.filter((x) => x !== c))}>{c}</Chip>)}{!chips.length && <Button onClick={() => setChips(['進行中', '佐藤 葵'])}>元に戻す</Button>}</div></Case>
           <Case label="未処理の数"><Button>未読<Badge count={3} /></Button></Case>
+        </Cases>
+      </Spec>
+      <Spec page={p} id="avatar">
+        <Cases>{(['xs', 'sm', 'md', 'lg', 'xl'] as const).map((size) => <Case key={size} label={size}><Avatar initial="佐" tone="c1" size={size} /></Case>)}</Cases>
+      </Spec>
+      <Spec page={p} id="avatars">
+        <Cases>
+          <Case label="メンバー"><AvatarGroup label="メンバー" items={PROJECTS.map((x) => ({ key: x.id, initial: x.initial, tone: x.tone, tip: x.owner }))} max={4} /></Case>
+          <Case label="重ねて押せる"><AvatarStack items={PROJECTS} tip={(x) => x.owner} render={(x, size) => <Avatar initial={x.initial} tone={x.tone} size={size} />} onPick={() => {}} activeId="p3" max={3} /></Case>
+          <Case label="幅に合わせる"><div className="cat-fit-w"><AvatarStack items={PROJECTS} tip={(x) => x.owner} render={(x, size) => <Avatar initial={x.initial} tone={x.tone} size={size} />} fit /></div></Case>
+          <Case label="人以外"><div className="cat-row"><IconBox><IconFolder size={16} stroke={1.8} /></IconBox><IconBox size="lg"><IconBuilding size={18} stroke={1.8} /></IconBox></div></Case>
         </Cases>
       </Spec>
       <Spec page={p} id="markpicker"><div className="cat-row"><MarkPicker label="印の色" value={mark} onChange={setMark} /></div></Spec>
@@ -89,6 +89,13 @@ export function DataPage({ target }: { target?: string | null }) {
           </div>
         </div>
       </Spec>
+      <Spec page={p} id="kv">
+        <div className="cat-sheet">
+          <Section title="概要"><KeyValues rows={[['担当', '佐藤 葵'], ['状態', '進行中'], ['タスク', '42 件', { num: true }]]} /></Section>
+          <SubHeading count={2}>メモ</SubHeading>
+          <Prose>デザインを更新し、表示速度を改善する</Prose>
+        </div>
+      </Spec>
       <Spec page={p} id="table">
         <DataTable label="プロジェクトの進み具合" columns={['名前', 'タスク', '完了の割合']} rows={PROJECTS.slice(0, 4).map((x, i) => [{ content: x.name }, { content: x.tasks }, { content: `${20 + i * 25}%`, ratio: 0.2 + i * 0.25 }])} />
         <DataTable label="並べ替えと選択" sort={sort} onSort={(c) => setSort({ column: c, dir: sort.column === c && sort.dir === 'asc' ? 'desc' : 'asc' })} rowKeys={sorted.map((x) => x.id)} selected={picked} onSelect={setPicked} columns={[{ label: '名前', sortable: true }, { label: 'タスク', sortable: true }]} rows={sorted.map((x) => [{ content: x.name }, { content: x.tasks }])} />
@@ -103,13 +110,6 @@ export function DataPage({ target }: { target?: string | null }) {
         {/* stickyHead は表の枠を親の高さいっぱいの縦スクロールにする。親に高さを決めて置く */}
         <div className="cat-tabletree">
           <DataTable label="作業の階層" stickyHead depths={TREE_ROWS.map((r) => r[0])} columns={['名前', '担当', '作業', '期限']} rows={TREE_ROWS.map(([, name, owner, n, due]) => [{ content: name }, { content: owner }, { content: `${n}件` }, { content: due }])} />
-        </div>
-      </Spec>
-      <Spec page={p} id="kv">
-        <div className="cat-sheet">
-          <Section title="概要"><KeyValues rows={[['担当', '佐藤 葵'], ['状態', '進行中'], ['タスク', '42 件', { num: true }]]} /></Section>
-          <SubHeading count={2}>メモ</SubHeading>
-          <Prose>デザインを更新し、表示速度を改善する</Prose>
         </div>
       </Spec>
       <Spec page={p} id="bar">

@@ -25,6 +25,12 @@ export function ChartsPage({ target }: { target?: string | null }) {
   const [kpi, setKpi] = useState(false)
   return (
     <Page page={p} target={target}>
+      <Spec page={p} id="stat">
+        <Cases>
+          <Case label="主役"><Stat value={52} unit="件" size="lg" after={<Sparkline label="完了の推移" unit="件" values={VALUES} />} /></Case>
+          <Case label="値なし"><Stat value={null} unit="件" /></Case>
+        </Cases>
+      </Spec>
       <Spec page={p} id="kpi">
         <div className="kpis">
           <Kpi icon={<IconClock size={18} stroke={1.8} />} label="進行中" value={3} unit="件" sub={<Delta value={1} unit="件" />} />
@@ -32,17 +38,7 @@ export function ChartsPage({ target }: { target?: string | null }) {
           <Kpi icon={<IconClock size={18} stroke={1.8} />} label="値なし" value={null} unit="件" />
         </div>
       </Spec>
-      <Spec page={p} id="stat">
-        <Cases>
-          <Case label="主役"><Stat value={52} unit="件" size="lg" after={<Sparkline label="完了の推移" unit="件" values={VALUES} />} /></Case>
-          <Case label="値なし"><Stat value={null} unit="件" /></Case>
-        </Cases>
-      </Spec>
-      <Spec page={p} id="line"><LineChart unit="件" xLabels={AXIS} series={[{ label: '完了', values: VALUES }, { label: '前の年', values: VALUES.map((v) => v - 8), soft: true }]} /></Spec>
       <Spec page={p} id="barlist"><BarList items={PROJECTS.map((x) => ({ label: <span>{x.owner}</span>, value: x.tasks }))} /></Spec>
-      <Spec page={p} id="stack"><StackColumns labels={AXIS} stacks={[{ label: '完了', values: VALUES }, { label: '進行中', values: VALUES.map((v) => v / 2 | 0) }]} current={5} /></Spec>
-      <Spec page={p} id="funnel"><Funnel unit="件" ofPrev="前の段から" ofFirst="最初から" steps={[{ label: '受付', value: 120 }, { label: '着手', value: 84 }, { label: '完了', value: 52 }]} /></Spec>
-      <Spec page={p} id="tile"><TileMap label="プロジェクトの規模と進み具合" height={220} selected={tile} onSelect={setTile} scale={['低い', '高い']} items={PROJECTS.map((x, i) => ({ key: x.id, label: x.name, size: x.tasks, ratio: 0.15 * i + 0.1, value: `${x.tasks}件` }))} /></Spec>
       <Spec page={p} id="column">
         <>
           <Case label="1 系列" fill><ColumnChart unit="件" labels={AXIS} series={[{ label: '完了', values: VALUES }]} current={5} /></Case>
@@ -50,8 +46,7 @@ export function ChartsPage({ target }: { target?: string | null }) {
           <Case label="負の数" fill><ColumnChart unit="件" labels={AXIS} series={[{ label: '前月との差', values: [6, 3, -4, 8, 7, -2] }]} /></Case>
         </>
       </Spec>
-      <Spec page={p} id="combo"><ColumnChart unit="件" lineUnit="%" labels={AXIS} series={[{ label: '受付', values: [120, 132, 101, 140, 152, 160] }]} line={{ label: '期限内の割合', values: [82, 85, 79, 88, 91, 90] }} /></Spec>
-      <Spec page={p} id="histogram"><ColumnChart histogram unit="件" labels={BINS} series={[{ label: '処理時間', values: [0, 3, 5, 4, 2, 1, 0, 0, 0, 1] }]} /></Spec>
+      <Spec page={p} id="line"><LineChart unit="件" xLabels={AXIS} series={[{ label: '完了', values: VALUES }, { label: '前の年', values: VALUES.map((v) => v - 8), soft: true }]} /></Spec>
       <Spec page={p} id="pie">
         <>
           <Case label="円" fill><PieChart unit="件" items={[{ label: '問い合わせ', value: 48 }, { label: '不具合', value: 26 }, { label: '要望', value: 14 }, { label: '請求', value: 8 }, { label: '退会', value: 3 }, { label: '分類なし', value: 5, muted: true }]} /></Case>
@@ -72,6 +67,10 @@ export function ChartsPage({ target }: { target?: string | null }) {
           <Case label="値なし"><Gauge label="満足度" value={null} size={160} /></Case>
         </Cases>
       </Spec>
+      <Spec page={p} id="stack"><StackColumns labels={AXIS} stacks={[{ label: '完了', values: VALUES }, { label: '進行中', values: VALUES.map((v) => v / 2 | 0) }]} current={5} /></Spec>
+      <Spec page={p} id="combo"><ColumnChart unit="件" lineUnit="%" labels={AXIS} series={[{ label: '受付', values: [120, 132, 101, 140, 152, 160] }]} line={{ label: '期限内の割合', values: [82, 85, 79, 88, 91, 90] }} /></Spec>
+      <Spec page={p} id="histogram"><ColumnChart histogram unit="件" labels={BINS} series={[{ label: '処理時間', values: [0, 3, 5, 4, 2, 1, 0, 0, 0, 1] }]} /></Spec>
+      <Spec page={p} id="funnel"><Funnel unit="件" ofPrev="前の段から" ofFirst="最初から" steps={[{ label: '受付', value: 120 }, { label: '着手', value: 84 }, { label: '完了', value: 52 }]} /></Spec>
       <Spec page={p} id="waterfall"><Waterfall unit="件" start={{ label: '月初', value: 120 }} steps={[{ label: '新規', value: 46 }, { label: '再開', value: 12 }, { label: '完了', value: -58 }, { label: '取消', value: -9 }]} total="月末" /></Spec>
       <Spec page={p} id="scatter">
         <>
@@ -86,6 +85,7 @@ export function ChartsPage({ target }: { target?: string | null }) {
           <Case label="カレンダーの形" fill><HeatMap square unit="件" rows={DAYS} cols={WEEKS} colEvery={4} values={ACTIVITY} /></Case>
         </>
       </Spec>
+      <Spec page={p} id="tile"><TileMap label="プロジェクトの規模と進み具合" height={220} selected={tile} onSelect={setTile} scale={['低い', '高い']} items={PROJECTS.map((x, i) => ({ key: x.id, label: x.name, size: x.tasks, ratio: 0.15 * i + 0.1, value: `${x.tasks}件` }))} /></Spec>
       <Spec page={p} id="box"><BoxPlot unit="秒" items={[{ label: '受付', ...boxStats(DURATIONS)! }, { label: '確認', ...boxStats(DURATIONS.map((v) => v * 0.7 + 0.5))! }, { label: '返信', ...boxStats(DURATIONS.map((v) => v * 1.3))! }]} /></Spec>
       <DiagramSpecs page={p} />
     </Page>

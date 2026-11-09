@@ -95,11 +95,21 @@ export function MotionPage({ target }: { target?: string | null }) {
   const [loaded, setLoaded] = useState(false)
   return (
     <Page page={p} target={target}>
+      <Spec page={p} id="rolling">
+        <Cases>
+          <Case label="数字"><RollingNumber value={MONTHS.indexOf(month) * 13 + 24} /></Case>
+          <Case label="大きな数字"><Stat value={MONTHS.indexOf(month) * 13 + 24} unit="件" /></Case>
+          <Case label="対象の月を変える"><MonthStepper value={month} months={STEPPER_MONTHS} onChange={setMonth} /></Case>
+        </Cases>
+      </Spec>
       <Spec page={p} id="collapse">
         <div className="cat-sheet">
           <Switch label="補足を見せる" checked={more} onChange={setMore} />
           <Collapse open={more}><Prose>押し下げて出す本文。下の段がなめらかに動く</Prose></Collapse>
         </div>
+      </Spec>
+      <Spec page={p} id="expand">
+        <div className="cat-sheet"><Expandable lines={2}>月末の請求を手で集計していた作業を、自動の取り込みに置き換える。{'\n'}対象は 4 つの窓口で、受付から支払いの確認までを 1 つの画面にまとめる。{'\n'}10 月に第 1 弾を出し、11 月に残りの窓口へ広げる。{'\n'}切り替えのあいだは、手作業の結果と毎日見比べる。</Expandable></div>
       </Spec>
       <Spec page={p} id="inline">
         <div className="cat-sheet">
@@ -115,21 +125,11 @@ export function MotionPage({ target }: { target?: string | null }) {
           <AnimatedList items={PROJECTS.slice(0, count)} keyOf={(x) => x.id}>{(x) => <EntityRow lead={<Avatar initial={x.initial} tone={x.tone} size="sm" />} title={x.name} sub={x.owner} />}</AnimatedList>
         </div>
       </Spec>
-      <Spec page={p} id="rolling">
-        <Cases>
-          <Case label="数字"><RollingNumber value={MONTHS.indexOf(month) * 13 + 24} /></Case>
-          <Case label="大きな数字"><Stat value={MONTHS.indexOf(month) * 13 + 24} unit="件" /></Case>
-          <Case label="対象の月を変える"><MonthStepper value={month} months={STEPPER_MONTHS} onChange={setMonth} /></Case>
-        </Cases>
-      </Spec>
       <Spec page={p} id="appear">
         <div className="cat-sheet">
           {loaded ? <Appear><KeyValues rows={[['担当', '佐藤 葵'], ['期限', '2026年11月']]} /></Appear> : <Skeleton lines={2} heading={false} />}
         </div>
         <div className="cat-row"><Button onClick={() => setLoaded(!loaded)}>{loaded ? '読み込みに戻す' : '読み込みを終える'}</Button></div>
-      </Spec>
-      <Spec page={p} id="expand">
-        <div className="cat-sheet"><Expandable lines={2}>月末の請求を手で集計していた作業を、自動の取り込みに置き換える。{'\n'}対象は 4 つの窓口で、受付から支払いの確認までを 1 つの画面にまとめる。{'\n'}10 月に第 1 弾を出し、11 月に残りの窓口へ広げる。{'\n'}切り替えのあいだは、手作業の結果と毎日見比べる。</Expandable></div>
       </Spec>
     </Page>
   )

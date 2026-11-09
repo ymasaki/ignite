@@ -51,7 +51,6 @@ export function FormsPage({ target }: { target?: string | null }) {
   const [sel, setSel] = useState('recent')
   return (
     <Page page={p} target={target}>
-      <Spec page={p} id="suggest"><SuggestDemo /></Spec>
       <Spec page={p} id="field">
         <div className="cat-sheet">
           <div className="cat-form two">
@@ -63,38 +62,12 @@ export function FormsPage({ target }: { target?: string | null }) {
           </div>
         </div>
       </Spec>
-      <Spec page={p} id="search">
-        <div className="cat-stack">
-          <SearchField label="プロジェクトを探す" placeholder="名前・担当者" value={q} onChange={setQ} />
-          <div className="cat-row"><Select label="並び順" value={sel} onChange={setSel} options={[{ value: 'recent', label: '更新が新しい順' }, { value: 'name', label: '名前の順', meta: 'A→Z' }]} /></div>
-        </div>
-      </Spec>
       <Spec page={p} id="number">
         <div className="cat-form">
           <FormField label="人数"><NumberField value={count} onChange={setCount} min={0} max={10} unit="名" /></FormField>
           <div className="cat-row"><LinkButton onClick={() => setCount(5)}>人数を 5 にする</LinkButton></div>
           <FormField label="割合"><NumberField value={rate} onChange={setRate} min={0} max={1} step={0.1} /></FormField>
         </div>
-      </Spec>
-      <Spec page={p} id="pick">
-        <div className="cat-form two">
-          <FormField label="拠点" hint="打って絞り込む"><Combobox value={city} onChange={setCity} options={CITIES} placeholder="拠点の名前" /></FormField>
-          {/* 幅の広いフォームでも、カレンダーの面は日付の表に合わせる。 */}
-          <FormField label="期限"><DatePicker value={date} onChange={setDate} clearable min="2026-01-01" max="2027-12-31" today="2026-10-30" /></FormField>
-        </div>
-      </Spec>
-      <Spec page={p} id="error">
-        <div className="cat-form two">
-          <ErrorCase label="スイッチ"><FormField label="同意" error="同意してください"><Switch checked={false} onChange={() => undefined} /></FormField></ErrorCase>
-          <ErrorCase label="プルダウン"><FormField label="担当" error="担当を選んでください"><Select value="none" onChange={() => undefined} options={[{ value: 'none', label: '未選択' }]} /></FormField></ErrorCase>
-          <ErrorCase label="日付"><FormField label="開始日" error="開始日を選んでください"><DatePicker value={null} onChange={() => undefined} /></FormField></ErrorCase>
-        </div>
-      </Spec>
-      <Spec page={p} id="radio">
-        <Cases cols={2}>
-          <Case label="補足つき"><FormField label="プラン" group><RadioGroup value={planName} onChange={setPlan} options={[{ value: 'a', label: '標準', hint: '月 100 件まで' }, { value: 'b', label: '大容量', hint: '月 1,000 件まで' }, { value: 'c', label: '無制限', disabled: true }]} /></FormField></Case>
-          <Case label="横並び"><RadioGroup label="表示" inline value={view} onChange={setView} options={[{ value: 'list', label: '一覧' }, { value: 'grid', label: '格子' }]} /></Case>
-        </Cases>
       </Spec>
       <Spec page={p} id="check">
         <Cases cols={2}>
@@ -114,6 +87,33 @@ export function FormsPage({ target }: { target?: string | null }) {
             </div>
           </Case>
         </Cases>
+      </Spec>
+      <Spec page={p} id="radio">
+        <Cases cols={2}>
+          <Case label="補足つき"><FormField label="プラン" group><RadioGroup value={planName} onChange={setPlan} options={[{ value: 'a', label: '標準', hint: '月 100 件まで' }, { value: 'b', label: '大容量', hint: '月 1,000 件まで' }, { value: 'c', label: '無制限', disabled: true }]} /></FormField></Case>
+          <Case label="横並び"><RadioGroup label="表示" inline value={view} onChange={setView} options={[{ value: 'list', label: '一覧' }, { value: 'grid', label: '格子' }]} /></Case>
+        </Cases>
+      </Spec>
+      <Spec page={p} id="search">
+        <div className="cat-stack">
+          <SearchField label="プロジェクトを探す" placeholder="名前・担当者" value={q} onChange={setQ} />
+          <div className="cat-row"><Select label="並び順" value={sel} onChange={setSel} options={[{ value: 'recent', label: '更新が新しい順' }, { value: 'name', label: '名前の順', meta: 'A→Z' }]} /></div>
+        </div>
+      </Spec>
+      <Spec page={p} id="pick">
+        <div className="cat-form two">
+          <FormField label="拠点" hint="打って絞り込む"><Combobox value={city} onChange={setCity} options={CITIES} placeholder="拠点の名前" /></FormField>
+          {/* 幅の広いフォームでも、カレンダーの面は日付の表に合わせる。 */}
+          <FormField label="期限"><DatePicker value={date} onChange={setDate} clearable min="2026-01-01" max="2027-12-31" today="2026-10-30" /></FormField>
+        </div>
+      </Spec>
+      <Spec page={p} id="suggest"><SuggestDemo /></Spec>
+      <Spec page={p} id="error">
+        <div className="cat-form two">
+          <ErrorCase label="スイッチ"><FormField label="同意" error="同意してください"><Switch checked={false} onChange={() => undefined} /></FormField></ErrorCase>
+          <ErrorCase label="プルダウン"><FormField label="担当" error="担当を選んでください"><Select value="none" onChange={() => undefined} options={[{ value: 'none', label: '未選択' }]} /></FormField></ErrorCase>
+          <ErrorCase label="日付"><FormField label="開始日" error="開始日を選んでください"><DatePicker value={null} onChange={() => undefined} /></FormField></ErrorCase>
+        </div>
       </Spec>
     </Page>
   )

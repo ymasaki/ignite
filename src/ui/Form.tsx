@@ -93,9 +93,18 @@ export function NumberField({ value, onChange, label, min, max, step = 1, unit, 
   // 打っている途中に外から値が変わったら、外の値を優先する（古い下書きを離れるときに書き戻さない）
   useEffect(() => setDraft(null), [value])
   const shown = draft === null ? value : parseNumber(draft)
-  // − ＋ と ↑↓ で変えたときだけ、欄の数字の上に回る数字（RollingNumber）を重ねて桁を回す。打ち込みの途中は欄の文字のまま。
+  // 値が変わったら（− ＋・↑↓・外からの変更のどれでも）、欄の数字の上に回る数字（RollingNumber）を重ねて桁を回す。
+  // 打ち込んで確定した値と、打ち込みの途中は欄の文字のまま（打った字がそのまま見えているので回さない）。
   // 回る数字は初めの表示では動かないので、ふだんから見えない形で置いておき、変えた直後だけ見せる
   const [rolling, setRolling] = useState(false)
+  const prev = useRef(value)
+  const typed = useRef(false)
+  useLayoutEffect(() => {
+    if (prev.current === value) return
+    prev.current = value
+    if (typed.current) typed.current = false
+    else setRolling(true)
+  }, [value])
   useEffect(() => {
     if (!rolling) return
     const t = window.setTimeout(() => setRolling(false), 700)
@@ -108,8 +117,10 @@ export function NumberField({ value, onChange, label, min, max, step = 1, unit, 
   const commit = () => {
     if (draft === null) return
     const n = parseNumber(draft)
+    const next = n === null ? null : clampNumber(n, min, max)
     setDraft(null)
-    onChange(n === null ? null : clampNumber(n, min, max))
+    typed.current = next !== value
+    onChange(next)
   }
   const onKey = (e: KeyboardEvent) => {
     if (e.nativeEvent.isComposing || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return

@@ -162,7 +162,7 @@ test('NumberField: 全角の数字を読み、離すと上限へ収め、↑↓ 
   await expect(rate).toHaveValue('0.6')
 })
 
-test('NumberField: − ＋ で変えた直後だけ数字を回し、打ち込むと欄の文字に戻る', async ({ page }) => {
+test('NumberField: − ＋・外からの変更で変えた直後だけ数字を回し、打ち込むと欄の文字に戻る', async ({ page }) => {
   await open(page, 'forms')
   const input = page.getByRole('spinbutton', { name: '人数' })
   const box = input.locator('..')
@@ -182,6 +182,14 @@ test('NumberField: − ＋ で変えた直後だけ数字を回し、打ち込�
   await input.pressSequentially('7')
   await expect(box).not.toHaveClass(/rolling/)
   await expect(input).toHaveValue('7')
+  // 打ち込んで確定した値は回さない
+  await input.blur()
+  await expect(input).toHaveAttribute('aria-valuenow', '7')
+  await expect(box).not.toHaveClass(/rolling/)
+  // 外から値を変えても回す（部品の外のボタンなど）
+  await page.getByRole('button', { name: '人数を 5 にする' }).click()
+  await expect(box).toHaveClass(/rolling/)
+  await expect(input).toHaveAttribute('aria-valuenow', '5')
 })
 
 test('FormField: エラーを出すと欄の補足として読まれ、見出しを押すと欄へ移る', async ({ page }) => {
