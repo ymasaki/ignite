@@ -73,22 +73,18 @@ function SimpleDemo() {
   const [date, setDate] = useState<string | null>('2026-11-20')
   return (
     <div className="cat-demo-card cat-demo-me">
-      <div className="cat-demo-cols">
-        <div className="cat-demo-col">
-          <Segmented fill label="表示" value={view} onChange={setView} options={VIEWS} />
-          <Checkbox label="週のまとめを受け取る" checked={digest} onChange={setDigest} />
-          <Checkbox label="予定をチームに公開" checked={share} onChange={setShare} />
-        </div>
-        <div className="cat-demo-col">
-          <Switch label="おやすみモード" checked={away} onChange={setAway} />
-          <Switch label="新しいメッセージを知らせる" checked={notify} onChange={setNotify} />
-          <FormField label="次の面談"><DatePicker value={date} onChange={setDate} today="2026-11-09" /></FormField>
-        </div>
+      <Segmented fill label="表示" value={view} onChange={setView} options={VIEWS} />
+      <div className="cat-demo-opts">
+        <Checkbox label="週のまとめを受け取る" checked={digest} onChange={setDigest} />
+        <Checkbox label="予定をチームに公開" checked={share} onChange={setShare} />
+        <Switch label="おやすみモード" checked={away} onChange={setAway} />
+        <Switch label="新しいメッセージを知らせる" checked={notify} onChange={setNotify} />
       </div>
-      <div className="cat-demo-foot">
-        <span className="cat-demo-tags"><Tag variant="accent">新着</Tag><Tag variant="ok">公開済み</Tag><Tag variant="warn">レビュー待ち</Tag><Tag variant="danger">期限切れ</Tag><Tag>保留</Tag><Tag variant="dashed">＋ 追加</Tag></span>
+      <div className="cat-demo-meet">
+        <FormField label="次の面談"><DatePicker value={date} onChange={setDate} today="2026-11-09" /></FormField>
         <AvatarGroup stack size="md" items={TEAM} label="同じチーム" />
       </div>
+      <div className="cat-demo-tags"><Tag variant="accent">新着</Tag><Tag variant="ok">公開済み</Tag><Tag variant="warn">レビュー待ち</Tag><Tag variant="danger">期限切れ</Tag><Tag>保留</Tag><Tag variant="dashed">＋ 追加</Tag></div>
     </div>
   )
 }

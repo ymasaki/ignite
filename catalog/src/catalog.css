@@ -177,12 +177,13 @@
 .cat-demo-chart{display:flex;flex-direction:column;justify-content:center;min-width:0;min-height:190px}
 .cat-demo-chart .gauge{align-self:center}
 .cat-demo-foot{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
-/* シンプルの見本: 個人の設定。部品は枠を重ねず、余白と罫線で分ける */
-.cat-demo-me{gap:18px}
-.cat-demo-cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 24px;padding-bottom:16px;border-bottom:1px solid var(--line)}
-.cat-demo-col{align-content:start}
-.cat-demo-tags{display:flex;flex-wrap:wrap;gap:6px}
-@media (max-width:600px){.cat-demo-cols{grid-template-columns:minmax(0,1fr)}}
+/* シンプルの見本: 個人の設定。部品は枠を重ねず、段の間は 20px の余白と罫線で分ける。
+   入と切は左にチェック・右にスイッチの 2 列で行の高さをそろえ、狭いときは 1 列にする */
+.cat-demo-me{gap:20px}
+.cat-demo-opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto auto;grid-auto-flow:column;align-items:center;gap:14px 24px}
+.cat-demo-meet{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;padding-top:20px;border-top:1px solid var(--line)}
+.cat-demo-tags{display:flex;flex-wrap:wrap;gap:8px}
+@media (max-width:600px){.cat-demo-opts{grid-template-columns:minmax(0,1fr);grid-auto-flow:row}}
 .cat-demo-t{font-size:var(--fs-14);font-weight:700;color:var(--ink)}
 /* 幅の見本。枠の幅を変えると、中の小さなアプリ画面が組み変わる（枠を container にして、枠の幅だけで決める）。
    枠の高さはどの幅でも同じにし、切り替えでカードの高さを変えない */
