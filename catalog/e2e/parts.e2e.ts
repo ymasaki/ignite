@@ -1240,6 +1240,35 @@ test('Stepper: 週の数字が前後の移動と一覧選択で回り、桁が�
   expect(await digit.evaluate(el => el.getAnimations().length)).toBe(0)
 })
 
+test('RollingNumber: 書体が差し替わった直後も桁が字の幅を切らない', async ({ page }) => {
+  // Web 書体が遅れて届くと、数字は端末の書体から別の書体へ差し替わる。桁の窓が書体に依る長さ（1ch）を動きで追うと、
+  // 追いつくまで（Chrome では止まったままになることもある）新しい書体の字を切る。監査は端末の書体だけで測るので、ここで差し替えを再現する
+  await open(page, 'overview')
+  const stats = page.locator('.cat-hero-s')
+  await expect(stats.locator('.roll-col').first()).toBeVisible()
+  const fits = () => stats.evaluate((el) => [...el.querySelectorAll<HTMLElement>('.roll-col:not(.gone)')].map((col) => {
+    const strip = col.querySelector<HTMLElement>('.roll-strip')!
+    const d = Math.round(-parseFloat(/-?[\d.]+/.exec(strip.style.transform)![0]) / 10)
+    const range = document.createRange()
+    range.selectNodeContents(strip.children[d])
+    return { col: col.getBoundingClientRect().width, glyph: range.getBoundingClientRect().width }
+  }))
+  // 候補の書体から、数字の幅がいちばん細いものと太いものを選び（端末にない書体は既定の書体で測られる）、細い書体から太い書体へ差し替える
+  const [narrowFont, wideFont, gap] = await stats.evaluate((el) => {
+    const v = el.querySelector('.stat-v')!
+    const size = getComputedStyle(v).fontSize
+    const ctx = document.createElement('canvas').getContext('2d')!
+    const width = (f: string) => { ctx.font = `700 ${size} ${f}`; return ctx.measureText('8').width }
+    const fonts = ['"Arial Narrow"', '"Liberation Sans Narrow"', '"Times New Roman"', 'serif', 'monospace', 'sans-serif', '"Hiragino Sans"', '"DejaVu Sans"', 'Verdana'].sort((a, b) => width(a) - width(b))
+    return [fonts[0], fonts[fonts.length - 1], width(fonts[fonts.length - 1]) - width(fonts[0])] as const
+  })
+  expect(gap, '数字の幅が違う書体が 2 つないと差し替えを再現できない').toBeGreaterThan(2)
+  await stats.evaluate((el, f) => { (el as HTMLElement).style.setProperty('--font-num', f) }, narrowFont)
+  await stats.evaluate((el) => Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished)))
+  await stats.evaluate((el, f) => { (el as HTMLElement).style.setProperty('--font-num', f) }, wideFont)
+  for (const { col, glyph } of await fits()) expect(col).toBeGreaterThanOrEqual(glyph - 0.5)
+})
+
 test('Canvas: ドラッグで動き、ドラッグのあとのクリックは中身に届かず、ボタンで拡大縮小する', async ({ page }) => {
   await open(page, 'charts')
   const canvas = page.getByRole('region', { name: 'カタログの目録' })

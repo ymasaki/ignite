@@ -142,6 +142,19 @@ export function measure(page: Page, args: MeasureArgs): Promise<Measured[]> {
       if (!clip && !scrolls && (r.right > innerWidth + 1 || r.left < -1)) clip = '窓'
       if (clip) out.push({ rule: '横のはみ出し（5 章）', where: parentWho(el), expected: '中身が枠に切られない', actual: `${clip} の外へ ${Math.round(r.left)}〜${Math.round(r.right)}px` })
     }
+    // 回る数字（RollingNumber）の桁は、見えている数字の字の幅を切らない。桁の枠は overflow:hidden で、箱どうしの比較では
+    // 枠の中の字のはみ出しが見えないので、字の幅（Range）で測る。消えていく桁（.gone）は幅 0 が正しい
+    for (const col of document.querySelectorAll<HTMLElement>('.roll-col:not(.gone)')) {
+      const strip = col.querySelector<HTMLElement>('.roll-strip')
+      const shift = strip && /translateY\((-?[\d.]+)%\)/.exec(strip.style.transform)
+      const digit = shift && strip.children[Math.round(-parseFloat(shift[1]) / 10)]
+      if (!digit || !visible(col)) continue
+      const range = document.createRange()
+      range.selectNodeContents(digit)
+      const glyph = range.getBoundingClientRect().width
+      const box = col.getBoundingClientRect().width
+      if (glyph > box + 0.5) out.push({ rule: '横のはみ出し（5 章）', where: parentWho(col.parentElement || col), expected: '数字の字が桁の枠に収まる', actual: `字 ${glyph.toFixed(1)}px > 桁 ${box.toFixed(1)}px` })
+    }
     // 開いたパネルは窓と枠に切られない（縦も）。スクロールして見える場所でも、開いた直後に操作の一部が隠れるので測る
     for (const el of document.querySelectorAll('.popover-body')) {
       if (!visible(el)) continue

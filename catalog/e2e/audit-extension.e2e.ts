@@ -155,3 +155,16 @@ test('本体の中で角丸の枠の外に置いた中身を拾い、枠・帯�
   expect(bare(await measure(page, args))).toEqual(['h2.bare の中の h2.bare', 'div.loose の中の button', 'div.sample の中の span'])
   expect(bare(await measure(page, { ...args, bareOk: '.sample' }))).toEqual(['h2.bare の中の h2.bare', 'div.loose の中の button'])
 })
+
+test('回る数字の桁が字を切るのを拾い、収まる桁・消えていく桁は拾わない', async ({ page }) => {
+  // 桁 1 つ分の帯。cut は字より狭い窓（以前の 1ch が古い書体のまま残った状態）、fit は帯の幅に任せた窓
+  const strip = (d: number) => `<span class="roll-strip" style="transform: translateY(-${d * 10}%)">${[...'0123456789'].map((x) => `<span>${x}</span>`).join('')}</span>`
+  await page.setContent(`<style>
+    body{margin:0;font-size:32px;font-weight:700} .roll-col{display:inline-block;height:37px;overflow:hidden} .roll-strip{display:flex;flex-direction:column}
+    .cut .roll-col{width:8px} .roll-col.gone{width:0}
+  </style><span class="roll fit"><span class="roll-col">${strip(8)}</span></span>
+    <span class="roll cut"><span class="roll-col">${strip(8)}</span></span>
+    <span class="roll cut"><span class="roll-col gone">${strip(0)}</span></span>`)
+  const cut = (await measure(page, args)).filter((f) => f.expected === '数字の字が桁の枠に収まる')
+  expect(cut.map((f) => f.where)).toEqual(['body > span.roll.cut'])
+})

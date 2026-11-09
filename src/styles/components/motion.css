@@ -51,9 +51,11 @@
   /* 1 桁の高さは整数 px に丸める。1.15em のままだと 11px で 12.65px になり、数字ごとに端数の位置へ回って上下がばらつく */
   --roll-h:round(1.15em,1px)}
 .roll-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-.roll-col{display:inline-block;width:1ch;height:var(--roll-h);overflow:hidden;transition:width .4s var(--ease-in-out),opacity .3s ease-out}
+/* 桁の幅は帯の数字の実際の幅（いちばん広い数字）に任せる。1ch で決めて幅を動かすと、Web 書体が遅れて届いたときに
+   古い書体の幅のまま（Chrome では途中で止まることもある）新しい書体の字を切るので、動かすのは書体に依らない max-width（1em）だけにする */
+.roll-col{display:inline-block;max-width:1em;height:var(--roll-h);overflow:hidden;transition:max-width .4s var(--ease-in-out),opacity .3s ease-out}
 /* 消える桁・増えた直後の桁は幅 0（幅の変化をなめらかに） */
-.roll-col.gone{width:0;opacity:0}
+.roll-col.gone{max-width:0;opacity:0}
 .roll-dot{display:inline-block;height:var(--roll-h);line-height:var(--roll-h)}
 .roll-strip{display:flex;flex-direction:column;transition:transform .6s var(--ease-spring)}
 .roll-strip > span{height:var(--roll-h);line-height:var(--roll-h);text-align:center}
