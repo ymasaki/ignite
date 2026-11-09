@@ -1,5 +1,5 @@
-import { IconArrowRight, IconBell, IconBrandGithub, IconEyeCheck, IconRocket, IconChartBar, IconHome, IconMenu2, IconSettings, IconUsers } from '@tabler/icons-react'
-import { AvatarGroup, BarList, Board, Button, Checkbox, CodeBlock, ColumnChart, currentAssist, Delta, EntityRow, FormField, Gauge, IconBox, LinkButton, NumberField, ProgressBar, reducedMotion, RollingNumber, Segmented, SettingGroup, SettingRow, setAssist, Stat, Switch, Tag, ThemeSettings, useScrollFocus, withFade, type Assist, type Theme } from '@ymasaki/ignite'
+import { IconArrowRight, IconBell, IconBrandGithub, IconEyeCheck, IconRocket, IconChartBar, IconHome, IconMenu2, IconMessageCircle, IconSettings, IconUsers } from '@tabler/icons-react'
+import { Avatar, AvatarGroup, Badge, BarList, Board, Button, Checkbox, CodeBlock, ColumnChart, currentAssist, DatePicker, Delta, EntityRow, FormField, Gauge, IconBox, LinkButton, NumberField, reducedMotion, RollingNumber, Segmented, SettingGroup, SettingRow, setAssist, Stat, Switch, Tag, ThemeSettings, useScrollFocus, withFade, type Assist, type Theme } from '@ymasaki/ignite'
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
 import { version } from '../../package.json'
 import { HeroLogo } from './logo'
@@ -56,36 +56,48 @@ function AssistTry() {
   )
 }
 
-const TODOS = ['画面の下書きを作る', '文言をそろえる', '数字の検証', 'リリースノートを書く', '社内に告知する']
-const MEMBERS = [{ key: 's', initial: '佐', tip: '佐藤' }, { key: 'k', initial: '鈴', tip: '鈴木' }, { key: 't', initial: '田', tip: '田中' }, { key: 'h', initial: '高', tip: '高橋' }].map((m) => ({ ...m, tone: 'cat-demo-av' }))
+type View = 'list' | 'board' | 'cal'
+const VIEWS: { value: View; label: string }[] = [{ value: 'list', label: 'リスト' }, { value: 'board', label: 'ボード' }, { value: 'cal', label: 'カレンダー' }]
+const TEAM = [{ key: 'k', initial: '鈴', tip: '鈴木' }, { key: 't', initial: '田', tip: '田中' }, { key: 'h', initial: '高', tip: '高橋' }, { key: 'y', initial: '山', tip: '山本' }, { key: 'i', initial: '伊', tip: '伊藤' }].map((m) => ({ ...m, tone: 'cat-demo-av' }))
 
 /**
- * シンプル: 1 枚のプロジェクトのカード。色は主要色ひとつ（札・進み・チェック・ボタン）、あとは灰色の濃さと余白で分ける。
- * 項目をチェックすると、進みの数字が回り、棒が伸び、項目に線が引かれる
+ * シンプル: 1 人のメンバーのカード。顔アイコン・札・バッジ付きのボタン・トグルボタン・チェックボックス・スイッチ・日付を、
+ * 色は主要色ひとつと灰色だけで、余白と罫線で分けて並べる。おやすみモードで札が変わり、メッセージを押すと未読のバッジが減る
  */
 function SimpleDemo() {
-  const [done, setDone] = useState<boolean[]>([true, true, true, false, false])
-  const count = done.filter(Boolean).length
-  const pct = Math.round((count / TODOS.length) * 100)
+  const [away, setAway] = useState(false)
+  const [notify, setNotify] = useState(true)
+  const [unread, setUnread] = useState(3)
+  const [view, setView] = useState<View>('board')
+  const [digest, setDigest] = useState(true)
+  const [share, setShare] = useState(false)
+  const [date, setDate] = useState<string | null>('2026-11-20')
   return (
-    <div className="cat-demo-card cat-demo-proj">
-      <div className="cat-demo-head">
-        <Tag variant="accent">{count === TODOS.length ? '完了' : '進行中'}</Tag>
-        <span className="cat-demo-l">11月20日 まで</span>
+    <div className="cat-demo-card cat-demo-me">
+      <div className="cat-demo-who">
+        <Avatar initial="佐" size="lg" tone="cat-demo-av" />
+        <span className="cat-demo-whob">
+          <span className="cat-demo-h" role="heading" aria-level={4}>佐藤 ひかり</span>
+          <span className="cat-demo-l">プロダクトデザイナー</span>
+        </span>
+        <Tag variant={away ? 'default' : 'accent'}>{away ? 'おやすみ中' : '対応できます'}</Tag>
+        <Button icon={<IconMessageCircle size={18} stroke={1.8} />} onClick={() => setUnread((n) => (n > 0 ? n - 1 : 3))}>メッセージ<Badge count={unread} /></Button>
       </div>
-      <div className="cat-demo-title">
-        <span className="cat-demo-h" role="heading" aria-level={4}>新しいダッシュボードの公開</span>
-        <AvatarGroup stack size="sm" items={MEMBERS} label="担当" />
-      </div>
-      <div className="cat-demo-prog">
-        <div className="cat-demo-num">
-          <span className="cat-demo-v num"><RollingNumber value={pct} />%</span>
-          <span className="cat-demo-l num">{count} / {TODOS.length} 完了</span>
+      <div className="cat-demo-cols">
+        <div className="cat-demo-col">
+          <Segmented fill label="表示" value={view} onChange={setView} options={VIEWS} />
+          <Checkbox label="週のまとめを受け取る" hint="毎週月曜の朝に届きます" checked={digest} onChange={setDigest} />
+          <Checkbox label="予定をチームに公開" hint="空いている時間だけ見せます" checked={share} onChange={setShare} />
         </div>
-        <ProgressBar value={pct} label="進み" />
+        <div className="cat-demo-col">
+          <Switch label="おやすみモード" checked={away} onChange={setAway} />
+          <Switch label="新しいメッセージを知らせる" checked={notify} onChange={setNotify} />
+          <FormField label="次の面談"><DatePicker value={date} onChange={setDate} today="2026-11-09" /></FormField>
+        </div>
       </div>
-      <div className="cat-demo-todo">
-        {TODOS.map((t, i) => <Checkbox key={t} label={t} checked={done[i]} onChange={(v) => setDone((d) => d.map((x, j) => (j === i ? v : x)))} />)}
+      <div className="cat-demo-foot">
+        <span className="cat-demo-tags"><Tag>デザイン</Tag><Tag>リサーチ</Tag><Tag variant="dashed">＋ 追加</Tag></span>
+        <AvatarGroup stack size="sm" max={4} items={TEAM} label="同じチーム" />
       </div>
     </div>
   )
