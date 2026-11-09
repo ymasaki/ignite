@@ -181,9 +181,9 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
     <Board>
       <div className="cat-wrap">
         <div className="cat" ref={ref}>
-          <div className="cat-main cat-lp cat-fx-wrap">
-            <div className="cat-fx" aria-hidden="true"><span /><span /><span /><span /></div>
+          <div className="cat-main cat-lp">
             <section className="cat-hero">
+              <div className="cat-fx" aria-hidden="true"><span /><span /><span /><span /></div>
               <div className="cat-hero-b">
                 <HeroLogo>
                   <Tag>v{version}</Tag>
