@@ -8,7 +8,7 @@ import fs from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { execFileSync, spawn, spawnSync } from 'node:child_process'
-import { auditInput, openAuditCache, pruneAuditCache, treeFiles, browserFiles } from './audit-cache.mjs'
+import { auditInput, openAuditCache, pruneAuditCache, treeFiles, browserFiles, DEPENDENCY_SCRATCH } from './audit-cache.mjs'
 
 const options = (store, extra = {}) => ({ snapshot: async () => ({ key: 'input', store }), ...extra })
 async function report(root, text = '成功') {
@@ -87,7 +87,7 @@ test('入力変更・中断・成果物不足は成功を保存しない', async
 test('Gitの未保存・未追跡・ツリー・依存実体・環境変更を区別する', async () => {
   const dir = await fs.mkdtemp(path.join(tmpdir(), 'ignite-cache-key-'))
   const git = (...args) => execFileSync('git', ['-C', dir, ...args], { stdio: 'pipe', env: { ...Object.fromEntries(Object.entries(process.env).filter(([name]) => !name.startsWith('GIT_'))), GIT_AUTHOR_NAME: 'Test', GIT_AUTHOR_EMAIL: 'test@example.invalid', GIT_COMMITTER_NAME: 'Test', GIT_COMMITTER_EMAIL: 'test@example.invalid' } })
-  const inspect = () => treeFiles(path.join(dir, 'node_modules'), true)
+  const inspect = () => treeFiles(path.join(dir, 'node_modules'), true, DEPENDENCY_SCRATCH)
   const input = (env = {}) => auditInput(dir, env, inspect)
   try {
     git('init', '-q'); await fs.writeFile(path.join(dir, '.gitignore'), 'node_modules/\n**/test-results-audit/\ntest-results/\n')
@@ -101,6 +101,13 @@ test('Gitの未保存・未追跡・ツリー・依存実体・環境変更を�
     assert.equal((await input({ CODEX_TOOL_CALL_ID: 'another-call', CODEX_THREAD_ID: 'another-thread', CODEX_SESSION_ID: 'another-session', DEVBOARD_COMPUTER_TOKEN: 'not-a-real-token', DEVBOARD_DISTRIBUTED_SOCKET: '/tmp/test-socket', CODEX_VERSION: 'another-executor', CLAUDE_CODE_ENABLE_TODO_TOOLS: '1' })).key, first.key)
     assert.equal((await input({ CLAUDE_CODE_SESSION_ID: 'another-session', CLAUDE_PID: '1', CLAUDE_CODE_MESSAGING_SOCKET: '/tmp/test-socket', CLAUDE_CODE_MESSAGING_TOKEN: 'not-a-real-token', CLAUDE_EFFORT: 'high', CLAUDECODE: '1', LaunchInstanceID: 'another-launch', SECURITYSESSIONID: 'another-login', SSH_AUTH_SOCK: '/tmp/test-agent' })).key, first.key)
     assert.notEqual((await input({ UNKNOWN_RENDER_OPTION: 'new' })).key, first.key)
+    // 単体テストの変換キャッシュは照合しない。同じ名前でも、根の直下でなければ依存として照合する
+    await fs.mkdir(path.join(dir, 'node_modules/.vitest-cache')); await fs.writeFile(path.join(dir, 'node_modules/.vitest-cache/entry'), 'cache')
+    assert.equal((await input()).key, first.key)
+    await fs.mkdir(path.join(dir, 'node_modules/package/.vitest-cache'), { recursive: true }); await fs.writeFile(path.join(dir, 'node_modules/package/.vitest-cache/entry'), 'nested')
+    assert.notEqual((await input()).key, first.key)
+    await fs.rm(path.join(dir, 'node_modules/package'), { recursive: true })
+    assert.equal((await input()).key, first.key)
     const cacheOptions = { env: {}, snapshot: () => input() }
     const saved = await openAuditCache(dir, [], () => false, cacheOptions)
     await report(dir); await saved.publish(); saved.close()

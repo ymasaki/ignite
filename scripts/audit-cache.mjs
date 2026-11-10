@@ -16,13 +16,15 @@ async function fileHash(file) {
   for await (const chunk of createReadStream(file)) hash.update(chunk)
   return hash.digest('hex')
 }
-export async function treeFiles(root, links = false) {
+// skip は根の直下で照合から外す名前（監査が読まない中間物）。
+export async function treeFiles(root, links = false, skip = []) {
   if ((await fs.lstat(root)).isSymbolicLink()) throw new Error('入力の根にリンクは使えません')
   const base = await fs.realpath(root)
   const files = []
   const inputs = []
   async function walk(dir) {
     for (const name of (await fs.readdir(dir)).sort()) {
+      if (dir === base && skip.includes(name)) continue
       const file = path.join(dir, name)
       const relative = path.relative(base, file)
       const stat = await fs.lstat(file)
@@ -132,11 +134,13 @@ export async function browserFiles(executable, manifest) {
   for (const name of names) files.push([name, await treeFiles(path.join(directory, name), true)])
   return files
 }
+export const DEPENDENCY_SCRATCH = ['.vitest-cache']
 export async function auditRuntime(root) {
   if (process.platform !== 'darwin') throw new Error('実行環境の照合はmacOSのみ対応')
   // Viteが作る中間物は入力にしない。開始前・子群停止確認後に消し、古い中間物を使わせない。
   for (const name of ['.vite', '.vite-temp']) await fs.rm(path.join(root, 'node_modules', name), { recursive: true, force: true })
-  const dependencies = await treeFiles(path.join(root, 'node_modules'), true)
+  // 単体テストの変換キャッシュは監査が読まず、単体テストを挟むたびに変わるので照合しない（消すと単体テストが遅くなるので残す）。
+  const dependencies = await treeFiles(path.join(root, 'node_modules'), true, DEPENDENCY_SCRATCH)
   const { chromium } = await import(pathToFileURL(path.join(root, 'node_modules/playwright-core/index.mjs')).href)
   const manifest = JSON.parse(await fs.readFile(path.join(root, 'node_modules/playwright-core/browsers.json'), 'utf8'))
   const browsers = await browserFiles(chromium.executablePath(), manifest)
