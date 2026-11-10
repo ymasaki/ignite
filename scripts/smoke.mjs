@@ -1,7 +1,7 @@
 // 配布から更新までを、実際のパッケージで確かめる。
 // npm pack した今の版を新しいアプリに入れ → 検査と監査を通し → わざと違反を入れて止まることを確かめ → 次の版へ ignite upgrade して部品と決まりが届くことを確かめる。
 // 引数 --skip-audit で、ブラウザを使う監査を省く。
-import { execFileSync, spawnSync } from 'node:child_process'
+import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
@@ -13,8 +13,24 @@ let app = path.join(tmp, 'app')
 const name = '@ymasaki/ignite'
 const MARK = 'ignite-smoke-marker'
 
-const run = (cmd, args, cwd = app) => execFileSync(cmd, args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] })
-const attempt = (cmd, args, cwd = app) => spawnSync(cmd, args, { cwd, encoding: 'utf8' })
+// macOS では npm・npx が起動直後のプロセス名の設定（LaunchServices）でまれに abort し、何も出さずに SIGABRT で止まる。
+// コマンドの中身の失敗ではないので、出力なしの SIGABRT に限って 1 回だけやり直す。終了コードのある失敗はやり直さない。
+const abortedSilently = (result) => result.signal === 'SIGABRT' && !result.stdout && !result.stderr
+function spawnOnceMore(cmd, args, options) {
+  const result = spawnSync(cmd, args, options)
+  if (!abortedSilently(result)) return result
+  console.log(`  （${cmd} ${args.join(' ')} が出力なしの SIGABRT で止まったため、1 回だけやり直します）`)
+  return spawnSync(cmd, args, options)
+}
+function run(cmd, args, cwd = app) {
+  const result = spawnOnceMore(cmd, args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] })
+  if (result.error) throw result.error
+  if (result.status !== 0) {
+    throw Object.assign(new Error(`Command failed: ${cmd} ${args.join(' ')}（終了コード ${result.status}・シグナル ${result.signal}）\n${result.stderr}${result.stdout}`), { status: result.status, signal: result.signal, stdout: result.stdout, stderr: result.stderr })
+  }
+  return result.stdout
+}
+const attempt = (cmd, args, cwd = app) => spawnOnceMore(cmd, args, { cwd, encoding: 'utf8' })
 const ok = (label) => console.log(`  ok: ${label}`)
 function assert(cond, label, detail = '') {
   if (!cond) throw new Error(`NG: ${label}\n${detail}`)
