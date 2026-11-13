@@ -121,6 +121,10 @@ test('Combobox: 打って絞り、↓ と Enter で選ぶ。変換の確定の E
   // 変換中の Enter（isComposing）では閉じない
   await box.evaluate((el) => el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, isComposing: true })))
   await expect(page.getByRole('listbox')).toBeVisible()
+  // Safari は確定の Enter を isComposing なしの keyCode 229 で送る。これでも選ばない
+  await box.evaluate((el) => el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, keyCode: 229 })))
+  await expect(page.getByRole('listbox')).toBeVisible()
+  await expect(box).toHaveValue('京')
   await page.keyboard.press('ArrowDown')
   await page.keyboard.press('Enter')
   await expect(box).toHaveValue('京都')
@@ -1431,4 +1435,152 @@ test('CopyText: 続けて押しても、あとに押した分の「コピーし�
   // 1 回目から 1.5 秒が過ぎても、2 回目の分が残っている
   await page.waitForTimeout(800)
   await expect(ct).toHaveClass(/copied/)
+})
+
+test('SideStatus: 動きを減らす設定でも「更新しました」が出て、通常と同じころに消える', async ({ page }) => {
+  await open(page, 'overview')
+  // カタログに見本は置かない（8 秒の動きの終わりを監査が待たないように）。ここで行を置き、決めた時刻の見え方を測る
+  const opacityAt = (ms: number) => page.evaluate((t) => {
+    document.getElementById('t-status')?.remove()
+    const row = document.createElement('div')
+    row.id = 't-status'
+    row.className = 'side-status updated'
+    row.innerHTML = '<span class="side-status-l"><span class="side-status-note">更新しました</span></span>'
+    document.body.append(row)
+    const note = row.querySelector<HTMLElement>('.side-status-note')!
+    const anim = note.getAnimations()[0]
+    anim.pause()
+    anim.currentTime = t
+    return getComputedStyle(note).opacity
+  }, ms)
+  const expectShown = async () => {
+    expect(await opacityAt(100)).toBe('1')
+    expect(await opacityAt(3000)).toBe('1')
+    expect(await opacityAt(7600)).toBe('0')
+  }
+  // 端末の「視差効果を減らす」
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await expectShown()
+  // 設定の画面の「動きを減らす」（端末の設定を戻すと表示の補助が data-motion を外すので、外れてから付ける）
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await expect.poll(() => page.evaluate(() => document.documentElement.dataset.motion ?? null)).toBeNull()
+  await page.evaluate(() => { document.documentElement.dataset.motion = 'reduce' })
+  await expectShown()
+})
+
+test('Toast: × で閉じると、フォーカスは隣の知らせの × へ移り、最後は知らせに入る前の場所へ戻る', async ({ page }) => {
+  await open(page, 'feedback')
+  const opener = page.getByRole('button', { name: '失敗を知らせる' })
+  await opener.click()
+  await opener.click()
+  const shown = page.locator('.toast.danger:not(.closing)')
+  await expect(shown).toHaveCount(2)
+  await opener.focus()
+  await shown.nth(0).getByRole('button', { name: '知らせを閉じる' }).focus()
+  await page.keyboard.press('Enter')
+  await expect(shown).toHaveCount(1)
+  await expect(shown.nth(0).getByRole('button', { name: '知らせを閉じる' })).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(shown).toHaveCount(0)
+  await expect(opener).toBeFocused()
+})
+
+test('AppShell: 引き出しの左メニューは、中の部品が Esc を先に処理したら閉じない', async ({ page }) => {
+  await open(page, 'overview')
+  await page.setViewportSize({ width: 500, height: 800 })
+  const menu = page.locator('.ttl-menu')
+  await menu.click()
+  await expect(menu).toHaveAttribute('aria-expanded', 'true')
+  // 引き出しの中で開いた Popover・一覧と同じく、document で Esc を受けて処理済みにする
+  await page.evaluate(() => {
+    const w = window as unknown as { escTaken: (e: KeyboardEvent) => void }
+    w.escTaken = (e) => { if (e.key === 'Escape') e.preventDefault() }
+    document.addEventListener('keydown', w.escTaken)
+  })
+  await page.keyboard.press('Escape')
+  await expect(menu).toHaveAttribute('aria-expanded', 'true')
+  // 処理する部品がなければ、Esc で閉じる
+  await page.evaluate(() => document.removeEventListener('keydown', (window as unknown as { escTaken: (e: KeyboardEvent) => void }).escTaken))
+  await page.keyboard.press('Escape')
+  await expect(menu).toHaveAttribute('aria-expanded', 'false')
+})
+
+test('Dialog: 処理中で閉じない窓は、Esc を続けて押しても開いたままで、処理が終わると閉じる', async ({ page }) => {
+  await page.clock.install()
+  await open(page, 'feedback')
+  await page.getByRole('button', { name: '削除する' }).first().click()
+  const box = page.getByRole('alertdialog')
+  await box.getByRole('button', { name: '削除する' }).click()
+  // ブラウザは 2 回目の Esc から取り消せない cancel を送り、窓を自分で閉じる
+  await page.keyboard.press('Escape')
+  await page.keyboard.press('Escape')
+  await page.keyboard.press('Escape')
+  await page.waitForTimeout(300)
+  expect(await page.evaluate(() => document.querySelector('dialog')?.open)).toBe(true)
+  expect(await page.evaluate(() => !!document.activeElement?.closest('dialog'))).toBe(true)
+  await page.clock.runFor(1000)
+  await expect(box).toHaveCount(0)
+  await expect(page.locator('.toast', { hasText: '1件削除しました' })).toBeVisible()
+})
+
+test('Dialog: 中で文字を選んで外で離しても閉じず、外側を押すと閉じる', async ({ page }) => {
+  await open(page, 'feedback')
+  await page.getByRole('button', { name: '窓を開く' }).click()
+  const dialog = page.getByRole('dialog', { name: '名前を変える' })
+  const b = (await dialog.getByRole('heading', { name: '名前を変える' }).boundingBox())!
+  await page.mouse.move(b.x + 2, b.y + b.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(b.x + b.width - 2, b.y + b.height / 2, { steps: 5 })
+  await page.mouse.move(20, 20, { steps: 5 })
+  await page.mouse.up()
+  await page.waitForTimeout(300)
+  await expect(dialog).toBeVisible()
+  await page.mouse.click(20, 20)
+  await expect(dialog).toHaveCount(0)
+})
+
+test('強制カラー（Windows のハイコントラスト）でも、選んだ状態と入力欄のフォーカスが見える', async ({ page }) => {
+  // 強制カラーでは作り手の地の色と影が端末の配色に置き換わる。選んだ状態は系統色の Highlight で塗り、フォーカスは線で出す
+  await page.emulateMedia({ forcedColors: 'active' })
+  await open(page, 'forms')
+  const sys = (name: string) => page.evaluate((n) => {
+    const probe = document.createElement('i')
+    probe.style.color = n
+    document.body.append(probe)
+    const value = getComputedStyle(probe).color
+    probe.remove()
+    return value
+  }, name)
+  const highlight = await sys('Highlight')
+  const highlightText = await sys('HighlightText')
+  expect(highlight).not.toBe(await sys('Canvas'))
+  const css = (l: import('@playwright/test').Locator, prop: string) => l.evaluate((el, p) => getComputedStyle(el).getPropertyValue(p), prop)
+  // スイッチ: 入は地を塗り、切もつまみと輪郭を描く（地と影だけでは丸ごと消える）
+  const on = page.getByRole('switch', { name: 'すぐに通知する' })
+  const off = page.getByRole('switch', { name: '週次の報告を送る' })
+  await expect(on).toHaveAttribute('aria-checked', 'true')
+  await expect(off).toHaveAttribute('aria-checked', 'false')
+  expect(await css(on.locator('.sw-track'), 'background-color')).toBe(highlight)
+  expect(await css(off.locator('.sw-thumb'), 'background-color')).toBe(await sys('ButtonText'))
+  expect(await css(off.locator('.sw-track'), 'outline-style')).toBe('solid')
+  // ラジオ: 選んだ丸を塗る
+  const standard = page.getByRole('radio', { name: /^標準/ })
+  await standard.check()
+  expect(await css(page.locator('.check', { has: standard }).locator('.check-box'), 'background-color')).toBe(highlight)
+  // 入力欄: フォーカス中は枠の外に線を出す
+  const search = page.getByPlaceholder('名前・担当者').first()
+  await search.focus()
+  expect(await css(search, 'outline-style')).toBe('solid')
+  expect(await css(search, 'outline-color')).toBe(highlight)
+  // 切り替え・タブ・ページ送り: 選択中の地を塗り、文字は地の上で読める色にする
+  await open(page, 'navigate')
+  const seg = page.locator('.seg').first()
+  expect(await css(seg.locator('.thumb'), 'background-color')).toBe(highlight)
+  expect(await css(seg.locator('button[aria-pressed="true"]'), 'color')).toBe(highlightText)
+  const tabs = page.getByRole('tablist', { name: '表示の切り替え' })
+  expect(await css(tabs.locator('.thumb'), 'background-color')).toBe(highlight)
+  expect(await css(tabs.getByRole('tab', { selected: true }), 'color')).toBe(highlightText)
+  const pages = page.locator('.pg-row').first()
+  expect(await css(pages.locator('.thumb'), 'background-color')).toBe(highlight)
+  expect(await css(pages.locator('[aria-current="page"]'), 'color')).toBe(highlightText)
 })

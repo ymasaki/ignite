@@ -10,6 +10,12 @@
 .pg-row.ready .thumb{transition:left .34s var(--ease-spring),top .34s var(--ease-spring),width .34s var(--ease-spring),height .34s var(--ease-spring)}
 @media (prefers-reduced-motion: reduce){.pg-row.ready .thumb{transition:none}}
 .pg-n[aria-current="page"],.pg-n[aria-current="page"]:hover{background:transparent;color:var(--pri-ink-2);font-weight:700}
+/* 強制カラー（Windows のハイコントラスト）では今のページの地が消える。切り替えと同じく系統色の Highlight で塗り、
+   文字の後ろに敷かれる地の色の板を止めて HighlightText で書く（DESIGN.md 原則 3 の例外） */
+@media (forced-colors: active){
+  .pg-row .thumb{background:Highlight}
+  .pg-n[aria-current="page"],.pg-n[aria-current="page"]:hover{forced-color-adjust:none;color:HighlightText}
+}
 .pg-gap{min-width:24px;text-align:center;color:var(--ink-3)}
 .pg-cur{display:none;padding:0 var(--space-2);font-size:var(--fs-13);color:var(--ink-2)}
 @container (max-width:320px){.pg-n,.pg-gap{display:none}.pg-cur{display:block}}

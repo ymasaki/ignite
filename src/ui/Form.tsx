@@ -182,7 +182,8 @@ export function Combobox<T extends string>({ value, options, onChange, label, pl
     if (o.value !== value) onChange(o.value)
   }
   const onKey = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.nativeEvent.isComposing) return
+    // 変換中のキーは欄に任せる（Safari は確定の Enter を isComposing なしの 229 で送る）
+    if (e.nativeEvent.isComposing || e.keyCode === 229) return
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       e.preventDefault()
       if (!open) return setOpen(true)

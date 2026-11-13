@@ -90,6 +90,10 @@
 .side-status.updated b{color:var(--pri-ink);background:var(--pri-soft);box-shadow:0 0 0 3px var(--pri-soft)}
 .side-status.updated .side-status-note{animation:statusNote 8s ease-out forwards}
 @keyframes statusNote{0%{opacity:0}4%{opacity:1}88%{opacity:1}100%{opacity:0}}
+/* 動きを減らすときは、薄れさせずにすぐ出し、同じ時刻（7 秒ほど）ですぐ消す。動きの長さを一律に縮める指定（base.css・assist.css）のままだと、
+   最後の透明の姿だけが残って一度も見えない */
+@media (prefers-reduced-motion: reduce){.side-status.updated .side-status-note{animation-duration:8s!important;animation-timing-function:steps(1,start)}}
+:root[data-motion="reduce"] .side-status.updated .side-status-note{animation-duration:8s!important;animation-timing-function:steps(1,start)}
 .side-status-ic{display:none}
 /* 左メニューの一番下のアカウントの欄（SideAccount）。読み込み中の Skeleton は EntityRow と同じ大きさ */
 .side-account{padding:8px;border-top:1px solid var(--line)}

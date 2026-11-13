@@ -26,14 +26,21 @@ export function Dialog({ open, onClose, title, footer, size = 'md', dismissable 
   if (open && !shown) setShown(true)
   // 閉じる途中か（描画と同時に決まるので、同じ操作で出した知らせが置き場所を間違えない）
   const closing = !open
+  // 外側で押し、外側で離したか（中で文字を選んで外で離したときも click は窓そのものに届くので、押した所と離した所の両方を見る）
+  const outside = useRef({ down: false, up: false })
+  // 開いたときのフォーカスの行き先（data-autofocus → 最初の入力欄 → 確認の窓は下の操作 → 窓そのもの）
+  const focusStart = (d: HTMLDialogElement) => {
+    const first = d.querySelector<HTMLElement>('[data-autofocus]') ?? d.querySelector<HTMLElement>('input:not([disabled]),textarea:not([disabled])')
+    const target = first ?? (alert ? d.querySelector<HTMLElement>(`.dlg-foot :is(${FOCUSABLE})`) : null) ?? d
+    target.focus()
+  }
   useLayoutEffect(() => {
     const d = ref.current
     if (!open || !d) return
     // 閉じる途中に開き直したときは窓が開いたままなので showModal は要らないが、中のフォーカスは外れているので移し直す
     if (!d.open) d.showModal()
-    const first = d.querySelector<HTMLElement>('[data-autofocus]') ?? d.querySelector<HTMLElement>('input:not([disabled]),textarea:not([disabled])')
-    const target = first ?? (alert ? d.querySelector<HTMLElement>(`.dlg-foot :is(${FOCUSABLE})`) : null) ?? d
-    target.focus()
+    focusStart(d)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, shown, alert])
   // 閉じる動きを見せてから閉じる（6 章）
   useEffect(() => {
@@ -57,7 +64,20 @@ export function Dialog({ open, onClose, title, footer, size = 'md', dismissable 
         e.preventDefault()
         if (dismissable && open) onClose()
       }}
-      onClick={(e) => e.target === ref.current && dismissable && open && onClose()}
+      // ブラウザが自分で閉じたとき（Esc を続けて押すと、2 回目からは取り消せない cancel のあとに閉じる）に、部品の状態とそろえる。
+      // 閉じる途中・閉じ終わりなら外し、閉じない窓（処理中など）は開き直し、閉じてよい窓は閉じる操作として渡す
+      onClose={() => {
+        const d = ref.current
+        if (!open) return setShown(false)
+        if (!d || d.open) return
+        if (!dismissable) {
+          d.showModal()
+          focusStart(d)
+        } else onClose()
+      }}
+      onPointerDown={(e) => { outside.current = { down: e.target === ref.current, up: false } }}
+      onPointerUp={(e) => { outside.current.up = e.target === ref.current }}
+      onClick={(e) => e.target === ref.current && outside.current.down && outside.current.up && dismissable && open && onClose()}
       onAnimationEnd={(e) => e.target === ref.current && closing && finish()}
     >
       {/* 閉じる動きのあいだは押せない（確定を二度実行しないように） */}

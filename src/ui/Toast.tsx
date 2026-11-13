@@ -42,10 +42,27 @@ const ICONS = { info: IconInfoCircle, ok: IconCircleCheck, danger: IconAlertCirc
 /** 消えるまでの ms。読む時間と押す時間を取る（WCAG 2.2.1。載せている・フォーカスがあるあいだは止める） */
 export const toastDuration = (o: ToastOptions) => (o.duration !== undefined ? o.duration : o.tone === 'danger' ? null : o.action ? 8000 : 5000)
 
+// 知らせの外から中へフォーカスが入ったときの元の場所（最後の知らせを × で閉じたら、ここへ戻す）
+let cameFrom: HTMLElement | null = null
+
 function ToastCard({ item }: { item: Item }) {
   const { id, text, tone = 'info', action, closing } = item
   const Icon = ICONS[tone]
   const wait = toastDuration(item)
+  const box = useRef<HTMLDivElement>(null)
+  // 手で閉じる。閉じる知らせの中にフォーカスがあれば、隣の知らせ（下、なければ上）の × か、知らせに入る前の場所へ移す
+  // （閉じる知らせは inert になるので、移さないとフォーカスが body に落ちる。WCAG 2.4.3）
+  const close = () => {
+    const el = box.current
+    if (el?.contains(document.activeElement)) {
+      const shown = [...(el.parentElement?.children ?? [])].filter((t) => !t.classList.contains('closing'))
+      const i = shown.indexOf(el)
+      const near = (shown[i + 1] ?? shown[i - 1])?.querySelector<HTMLElement>('[data-toast-close]')
+      const back = near ?? (cameFrom?.isConnected ? cameFrom : null)
+      back?.focus({ preventScroll: true })
+    }
+    dismissToast(id)
+  }
   const timer = useRef(0)
   // 載せている・フォーカスがある、のどちらかが続くあいだは止める
   const held = useRef({ hover: false, focus: false })
@@ -63,11 +80,11 @@ function ToastCard({ item }: { item: Item }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => (start(), stop), [])
   return (
-    <div className={`toast ${tone}${closing ? ' closing' : ''}`} inert={closing} onPointerEnter={() => hold('hover', true)} onPointerLeave={() => hold('hover', false)} onFocus={() => hold('focus', true)} onBlur={() => hold('focus', false)} onAnimationEnd={(e) => e.target === e.currentTarget && closing && set(items.filter((t) => t.id !== id))}>
+    <div ref={box} className={`toast ${tone}${closing ? ' closing' : ''}`} inert={closing} onPointerEnter={() => hold('hover', true)} onPointerLeave={() => hold('hover', false)} onFocus={() => hold('focus', true)} onBlur={() => hold('focus', false)} onAnimationEnd={(e) => e.target === e.currentTarget && closing && set(items.filter((t) => t.id !== id))}>
       <Icon size={16} stroke={1.8} aria-hidden="true" />
       <span className="toast-t">{text}</span>
-      {action && <LinkButton onClick={() => (dismissToast(id), action.onClick())}>{action.label}</LinkButton>}
-      <IconButton label="知らせを閉じる" tip="閉じる" onClick={() => dismissToast(id)}><IconX size={14} stroke={1.8} /></IconButton>
+      {action && <LinkButton onClick={() => (close(), action.onClick())}>{action.label}</LinkButton>}
+      <IconButton label="知らせを閉じる" tip="閉じる" data-toast-close="" onClick={close}><IconX size={14} stroke={1.8} /></IconButton>
     </div>
   )
 }
@@ -78,5 +95,10 @@ function ToastCard({ item }: { item: Item }) {
  */
 export function Toaster({ inert }: { inert?: boolean }) {
   const shown = useSyncExternalStore((l) => (listeners.add(l), () => void listeners.delete(l)), () => items, () => items)
-  return <section className="toasts" aria-label="知らせ" hidden={!shown.length} inert={inert}>{shown.map((t) => <ToastCard key={t.id} item={t} />)}</section>
+  return (
+    <section className="toasts" aria-label="知らせ" hidden={!shown.length} inert={inert}
+      onFocus={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) cameFrom = e.relatedTarget as HTMLElement | null }}>
+      {shown.map((t) => <ToastCard key={t.id} item={t} />)}
+    </section>
+  )
 }

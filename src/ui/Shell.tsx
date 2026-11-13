@@ -241,7 +241,8 @@ export function AppShell({ side, foot, collapse, title, titleAfter, search, tool
     if (!drawerOpen) return
     const back = document.activeElement as HTMLElement | null
     sideRef.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus()
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
+    // 中で開いた一覧・ポップオーバーが Esc で先に閉じたとき（preventDefault 済み）は、引き出しまで閉じない
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && !e.defaultPrevented && setOpen(false)
     window.addEventListener('keydown', onKey)
     return () => {
       window.removeEventListener('keydown', onKey)

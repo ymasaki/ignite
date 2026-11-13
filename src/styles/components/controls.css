@@ -40,6 +40,13 @@
 .seg .thumb,.tabs .thumb{position:absolute;top:0;left:0;border-radius:8px;background:var(--thumb);pointer-events:none}
 .seg.ready .thumb,.tabs.ready .thumb{transition:left .34s var(--ease-spring),top .34s var(--ease-spring),width .34s var(--ease-spring),height .34s var(--ease-spring)}
 @media (prefers-reduced-motion: reduce){.seg.ready .thumb,.tabs.ready .thumb{transition:none}}
+/* 強制カラー（Windows のハイコントラスト）では選択中の地が消え、文字の太さも変えないので選択が見分けられない。系統色の Highlight で塗る（DESIGN.md 原則 3 の例外）。
+   選択中の文字は、ブラウザが文字の後ろに敷く地の色の板を止めて HighlightText で書く（板があると Highlight の地が隠れ、白い板に白い文字になる） */
+@media (forced-colors: active){
+  .seg .thumb,.tabs .thumb{background:Highlight}
+  .seg button[aria-pressed="true"],.tabs button[aria-selected="true"]{forced-color-adjust:none;color:HighlightText}
+  .seg button[aria-pressed="true"] .n,.tabs button[aria-selected="true"] .n{color:HighlightText}
+}
 
 /* ポップオーバー */
 .popover{position:relative;flex:none}
@@ -97,6 +104,8 @@
 .field.area{display:block;width:100%;height:auto;min-height:88px;padding:8px 12px;font:inherit;font-size:var(--fs-13);line-height:1.6;color:var(--ink);resize:vertical}
 .field:hover{border-color:var(--pri)}
 .field:focus{outline:none;border-color:var(--focus);box-shadow:0 0 0 3px var(--focus-ring)}
+/* 強制カラーでは枠の色とにじみ（影）が消え、フォーカスのある欄がわからない。枠の外に線を出す（DESIGN.md 原則 3 の例外） */
+@media (forced-colors: active){.field:focus{outline:2px solid Highlight;outline-offset:1px}}
 /* エラーのある欄（FormField の error）。枠だけでなく、欄の下の文とアイコンでも示す */
 .field[aria-invalid="true"],.select-btn[aria-invalid="true"]{border-color:var(--danger)}
 .field[aria-invalid="true"]:hover{box-shadow:0 0 0 1px var(--danger)}
