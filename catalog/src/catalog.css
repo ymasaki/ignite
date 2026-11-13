@@ -85,14 +85,14 @@
   --flame-b:oklch(from var(--pri) calc(l + .1) c calc(h + 40));
   --flame-c:oklch(from var(--pri) .92 .14 calc(h + 70))}
 /* 炎は面（Board）の中の文字の背後に重なる。小さな文字が 4.5:1 を保つよう薄く敷く */
-.cat-fx>span{position:absolute;border-radius:50%;filter:blur(90px);opacity:.06;mix-blend-mode:multiply}
+.cat-fx>span{position:absolute;border-radius:50%;filter:blur(90px);opacity:.1;mix-blend-mode:multiply}
 .cat-fx>span:nth-child(1){width:60%;height:60%;left:-10%;top:45%;background:var(--pri)}
 .cat-fx>span:nth-child(2){width:50%;height:55%;left:35%;top:55%;background:var(--flame-b)}
 .cat-fx>span:nth-child(3){width:55%;height:60%;left:55%;top:-5%;background:var(--flame-a)}
-.cat-fx>span:nth-child(4){width:45%;height:45%;left:15%;top:-10%;background:var(--flame-c);opacity:.08}
+.cat-fx>span:nth-child(4){width:45%;height:45%;left:15%;top:-10%;background:var(--flame-c);opacity:.13}
 /* 暗い地では掛け合わせると沈むので、光として足す。黄色は暗い地で薄めると濁るので控えめにする */
-[data-mode="dark"] .cat-fx>span{mix-blend-mode:screen;opacity:.14}
-[data-mode="dark"] .cat-fx>span:nth-child(4){opacity:.06}
+[data-mode="dark"] .cat-fx>span{mix-blend-mode:screen;opacity:.17}
+[data-mode="dark"] .cat-fx>span:nth-child(4){opacity:.09}
 @media (prefers-reduced-motion:no-preference){
   .cat-fx>span:nth-child(1){animation:cat-heat-1 11s ease-in-out infinite alternate}
   .cat-fx>span:nth-child(2){animation:cat-heat-2 9s ease-in-out infinite alternate}
@@ -152,7 +152,8 @@
 .cat-pillar-go svg{width:14px;height:14px;transition:translate var(--dur-base) var(--ease-spring)}
 /* 特徴。1 行に 1 つ、左に見出し・説明、右に本物の部品の見本。行の間は罫線で区切る。狭いときは説明 → 見本の順に縦に積む */
 .cat-features{display:grid}
-.cat-feature{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,6fr);align-items:center;gap:56px;padding:40px 0;border-top:1px solid var(--line)}
+/* 列は説明と見本の上限の幅で止め、左へ寄せる。広い画面で両者が左右の端へ離れない（罫線は幅いっぱいのまま） */
+.cat-feature{display:grid;grid-template-columns:minmax(0,400px) minmax(0,520px);justify-content:start;align-items:center;gap:56px;padding:40px 0;border-top:1px solid var(--line)}
 .cat-feature:first-child{padding-top:0;border-top:0}
 .cat-feature:last-child{padding-bottom:0}
 .cat-feature-b{display:grid;justify-items:start;align-content:center;gap:14px;min-width:0}
