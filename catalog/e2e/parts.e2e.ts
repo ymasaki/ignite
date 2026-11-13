@@ -1461,10 +1461,14 @@ test('SideStatus: 動きを減らす設定でも「更新しました」が出�
   // 端末の「視差効果を減らす」
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await expectShown()
-  // 設定の画面の「動きを減らす」（端末の設定を戻すと表示の補助が data-motion を外すので、外れてから付ける）
+  // 設定の画面の「動きを減らす」。表示の補助は端末の設定が変わるたびに、<html> に覚えた設定（data-assist）から data-motion を
+  // 書き直す（知らせは遅れて届くことがある）。設定の画面と同じく覚えた設定も「減らす」にして、書き直されても外れないようにする
   await page.emulateMedia({ reducedMotion: 'no-preference' })
-  await expect.poll(() => page.evaluate(() => document.documentElement.dataset.motion ?? null)).toBeNull()
-  await page.evaluate(() => { document.documentElement.dataset.motion = 'reduce' })
+  await page.evaluate(() => {
+    const root = document.documentElement
+    root.dataset.assist = JSON.stringify({ ...JSON.parse(root.dataset.assist || '{}'), motion: 'reduce' })
+    root.dataset.motion = 'reduce'
+  })
   await expectShown()
 })
 
