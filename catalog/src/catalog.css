@@ -79,19 +79,22 @@
    往復（alternate）で動かすので、周期の頭で面が急に現れることがない。周期は互いに割り切れない長さにして繰り返しを目立たせない。
    面は器（overflow:hidden）の中で動くので、面の外へはみ出さない（横スクロールを出さない）。
    色は --pri の色相を黄色の側へ回して作るので、テーマカラーとダークに従う。視差効果を減らす設定では動かさず、止まった炎の色だけにする */
-.cat-fx{position:absolute;inset:-24px -24px 0;z-index:-1;overflow:hidden;pointer-events:none;border-radius:12px 12px 0 0;
+.cat-fx{position:absolute;inset:-24px -24px 0;z-index:-1;overflow:hidden;pointer-events:none;border-radius:12px 12px 0 0;mix-blend-mode:multiply;
   -webkit-mask-image:linear-gradient(var(--ink) 55%,transparent);mask-image:linear-gradient(var(--ink) 55%,transparent);
   --flame-a:oklch(from var(--pri) l c calc(h + 18));
   --flame-b:oklch(from var(--pri) calc(l + .1) c calc(h + 40));
   --flame-c:oklch(from var(--pri) .92 .14 calc(h + 70))}
 /* 炎は面（Board）の中の文字の背後に重なる。小さな文字が 4.5:1 を保つよう薄く敷く */
-.cat-fx>span{position:absolute;border-radius:50%;filter:blur(90px);opacity:.1;mix-blend-mode:multiply}
+/* 掛け合わせは器（回転しない）でまとめて行い、面ごとには掛けない。回転する面を面ごとに掛け合わせると、
+   Chromium で面の四角い縁が明るい線として見えるため */
+.cat-fx>span{position:absolute;border-radius:50%;filter:blur(90px);opacity:.1}
 .cat-fx>span:nth-child(1){width:60%;height:60%;left:-10%;top:45%;background:var(--pri)}
 .cat-fx>span:nth-child(2){width:50%;height:55%;left:35%;top:55%;background:var(--flame-b)}
 .cat-fx>span:nth-child(3){width:55%;height:60%;left:55%;top:-5%;background:var(--flame-a)}
 .cat-fx>span:nth-child(4){width:45%;height:45%;left:15%;top:-10%;background:var(--flame-c);opacity:.13}
 /* 暗い地では掛け合わせると沈むので、光として足す。黄色は暗い地で薄めると濁るので控えめにする */
-[data-mode="dark"] .cat-fx>span{mix-blend-mode:screen;opacity:.17}
+[data-mode="dark"] .cat-fx{mix-blend-mode:screen}
+[data-mode="dark"] .cat-fx>span{opacity:.17}
 [data-mode="dark"] .cat-fx>span:nth-child(4){opacity:.09}
 @media (prefers-reduced-motion:no-preference){
   .cat-fx>span:nth-child(1){animation:cat-heat-1 11s ease-in-out infinite alternate}
