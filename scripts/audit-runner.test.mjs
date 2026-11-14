@@ -12,13 +12,15 @@ test('監査の排他と終了処理', async t => {
   const lock = path.join(dir, 'lock')
   const source = (await readFile(new URL('./audit-design.mjs', import.meta.url), 'utf8'))
     .replace("'/tmp/ignite-catalog-audit-5198.lock'", JSON.stringify(lock))
-    .replace('1800000', '3000').replace('10800000', '8000').replace('60000', '5000') // 混んだマシンでも偽サーバーの起動が間に合う長さ
     .replace('60 * 1000', '1000') // 待機中の知らせの間隔
-  async function fixture(name, body) {
+  // 正常起動には本来の期限を使い、期限切れを検査するケースだけ短縮する。
+  const shortWaitSource = source.replace('1800000', '3000').replace('10800000', '8000')
+  const shortStartupSource = source.replace('60000', '5000')
+  async function fixture(name, body, fixtureSource = source) {
     const root = path.join(dir, name)
     await mkdir(path.join(root, 'scripts'), { recursive: true })
     await mkdir(path.join(root, 'node_modules/@playwright/test'), { recursive: true })
-    await writeFile(path.join(root, 'scripts/audit-design.mjs'), source)
+    await writeFile(path.join(root, 'scripts/audit-design.mjs'), fixtureSource)
     await writeFile(path.join(root, 'scripts/audit-cache.mjs'), await readFile(new URL('./audit-cache.mjs', import.meta.url), 'utf8'))
     await writeFile(path.join(root, 'scripts/audit-server.mjs'), "process.send({ready:true,port:41234}); setInterval(()=>{},1000)")
     await writeFile(path.join(root, 'node_modules/@playwright/test/cli.js'), body)
@@ -68,7 +70,7 @@ test('監査の排他と終了処理', async t => {
     await t.test('異なる版が同時開始しても順番に自分の版を実行', async () => {
       const a = await fixture('a', 'console.log("版A"); setTimeout(()=>{},200)')
       const b = await fixture('b', 'console.log("版B")')
-      const results = await Promise.all([run(a).done, run(b).done])
+      const results = await Promise.all([finishWithin(run(a)), finishWithin(run(b))])
       assert.equal(results[0].code, 0, results[0].output); assert.equal(results[1].code, 0, results[1].output)
       for (const result of results) assert.match(result.output, /harness-metric: stage=audit-lock seconds=\d+\.\d{3}/)
       assert.match(results[0].output, /版A/); assert.match(results[1].output, /版B/)
@@ -82,7 +84,7 @@ test('監査の排他と終了処理', async t => {
       await gone()
     })
     await t.test('ポートを知らせないサーバーでは監査を始めない', async () => {
-      const root = await fixture('noport', 'console.log("監査を実行")')
+      const root = await fixture('noport', 'console.log("監査を実行")', shortStartupSource)
       await writeFile(path.join(root, 'scripts/audit-server.mjs'), "process.send({ready:true}); setInterval(()=>{},1000)")
       const result = await run(root).done
       assert.notEqual(result.code, 0)
@@ -106,7 +108,7 @@ test('監査の排他と終了処理', async t => {
       await gone()
     })
     await t.test('起動失敗・起動期限でも解放', async () => {
-      const root = await fixture('startup', '')
+      const root = await fixture('startup', '', shortStartupSource)
       await writeFile(path.join(root, 'scripts/audit-server.mjs'), 'process.exit(1)')
       assert.equal((await run(root).done).code, 1); await gone()
       await writeFile(path.join(root, 'scripts/audit-server.mjs'), 'setInterval(()=>{},1000)')
@@ -231,7 +233,7 @@ process.kill = (pid, signal) => {
     })
     await t.test('残骸と待機期限は削除せず明示', async () => {
       await mkdir(lock)
-      const root = await fixture('locked', '')
+      const root = await fixture('locked', '', shortWaitSource)
       await writeFile(path.join(lock, 'owner.json'), JSON.stringify({pid: 2147483647}))
       const stale = await run(root).done
       assert.match(stale.output, /ロックが残っています/)
@@ -252,7 +254,9 @@ process.kill = (pid, signal) => {
       }
     }
     await t.test('所有者が入れ替わる間は保持の上限を超えても待ち続ける', async () => {
-      const root = await fixture('queued', 'console.log("順番が来た")')
+      const root = await fixture('queued', 'console.log("順番が来た")', shortWaitSource)
+      // 待機の検査に短い起動期限が混ざらないことも確認する（旧設定の5秒を超えて通知する）。
+      await writeFile(path.join(root, 'scripts/audit-server.mjs'), "setTimeout(()=>process.send({ready:true,port:41234}),6000); setInterval(()=>{},1000)")
       const child = run(root)
       await rotateOwners(i => i === 3) // 約6秒。保持の上限（試験では3秒）より長い
       await rm(lock, {recursive:true})
@@ -264,7 +268,7 @@ process.kill = (pid, signal) => {
       await gone()
     })
     await t.test('所有者が入れ替わり続けても全体の上限で打ち切る', async () => {
-      const child = run(await fixture('starved', ''))
+      const child = run(await fixture('starved', '', shortWaitSource))
       let done = false
       child.done.then(() => { done = true })
       await rotateOwners(i => done || i === 10)
