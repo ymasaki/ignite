@@ -2,6 +2,12 @@
 
 採用アプリは `npx ignite upgrade ./vendor/次の版.tgz`（[採用手順](docs/adopting.md#更新を取り込む)）でこの内容を確かめて取り込む。形式は [docs/releasing.md](docs/releasing.md)。
 
+## 1.16.3（2026-11-14）
+
+### 修正
+
+- 開発用の TypeScript 解析・品質計測が使う minimatch の脆弱性（GHSA-g3hv-75wg-m249）を修正した。9・10 系の依存経路だけを 11.0.1 に固定し、ESLint の 3 系は維持する。公開 API と Node.js の対応範囲は変えない
+
 ## 1.16.2（2026-11-14）
 
 ### 修正
