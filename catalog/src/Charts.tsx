@@ -54,6 +54,7 @@ export function ChartsPage({ target }: { target?: string | null }) {
         </>
       </Spec>
       <Spec page={p} id="gauge">
+        {/* 通常画面でも Dialog 内でも、吹き出しはグラフの領域内に保持する。parts.e2e.ts で表示中の axe も確認する。 */}
         <Notice tone="info">ホバー・Tab で値を確認、Esc で閉じる</Notice>
         <Button onClick={() => setDialog(true)}>窓の中でグラフを確認</Button>
         <Dialog open={dialog} onClose={() => setDialog(false)} title="グラフの値の確認">

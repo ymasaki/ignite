@@ -2,6 +2,8 @@
 
 `npm run audit:design` を使う。Playwrightへの引数も渡せる（例: `npm run audit:design -- --grep DatePicker`）。直接 `playwright test -c catalog/playwright.audit.config.ts` は受け付けない。
 
+通常の検査は Playwright の既定のヘッドレス Chromium で実行し、画面やフォーカスを使わない。オーナーの操作を妨げないよう、この Mac での自動検査に `--headed`・`--ui` は使わない。グラフの吹き出しの回帰確認だけなら `npm run audit:design -- --grep グラフ共通` を使う。
+
 ## 並列の測定と判定
 
 測定は6 worker（`IGNITE_AUDIT_WORKERS` で変更）に分け、判定「決まりから外れたところがない」は測定がすべて終わってから別のプロジェクトで行う（[並列で動かす設定](adopting.md#監査を並列で動かす1100以降)と同じ）。各テストの指摘は `catalog/test-results-audit/artifacts/.ignite-audit/` に記録し、テストを定義した順に集計するので、レポートと画像の番号は worker の数や終わった順で変わらない。前回の画像とレポートは、実行で最初に始まったテストが一度だけ消す。判定を含めない一部の実行（`--grep DatePicker` など）でも、worker の終わりにレポートを書く。判定を `--grep` で選ぶと、測定はすべて動く。

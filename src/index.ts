@@ -23,7 +23,7 @@ export { ReleasePanel } from './ui/Releases'
 export { RELEASE_CATEGORIES, releaseDays, type Release, type ReleaseCategory, type ReleaseItem } from './releases'
 // AppShellは検索欄なしの範囲選択と道具を同じ段に収める。採用側で枠のCSSを上書きしない。
 export { AppShell, Brand, SIDE_ICON_SIZE, SideAccount, SideIconButton, SideNav, SideStatus, useShell, useShownMode, type NavItem, type ShellPanel, type ShellSideState } from './ui/Shell'
-// グラフの値の確認は内部の ChartTooltip で共有（公開APIは各グラフのまま）。
+// グラフの値の確認は内部の ChartTooltip で共有（元のランドマーク内に保持。公開APIは各グラフのまま）。
 export { BarList, ChartCard, ChartGrid, Funnel, LineChart, Sparkline, StackColumns, Stat, TileMap, type BarItem, type LineSeries, type TileItem } from './ui/Chart'
 export { BoxPlot, ColumnChart, Gauge, HeatMap, PieChart, RadarChart, ScatterChart, Waterfall, axisTicks, boxStats, type BoxItem, type ColumnSeries, type PieItem, type RadarSeries, type ScatterPoint } from './ui/Plot'
 export { squarify, type Tile } from './ui/squarify'

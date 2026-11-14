@@ -1003,6 +1003,66 @@ for (const [name, selector] of [
   })
 }
 
+// 吹き出しが出ている状態を監査する。閉じた初期画面だけでは body portal の回帰を検出できない。
+for (const width of [600, 375]) {
+  test(`グラフ共通: ${width}px で表示中の吹き出しを元のランドマークに保つ`, async ({ page }) => {
+    await open(page, 'charts')
+    await page.setViewportSize({ width, height: 800 })
+    for (const selector of ['.bl', '.spark']) {
+      const item = page.locator(selector).first()
+      await item.scrollIntoViewIfNeeded()
+      const tip = page.getByRole('tooltip')
+      for (const action of ['hover', 'focus'] as const) {
+        await item[action]()
+        await expect(tip).toBeVisible()
+        expect(await tip.evaluate(el => el.closest('main') !== null)).toBe(true)
+        await expect(item).toHaveAccessibleName((await tip.textContent())!)
+        const result = await new AxeBuilder({ page }).withRules(['region']).analyze()
+        expect(result.violations).toEqual([])
+        expect(await tip.evaluate(el => el.matches(':popover-open'))).toBe(true)
+        // top layer 上の本文へ移動しても読め、外へ離れると閉じる。
+        if (action === 'hover') {
+          await tip.hover()
+          await page.waitForTimeout(200)
+          await expect(tip).toBeVisible()
+          await page.mouse.move(0, 0)
+        } else {
+          await page.keyboard.press('Escape')
+        }
+        await expect(tip).toHaveCount(0)
+      }
+    }
+    // 旧配置を作ると region が検出されることも確認する（例外や aria-hidden で隠さない）。
+    await page.keyboard.press('Tab')
+    await page.locator('.spark').first().focus()
+    const tip = page.getByRole('tooltip')
+    await expect(tip).toBeVisible()
+    await tip.evaluate(el => { document.body.append(el); (el as HTMLElement).showPopover() })
+    const broken = await new AxeBuilder({ page }).withRules(['region']).analyze()
+    expect(broken.violations.map(v => v.id)).toContain('region')
+  })
+}
+
+test('グラフ共通: 通常画面の切り抜き枠からも吹き出しが切れずに出る', async ({ page }) => {
+  await open(page, 'charts')
+  const item = page.locator('.gauge').first()
+  await item.scrollIntoViewIfNeeded()
+  await item.evaluate(el => {
+    const root = el.closest('.chart-tooltip-root')!
+    const clip = document.createElement('div')
+    clip.style.cssText = 'overflow:hidden;width:20px;height:20px;contain:paint'
+    root.before(clip)
+    clip.append(root)
+  })
+  await item.focus()
+  const tip = page.getByRole('tooltip')
+  await expect(tip).toBeVisible()
+  expect(await tip.evaluate(el => {
+    const r = el.getBoundingClientRect()
+    return el.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2))
+  })).toBe(true)
+})
+
 test('グラフ共通: 円の区分・ドーナツ・値なしゲージ・選択を保つ', async ({ page }, testInfo) => {
   await open(page, 'charts')
   await page.evaluate(() => document.fonts.ready)
@@ -1052,6 +1112,8 @@ test('グラフ共通: 窓の端とスクロール枠、Dialog の前面に出�
   await cell.focus()
   const tip = page.getByRole('tooltip')
   await expect(tip).toBeVisible()
+  expect(await tip.evaluate(el => !!el.closest('dialog'))).toBe(true)
+  expect((await new AxeBuilder({ page }).withRules(['region']).analyze()).violations).toEqual([])
   expect(await tip.evaluate(el => el.matches(':popover-open'))).toBe(true)
   const rect = await tip.boundingBox()
   expect(rect!.x).toBeGreaterThanOrEqual(8)

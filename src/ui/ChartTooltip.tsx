@@ -1,6 +1,5 @@
 // グラフ共通の吹き出し。SVG とスクロール枠の中でも同じ表示・操作にする。
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
-import { createPortal } from 'react-dom'
 
 /** 読み取り用の図の確認口。選択ボタン・凡例・meter は呼び出し側で役割を上書きする */
 export const chartTip = (text: string) => ({ role: 'img' as const, 'data-chart-tip': text, tabIndex: 0, 'aria-label': text })
@@ -20,7 +19,7 @@ export function ChartTooltip({ children, inline = false }: { children: ReactNode
   const [revision, setRevision] = useState(0)
   const [target, setTarget] = useState<HTMLElement | SVGElement | null>(null)
   const root = useRef<HTMLDivElement>(null)
-  const tip = useRef<HTMLDivElement>(null)
+  const tip = useRef<HTMLSpanElement>(null)
   const dismissedFocus = useRef<HTMLElement | SVGElement | null>(null)
   const leaving = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const cancelLeave = () => clearTimeout(leaving.current)
@@ -95,10 +94,11 @@ export function ChartTooltip({ children, inline = false }: { children: ReactNode
       onFocus={(e) => { dismissedFocus.current = null; setTarget(targetOf(e.target)) }}
       onBlur={(e) => setTarget(localTarget(e.relatedTarget))}>
       {children}
-      {target && createPortal(
-        <div ref={tip} className="chart-tip" role="tooltip" popover="manual" onMouseLeave={leave}>
+      {/* 元のランドマークと Dialog の中に保ち、切れ回避は popover の top layer に任せる。 */}
+      {target && (
+        <span ref={tip} className="chart-tip" role="tooltip" popover="manual" onMouseLeave={leave}>
           {target.getAttribute('aria-labelledby')?.split(/\s+/).map(id => spokenText(document.getElementById(id))).filter(Boolean).join('　') || target.getAttribute('data-chart-tip')}
-        </div>, target.closest('dialog') ?? document.body,
+        </span>
       )}
     </Tag>
   )
