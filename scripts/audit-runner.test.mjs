@@ -69,7 +69,7 @@ test('監査の排他と終了処理', async t => {
       const a = await fixture('a', 'console.log("版A"); setTimeout(()=>{},200)')
       const b = await fixture('b', 'console.log("版B")')
       const results = await Promise.all([run(a).done, run(b).done])
-      assert.equal(results[0].code, 0); assert.equal(results[1].code, 0)
+      assert.equal(results[0].code, 0, results[0].output); assert.equal(results[1].code, 0, results[1].output)
       for (const result of results) assert.match(result.output, /harness-metric: stage=audit-lock seconds=\d+\.\d{3}/)
       assert.match(results[0].output, /版A/); assert.match(results[1].output, /版B/)
       assert.ok(results.some(x => x.output.includes('他の監査を待機')))

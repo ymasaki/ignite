@@ -2,6 +2,12 @@
 
 採用アプリは `npx ignite upgrade ./vendor/次の版.tgz`（[採用手順](docs/adopting.md#更新を取り込む)）でこの内容を確かめて取り込む。形式は [docs/releasing.md](docs/releasing.md)。
 
+## 1.16.4（2026-11-14）
+
+### 修正
+
+- 開発・検証用の Playwright、Tabler Icons、Vitest と coverage、jscpd、および互換範囲の推移依存を更新した。Vitest の内部カバレッジライブラリは親の指定に合わせて 2.1.0 に揃える。公開 API・対応 Node.js・採用アプリの peer 依存範囲は維持する
+
 ## 1.16.3（2026-11-14）
 
 ### 修正
