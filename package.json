@@ -4,22 +4,45 @@
   "description": "Web・デスクトップのアプリで同じ見た目と使い勝手をそろえるデザインシステム",
   "type": "module",
   "license": "UNLICENSED",
-  "repository": { "type": "git", "url": "git+https://github.com/ymasaki/ignite.git" },
-  "publishConfig": { "registry": "https://npm.pkg.github.com" },
-  "engines": { "node": ">=22.12.0" },
-  "sideEffects": ["*.css"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ymasaki/ignite.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "sideEffects": [
+    "*.css"
+  ],
   "main": "./dist/index.js",
   "types": "./dist/src/index.d.ts",
-  "bin": { "ignite": "./dist/cli.js" },
+  "bin": {
+    "ignite": "./dist/cli.js"
+  },
   "exports": {
-    ".": { "types": "./dist/src/index.d.ts", "default": "./dist/index.js" },
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/index.js"
+    },
     "./styles.css": "./dist/styles.css",
     "./tokens.css": "./dist/tokens.css",
-    "./audit": { "types": "./dist/audit/index.d.ts", "default": "./dist/audit.js" },
+    "./audit": {
+      "types": "./dist/audit/index.d.ts",
+      "default": "./dist/audit.js"
+    },
     "./DESIGN.md": "./DESIGN.md",
     "./package.json": "./package.json"
   },
-  "files": ["dist", "DESIGN.md", "CHANGELOG.md", "docs", "templates"],
+  "files": [
+    "dist",
+    "DESIGN.md",
+    "CHANGELOG.md",
+    "docs",
+    "templates"
+  ],
   "scripts": {
     "build": "node scripts/build.mjs",
     "prepack": "node scripts/build.mjs",
@@ -42,8 +65,12 @@
     "react-dom": "^19.2.6"
   },
   "peerDependenciesMeta": {
-    "@axe-core/playwright": { "optional": true },
-    "@playwright/test": { "optional": true }
+    "@axe-core/playwright": {
+      "optional": true
+    },
+    "@playwright/test": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
@@ -53,7 +80,7 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@typescript-eslint/parser": "8.46.3",
-    "@vitejs/plugin-react": "^5.0.0",
+    "@vitejs/plugin-react": "^6.3.0",
     "@vitest/coverage-v8": "5.1.0",
     "esbuild": "0.28.2",
     "eslint": "9.39.5",
@@ -62,7 +89,7 @@
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "typescript": "5.9.3",
-    "vite": "^8.0.11",
+    "vite": "^8.3.8",
     "vitest": "5.1.0"
   },
   "overrides": {
