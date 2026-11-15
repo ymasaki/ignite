@@ -1,6 +1,6 @@
 /* ファイルを落とす場所（ui/FileDrop.tsx）。破線の枠のある部品（8 章: ホバーで枠と文字を主要色、押している間は地 --press）。角丸は入力欄と同じ 10px（面の中の枠に数えない。7 章） */
 .filedrop{display:block;width:100%}
-.fd-zone{display:grid;justify-items:center;gap:2px;width:100%;padding:var(--space-5) var(--space-4);border:1.5px dashed var(--line-2);border-radius:10px;background:var(--panel);color:var(--ink-2);font-size:var(--fs-13);text-align:center;cursor:pointer;
+.fd-zone{position:relative;display:grid;justify-items:center;gap:2px;width:100%;padding:var(--space-5) var(--space-4);border:1.5px dashed var(--line-2);border-radius:10px;background:var(--panel);color:var(--ink-2);font-size:var(--fs-13);text-align:center;cursor:pointer;
   transition:border-color var(--dur-fast) ease-out,background-color var(--dur-fast) ease-out}
 /* 文言の入れ替えや矢印の移動で dragenter / dragleave の対象を変えない。 */
 .fd-zone *{pointer-events:none}
@@ -20,3 +20,35 @@
 @keyframes fdLand{from{translate:0 -8px;opacity:.4}to{translate:0 0;opacity:1}}
 .filedrop.invalid .fd-zone{border-color:var(--danger)}
 .filedrop.off{opacity:.45;pointer-events:none}
+
+/* 送信の状態（upload）。待機の中身（見えなくする）と同じ場所に重ね、枠の高さを変えずに上下の中央へ置く */
+.fd-layer{grid-area:1/1;display:grid;justify-items:center;align-content:center;gap:2px;min-width:0;max-width:100%}
+.fd-layer.gone{visibility:hidden}
+.fd-state{animation:fdFade var(--dur-base) ease-out}
+@keyframes fdFade{from{opacity:0}to{opacity:1}}
+.fd-icon-box{display:grid;place-items:center;width:40px;height:40px;margin-bottom:var(--space-1)}
+.fd-icon-box > .fd-icon{margin-bottom:0}
+.filedrop.uploading .fd-zone{cursor:default}
+.filedrop.uploading .fd-zone:hover{border-color:var(--line-2);color:var(--ink-2)}
+.filedrop.uploading .fd-zone:active{background:var(--panel)}
+.fd-meta{display:flex;justify-content:center;max-width:100%;min-width:0;white-space:nowrap}
+.fd-name{display:flex;min-width:0}
+.fd-base{overflow:hidden;text-overflow:ellipsis}
+.fd-err{overflow:hidden;text-overflow:ellipsis;color:var(--danger)}
+/* 送信中の輪。棒は進み具合の棒と同じ --chart-1、中央に % の数字 */
+.fd-ring{position:relative;display:grid;place-items:center;width:40px;height:40px;animation:fdIn var(--dur-base) var(--ease-spring)}
+.fd-ring svg{position:absolute;inset:0;rotate:-90deg}
+.fd-ring circle{fill:none;stroke-width:3}
+.fd-ring-track{stroke:var(--line)}
+.fd-ring-bar{stroke:var(--chart-1);stroke-linecap:round;transition:stroke-dashoffset var(--dur-slow) var(--ease-in-out)}
+.fd-ring.unknown svg{animation:spin .9s linear infinite}
+.fd-ring-n{font-size:var(--fs-12);font-weight:700;color:var(--ink)}
+/* 完了は緑のチェック、失敗は赤の「!」が弾んで出る */
+.fd-icon.fd-done{background:var(--ok-ink);color:var(--panel);animation:fdIn var(--dur-slow) var(--ease-spring)}
+.fd-icon.fd-fail{background:var(--danger-soft);color:var(--danger);animation:fdIn var(--dur-slow) var(--ease-spring)}
+@keyframes fdIn{from{scale:.4;opacity:0}to{scale:1;opacity:1}}
+/* ドラッグ中のファイルのカード。カーソルの右下について動き、離すと丸へ吸い込まれる */
+.fd-chip{position:absolute;top:0;left:0;z-index:1;display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:10px;background:var(--panel);box-shadow:var(--shadow-2);color:var(--ink);font-size:var(--fs-13);font-weight:700;white-space:nowrap;
+  translate:var(--x,50%) var(--y,50%);rotate:-3deg;transition:translate 90ms ease-out,scale var(--dur-base) var(--ease-in-out),opacity var(--dur-base) var(--ease-in-out),rotate var(--dur-base) var(--ease-in-out);animation:fdChip var(--dur-base) var(--ease-spring)}
+@keyframes fdChip{from{scale:.6;opacity:0}to{scale:1;opacity:1}}
+.fd-chip.land{scale:.3;opacity:0;rotate:0deg;transition-duration:var(--dur-slow)}

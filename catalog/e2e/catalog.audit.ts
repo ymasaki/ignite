@@ -61,7 +61,10 @@ defineIgniteAudit({
     { name: '一覧の型（文字 特大）', path: '/?nav=list', assist: { text: 'larger' } },
     { name: '設定の型（コントラスト 強く）', path: '/?nav=settings&mode=dark', assist: { contrast: 'more', underline: true, focus: true } },
   ],
-  states: [{ name: '一覧: 状態を切り替える', path: '/?nav=list', before: '.lscreen-bar', act: (page) => page.getByRole('group', { name: '状態で絞り込む' }).getByRole('button', { name: '完了' }).click(), after: '.lscreen-bar' }],
+  states: [
+    { name: '一覧: 状態を切り替える', path: '/?nav=list', before: '.lscreen-bar', act: (page) => page.getByRole('group', { name: '状態で絞り込む' }).getByRole('button', { name: '完了' }).click(), after: '.lscreen-bar' },
+    { name: 'ファイル: 受け取って送信を始める', path: '/?nav=forms&spec=file', before: '.filedrop .fd-zone', act: (page) => page.locator('.filedrop input[type=file]').first().setInputFiles([{ name: 'brief.pdf', mimeType: 'application/pdf', buffer: Buffer.alloc(2_500_000) }]), after: '.filedrop .fd-zone' },
+  ],
   reveals: [{ name: 'プロジェクトの詳細', path: '/?nav=list&open=p1' }],
   hoverScreens: [{ name: 'プルダウンの一覧', path: '/?nav=forms', act: async (page) => { await page.getByRole('button', { name: /^並び順/ }).click(); await page.waitForTimeout(300) } }],
 })

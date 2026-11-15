@@ -6,7 +6,7 @@ Ignite 自身を変更するときの案内。デザインの規約は [DESIGN.m
 
 | 場所 | 持つもの | 境界 |
 |---|---|---|
-| `src/ui/`・`src/format/` | React の部品・配置計算・日付や検索の処理 | 業務の語・採用アプリのデータ型やコードを持たない |
+| `src/ui/`・`src/format/` | React の部品・配置計算・日付・検索・ファイルの大きさの処理 | 業務の語・採用アプリのデータ型やコードを持たない |
 | `src/styles/` | トークン・スキン・モード・部品の CSS | 読み順は `index.css`、層の規約は DESIGN 0 章 |
 | `src/skin.ts`・`src/assist.ts`・`src/contrast.ts` | テーマ・表示の補助・コントラストの測定規則 | 部品と監査で共通の定義を使う |
 | `cli/` | `init`・`check`・`sync`・`upgrade`・`version` | 採用アプリのソースや設定を扱う Node.js 用の入口 |

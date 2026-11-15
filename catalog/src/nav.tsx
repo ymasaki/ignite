@@ -81,6 +81,7 @@ export const PAGES: PageDef[] = [
     { id: 'otp', title: '確認コード', parts: ['OtpField'] },
     { id: 'password', title: 'パスワードの強さ', parts: ['PasswordStrength'] },
     { id: 'file', title: 'ファイル', parts: ['FileDrop'] },
+    { id: 'fileupload', title: 'ファイルの送信', parts: ['FileDrop'] },
     { id: 'scrubber', title: 'なぞって決める', parts: ['Scrubber'] },
     { id: 'error', title: 'エラーの状態', parts: ['focusFirstInvalid'] },
   ] },

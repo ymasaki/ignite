@@ -1807,7 +1807,9 @@ test('FileDrop: Enter とラベルのクリックで選ぶ画面を開き、種�
     { name: '見積.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF') },
     { name: 'メモ.txt', mimeType: 'text/plain', buffer: Buffer.from('x') },
   ])
-  await expect(page.getByText('見積.pdf')).toBeVisible()
+  // 受け取ったファイルは同じ枠の中で送信に進み、名前が出る（見本は小さいのですぐ終わる）
+  await expect(zone.locator('.fd-name')).toHaveText('見積.pdf')
+  await expect(zone.locator('.fd-state .fd-t')).toHaveText('送信しました')
   await expect(page.getByText('メモ.txt')).toHaveCount(0)
   await expect(page.getByText('1 件は追加できません（種類か大きさ）')).toBeVisible()
   const pick = (await zone.locator('.fd-pick').boundingBox())!
@@ -1830,7 +1832,7 @@ test('FileDrop: 持って来ると枠が変わり、落とすと受け取る', a
   await expect(page.locator('.filedrop.over')).toHaveCount(1)
   await zone.dispatchEvent('drop', { dataTransfer: data })
   await expect(page.locator('.filedrop.over')).toHaveCount(0)
-  await expect(page.getByText('図.png')).toBeVisible()
+  await expect(zone.locator('.fd-name')).toHaveText('図.png')
 })
 
 test('FileDrop: ラベルとアイコン上のファイルドラッグを保ち、退出・再進入できる', async ({ page }, testInfo) => {
@@ -1864,7 +1866,7 @@ test('FileDrop: ラベルとアイコン上のファイルドラッグを保ち�
     await expect(page.locator('.filedrop.over')).toHaveCount(1)
     await expect(zone.locator('.rword > .sr-only')).toHaveText('ここで離す')
   }
-  expect(await page.locator('.filedrop').getAttribute('data-drag-classes')).toBe('filedrop|')
+  expect(await zone.locator('xpath=..').getAttribute('data-drag-classes')).toBe('filedrop|')
   await zone.screenshot({ path: testInfo.outputPath('filedrop-over.png') })
   const box = (await zone.boundingBox())!
   await cdp.send('Input.dispatchDragEvent', { type: 'dragOver', x: box.x - 10, y: box.y - 10, data })
@@ -1876,7 +1878,7 @@ test('FileDrop: ラベルとアイコン上のファイルドラッグを保ち�
   await expect(page.locator('.filedrop.over')).toHaveCount(1)
   await cdp.send('Input.dispatchDragEvent', { type: 'drop', ...label, data })
   await expect(page.locator('.filedrop.over')).toHaveCount(0)
-  await expect(page.getByText('ドラッグ.pdf')).toBeVisible()
+  await expect(zone.locator('.fd-name')).toHaveText('ドラッグ.pdf')
   await cdp.detach()
 })
 
@@ -1919,4 +1921,55 @@ test('検索欄の印: ショートカットで移ると、キーを離すまで
   await expect(page.locator('.kbd-key.down')).toHaveCount(1)
   await page.keyboard.up('f')
   await expect(page.locator('.kbd-key.down')).toHaveCount(0)
+})
+
+test('FileDrop: ドラッグ中はファイルのカードがつき、離すと同じ枠で送信中の輪から「送信しました」へ変わる', async ({ page }) => {
+  await open(page, 'forms')
+  const zone = page.getByRole('button', { name: '添付', exact: true })
+  await zone.scrollIntoViewIfNeeded()
+  const height = (await zone.boundingBox())!.height
+  await page.evaluate(() => {
+    const w = window as unknown as { notes: string[] }
+    w.notes = []
+    new MutationObserver(() => {
+      for (const el of document.querySelectorAll('[aria-live]')) if (el.textContent && !w.notes.includes(el.textContent)) w.notes.push(el.textContent)
+    }).observe(document.body, { subtree: true, childList: true, characterData: true })
+  })
+  const data = await page.evaluateHandle(() => {
+    const dt = new DataTransfer()
+    dt.items.add(new File([new Uint8Array(2_500_000)], 'brief.pdf', { type: 'application/pdf' }))
+    return dt
+  })
+  const box = (await zone.boundingBox())!
+  const at = { clientX: box.x + box.width * 0.6, clientY: box.y + box.height * 0.5 }
+  await zone.dispatchEvent('dragenter', { dataTransfer: data, ...at })
+  await zone.dispatchEvent('dragover', { dataTransfer: data, ...at })
+  // ブラウザは離すまで名前を見せないので、カードは種類を出す
+  const chip = zone.locator('.fd-chip')
+  await expect(chip).toHaveText('PDF')
+  await zone.dispatchEvent('drop', { dataTransfer: data, ...at })
+  await expect(chip).toHaveCount(0)
+  const state = zone.locator('.fd-state')
+  await expect(state.locator('.fd-t')).toHaveText('送信中')
+  await expect(state.locator('.fd-ring')).toBeVisible()
+  await expect(state.locator('.fd-name')).toHaveText('brief.pdf')
+  await expect(zone).toHaveAttribute('aria-disabled', 'true')
+  expect((await zone.boundingBox())!.height).toBe(height)
+  await expect(state.locator('.fd-t')).toHaveText('送信しました', { timeout: 15000 })
+  await expect(state.locator('.fd-done')).toBeVisible()
+  await expect(state.locator('.fd-meta')).toHaveText('brief.pdf・2.4MB')
+  expect((await zone.boundingBox())!.height).toBe(height)
+  await expect(zone).not.toHaveAttribute('aria-disabled', 'true')
+  await expect.poll(() => page.evaluate(() => (window as unknown as { notes: string[] }).notes)).toEqual(expect.arrayContaining(['brief.pdf を送信しています', 'brief.pdf を送信しました']))
+})
+
+test('FileDrop: 送れなかったときは赤い印と理由を出し、押すと選び直せる', async ({ page }) => {
+  await open(page, 'forms')
+  const zone = page.getByRole('button', { name: '送れなかったファイル' })
+  await zone.scrollIntoViewIfNeeded()
+  await expect(zone.locator('.fd-fail')).toBeVisible()
+  await expect(zone.locator('.fd-state .fd-t')).toHaveText('送信できませんでした')
+  await expect(zone.locator('.fd-err')).toHaveText('通信が切れました')
+  const [chooser] = await Promise.all([page.waitForEvent('filechooser'), zone.click()])
+  await chooser.setFiles([])
 })

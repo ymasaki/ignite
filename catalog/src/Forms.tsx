@@ -1,5 +1,5 @@
-import { Avatar, Button, Checkbox, Chip, Combobox, DatePicker, FileDrop, focusFirstInvalid, FormField, LinkButton, NumberField, OtpField, PasswordField, PasswordStrength, RadioGroup, Scrubber, SearchField, SearchSuggest, Select, Switch, Tag, TextArea, type SuggestGroup, TextField, toast } from '@ymasaki/ignite'
-import { useMemo, useRef, useState, type ReactNode } from 'react'
+import { Avatar, Button, Checkbox, Combobox, DatePicker, FileDrop, type FileUpload, focusFirstInvalid, FormField, LinkButton, NumberField, OtpField, PasswordField, PasswordStrength, RadioGroup, Scrubber, SearchField, SearchSuggest, Select, Switch, Tag, TextArea, type SuggestGroup, TextField, toast } from '@ymasaki/ignite'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useTick } from './Controls'
 import { PROJECTS } from './data'
 import { Case, Cases, Page, Spec } from './kit'
@@ -43,13 +43,39 @@ function PasswordDemo() {
   )
 }
 
-/** ファイルを受け取り、名前を取り消せるタグで並べる */
+/** ファイルを受け取り、枠の中で送信の進み具合と完了を見せる（見本の擬似送信。大きさに応じて刻む） */
 function FileDemo() {
-  const [files, setFiles] = useState<string[]>([])
+  const [upload, setUpload] = useState<FileUpload | null>(null)
+  const busy = upload?.status === 'uploading'
+  useEffect(() => {
+    if (!busy) return
+    const t = setInterval(() => setUpload((u) => {
+      if (!u) return u
+      const loaded = Math.min(u.total, u.loaded + Math.max(u.total / 12, 64 * 1024))
+      return loaded >= u.total ? { ...u, loaded, status: 'done' } : { ...u, loaded }
+    }), 250)
+    return () => clearInterval(t)
+  }, [busy])
   return (
     <div className="cat-form">
-      <FormField label="添付"><FileDrop accept=".pdf,image/*" maxSize={10 * 1024 * 1024} hint={<span>PDF・画像、10MB まで</span>} onFiles={(ok, ng) => { setFiles([...files, ...ok.map((f) => f.name)]); if (ng.length) toast(`${ng.length} 件は追加できません（種類か大きさ）`, { tone: 'danger' }) }} /></FormField>
-      {!!files.length && <div className="cat-row">{files.map((n, i) => <Chip key={`${n}-${i}`} removeLabel={`${n} を外す`} removeTip="外す" onRemove={() => setFiles(files.filter((_, j) => j !== i))}>{n}</Chip>)}</div>}
+      <FormField label="添付">
+        <FileDrop accept=".pdf,image/*" maxSize={10 * 1024 * 1024} hint={<span>PDF・画像、10MB まで</span>} upload={upload} onFiles={(ok, ng) => {
+          if (ok.length) setUpload({ name: ok.length === 1 ? ok[0].name : `${ok.length} 件のファイル`, loaded: 0, total: ok.reduce((n, f) => n + f.size, 0) || 1, status: 'uploading' })
+          if (ng.length) toast(`${ng.length} 件は追加できません（種類か大きさ）`, { tone: 'danger' })
+        }} />
+      </FormField>
+    </div>
+  )
+}
+
+/** 送信の状態ごとの枠 */
+function FileStatesDemo() {
+  const total = 2.4 * 1024 * 1024
+  return (
+    <div className="cat-form">
+      <Case label="送信中" fill><FileDrop label="送信中のファイル" hint="PDF・画像、10MB まで" upload={{ name: 'brief.pdf', loaded: total * 0.42, total }} onFiles={() => {}} /></Case>
+      <Case label="送信しました" fill><FileDrop label="送信したファイル" hint="PDF・画像、10MB まで" upload={{ name: 'brief.pdf', loaded: total, total, status: 'done' }} onFiles={() => {}} /></Case>
+      <Case label="送れなかった" fill><FileDrop label="送れなかったファイル" hint="PDF・画像、10MB まで" upload={{ name: 'brief.pdf', loaded: 0, total, status: 'error', error: '通信が切れました' }} onFiles={() => toast('選び直しました')} /></Case>
     </div>
   )
 }
@@ -146,6 +172,7 @@ export function FormsPage({ target }: { target?: string | null }) {
       <Spec page={p} id="otp"><OtpDemo /></Spec>
       <Spec page={p} id="password"><PasswordDemo /></Spec>
       <Spec page={p} id="file"><FileDemo /></Spec>
+      <Spec page={p} id="fileupload"><FileStatesDemo /></Spec>
       <Spec page={p} id="scrubber">
         <div className="cat-form">
           <Scrubber label="明るさ" value={light} onChange={setLight} unit="%" ticks={3} />
