@@ -63,7 +63,7 @@ export function SetupPage({ target }: { target?: string | null }) {
     <Page page={p} target={target}>
       <Spec page={p} id="need">
         <KeyValues rows={[
-          ['Node.js', '22.12.0 以上'],
+          ['Node.js', '22.13.0 以上'],
           ['画面', 'React・react-dom'],
           ['アイコン', '@tabler/icons-react'],
           ['監査', '@playwright/test・@axe-core/playwright'],

@@ -16,7 +16,7 @@ Web アプリで同じ見た目・使い勝手・UX をそろえるデザイン�
 
 ## 使い始める
 
-[docs/adopting.md](docs/adopting.md) を見てください。Node.js 22.12.0 以上を用意し、GitHub Release の固定版アーカイブを取得して、SHA256 と元コミットを確認します。相対 `vendor/` からの導入・初期化は採用手順に沿って進めてください。
+[docs/adopting.md](docs/adopting.md) を見てください。Node.js 22.13.0 以上を用意し、GitHub Release の固定版アーカイブを取得して、SHA256 と元コミットを確認します。相対 `vendor/` からの導入・初期化は採用手順に沿って進めてください。
 
 更新時も [固定版の更新手順](docs/adopting.md#更新を取り込む)で次版のアーカイブを指定します。規約だけの同期は `npm run ignite:sync` です。
 

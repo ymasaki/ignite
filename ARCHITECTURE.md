@@ -43,7 +43,7 @@ Ignite 自身を変更するときの案内。デザインの規約は [DESIGN.m
 
 ## 変更と確認の対応
 
-開発には Node.js 22.12.0 以上と `bash scripts/setup.sh` を使う。依存の導入前に、共通Gitディレクトリへ完成済みの pre-commit 入口を排他的に配置する。別のhookや `core.hooksPath` があれば上書きせず停止する。コミット時は同じ入口の `--commit` がステージした全内容（skip-worktreeを含む）を一時コピーへ取り出して空白と型を検査し、成功・失敗時にコピーを消す。依存はそのworktreeのものを利用し、定義変更時の再導入と全件確認は取り込み前に行う。全件成功票は作らない。必須の一括確認は `bash scripts/test.sh`（`devboard.json` の `workflow.test` と同じ）。途中の確認には次の対応を使い、一括確認の代わりにはしない。
+開発には Node.js 22.13.0 以上と `bash scripts/setup.sh` を使う。依存の導入前に、共通Gitディレクトリへ完成済みの pre-commit 入口を排他的に配置する。別のhookや `core.hooksPath` があれば上書きせず停止する。コミット時は同じ入口の `--commit` がステージした全内容（skip-worktreeを含む）を一時コピーへ取り出して空白と型を検査し、成功・失敗時にコピーを消す。依存はそのworktreeのものを利用し、定義変更時の再導入と全件確認は取り込み前に行う。全件成功票は作らない。必須の一括確認は `bash scripts/test.sh`（`devboard.json` の `workflow.test` と同じ）。途中の確認には次の対応を使い、一括確認の代わりにはしない。
 
 | 変更 | 関連する確認 |
 |---|---|
