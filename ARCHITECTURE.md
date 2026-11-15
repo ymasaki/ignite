@@ -48,6 +48,7 @@ Ignite 自身を変更するときの案内。デザインの規約は [DESIGN.m
 | 変更 | 関連する確認 |
 |---|---|
 | 部品・トークン・公開 API | `npm run typecheck`、`npm test -- --maxWorkers=2`。`tests/coverage.test.ts` が DESIGN・公開入口・カタログの載せ漏れを検査する |
+| UIの状態・通知・後片付け | `tests/ui-*.test.tsx` は各テストの `@vitest-environment jsdom` と `tests/dom.tsx` で、ウィンドウを開かずに実行する。`npm test -- --maxWorkers=2` と既存の行カバレッジ計測の両方で動く。寸法・Observer・アニメーションの代替はテスト内だけに置き、実描画・実入力は下記のカタログE2Eで確認する |
 | キー操作・フォーカス・描画 | `catalog/e2e/parts.e2e.ts` とカタログ監査。例: `npm run audit:design -- --grep DatePicker` |
 | 静的検査 | `tests/check.test.ts`・`tests/staged.test.ts` と、ビルド後の `npm run check:design` |
 | 初期化・同期・更新 | `tests/cli.test.ts` と `npm run smoke` |
