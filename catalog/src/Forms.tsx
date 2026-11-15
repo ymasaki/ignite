@@ -48,7 +48,7 @@ function FileDemo() {
   const [files, setFiles] = useState<string[]>([])
   return (
     <div className="cat-form">
-      <FormField label="添付"><FileDrop accept=".pdf,image/*" maxSize={10 * 1024 * 1024} hint="PDF・画像、10MB まで" onFiles={(ok, ng) => { setFiles([...files, ...ok.map((f) => f.name)]); if (ng.length) toast(`${ng.length} 件は追加できません（種類か大きさ）`, { tone: 'danger' }) }} /></FormField>
+      <FormField label="添付"><FileDrop accept=".pdf,image/*" maxSize={10 * 1024 * 1024} hint={<span>PDF・画像、10MB まで</span>} onFiles={(ok, ng) => { setFiles([...files, ...ok.map((f) => f.name)]); if (ng.length) toast(`${ng.length} 件は追加できません（種類か大きさ）`, { tone: 'danger' }) }} /></FormField>
       {!!files.length && <div className="cat-row">{files.map((n, i) => <Chip key={`${n}-${i}`} removeLabel={`${n} を外す`} removeTip="外す" onRemove={() => setFiles(files.filter((_, j) => j !== i))}>{n}</Chip>)}</div>}
     </div>
   )

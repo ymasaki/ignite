@@ -2,6 +2,8 @@
 .filedrop{display:block;width:100%}
 .fd-zone{display:grid;justify-items:center;gap:2px;width:100%;padding:var(--space-5) var(--space-4);border:1.5px dashed var(--line-2);border-radius:10px;background:var(--panel);color:var(--ink-2);font-size:var(--fs-13);text-align:center;cursor:pointer;
   transition:border-color var(--dur-fast) ease-out,background-color var(--dur-fast) ease-out}
+/* 文言の入れ替えや矢印の移動で dragenter / dragleave の対象を変えない。 */
+.fd-zone *{pointer-events:none}
 .fd-zone:hover{border-color:var(--pri);color:var(--pri-ink)}
 .fd-zone:active{background:var(--press)}
 .fd-zone:focus-visible{outline:2px solid var(--focus);outline-offset:2px}

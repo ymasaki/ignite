@@ -51,6 +51,7 @@ export { Accordion, Menu, Pagination, type AccordionItem, type MenuItem } from '
 export { ProgressBar, Spinner, Steps } from './ui/Progress'
 export { KeyCaps, ariaShortcut, matchShortcut, parseShortcut, shortcutCaps, useShortcut, type ParsedShortcut } from './ui/Shortcut'
 export { TipGroup } from './ui/TipGroup'
+// ラベルや矢印の上でも、外枠でドラッグを受け続ける。
 export { FileDrop, acceptFile, splitFiles } from './ui/FileDrop'
 export { OtpField, otpDigits } from './ui/OtpField'
 export { PASSWORD_WORDS, PasswordStrength, passwordStrength, type PasswordScore } from './ui/PasswordStrength'

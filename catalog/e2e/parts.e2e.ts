@@ -1,3 +1,4 @@
+import { writeFile } from 'node:fs/promises'
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from './test'
 
@@ -1735,7 +1736,7 @@ test('PasswordStrength: 打つたびに強さが変わり、言葉が読み上�
   await expect(page.locator('.pwstr-bars > span.on')).toHaveCount(4)
 })
 
-test('FileDrop: Enter で選ぶ画面を開き、種類が合うものだけを受け取る', async ({ page }) => {
+test('FileDrop: Enter とラベルのクリックで選ぶ画面を開き、種類が合うものだけを受け取る', async ({ page }) => {
   await open(page, 'forms')
   const zone = page.getByRole('button', { name: '添付' })
   await zone.focus()
@@ -1747,6 +1748,12 @@ test('FileDrop: Enter で選ぶ画面を開き、種類が合うものだけを�
   await expect(page.getByText('見積.pdf')).toBeVisible()
   await expect(page.getByText('メモ.txt')).toHaveCount(0)
   await expect(page.getByText('1 件は追加できません（種類か大きさ）')).toBeVisible()
+  const pick = (await zone.locator('.fd-pick').boundingBox())!
+  const [clicked] = await Promise.all([
+    page.waitForEvent('filechooser'),
+    page.mouse.click(pick.x + pick.width / 2, pick.y + pick.height / 2),
+  ])
+  await clicked.setFiles([])
 })
 
 test('FileDrop: 持って来ると枠が変わり、落とすと受け取る', async ({ page }) => {
@@ -1762,6 +1769,53 @@ test('FileDrop: 持って来ると枠が変わり、落とすと受け取る', a
   await zone.dispatchEvent('drop', { dataTransfer: data })
   await expect(page.locator('.filedrop.over')).toHaveCount(0)
   await expect(page.getByText('図.png')).toBeVisible()
+})
+
+test('FileDrop: ラベルとアイコン上のファイルドラッグを保ち、退出・再進入できる', async ({ page }, testInfo) => {
+  await open(page, 'forms')
+  const zone = page.getByRole('button', { name: '添付' })
+  await zone.scrollIntoViewIfNeeded()
+  const file = testInfo.outputPath('ドラッグ.pdf')
+  await writeFile(file, '%PDF')
+  const cdp = await page.context().newCDPSession(page)
+  const data = { items: [], files: [file], dragOperationsMask: 1 }
+  const point = async (selector: string) => {
+    const box = (await zone.locator(selector).boundingBox())!
+    return { x: box.x + box.width / 2, y: box.y + box.height / 2 }
+  }
+  const label = await point('.fd-t')
+  await zone.evaluate((el) => {
+    const root = el.parentElement!
+    root.dataset.dragClasses = ''
+    new MutationObserver((records) => {
+      for (const record of records) root.dataset.dragClasses += `${record.oldValue}|`
+    }).observe(root, { attributes: true, attributeFilter: ['class'], attributeOldValue: true })
+  })
+  await cdp.send('Input.dispatchDragEvent', { type: 'dragEnter', ...label, data })
+  await expect(page.locator('.filedrop.over')).toHaveCount(1)
+  for (const selector of ['.fd-t', '.fd-icon', '.fd-hint', '.fd-pick', '.fd-t']) {
+    const at = await point(selector)
+    await cdp.send('Input.dispatchDragEvent', { type: 'dragOver', ...at, data })
+    // DOM の入れ替え・矢印の移動中も、枠自身が当たり判定を持つ。
+    expect(await zone.evaluate((el, p) => document.elementFromPoint(p.x, p.y) === el, at)).toBe(true)
+    await page.waitForTimeout(400)
+    await expect(page.locator('.filedrop.over')).toHaveCount(1)
+    await expect(zone.locator('.rword > .sr-only')).toHaveText('ここで離す')
+  }
+  expect(await page.locator('.filedrop').getAttribute('data-drag-classes')).toBe('filedrop|')
+  await zone.screenshot({ path: testInfo.outputPath('filedrop-over.png') })
+  const box = (await zone.boundingBox())!
+  await cdp.send('Input.dispatchDragEvent', { type: 'dragOver', x: box.x - 10, y: box.y - 10, data })
+  await expect(page.locator('.filedrop.over')).toHaveCount(0)
+  await expect(zone.locator('.rword > .sr-only')).toHaveText('ファイルをドロップ')
+  await expect(zone.locator('.rw-out')).toHaveCount(0)
+  await zone.screenshot({ path: testInfo.outputPath('filedrop-idle.png') })
+  await cdp.send('Input.dispatchDragEvent', { type: 'dragOver', ...label, data })
+  await expect(page.locator('.filedrop.over')).toHaveCount(1)
+  await cdp.send('Input.dispatchDragEvent', { type: 'drop', ...label, data })
+  await expect(page.locator('.filedrop.over')).toHaveCount(0)
+  await expect(page.getByText('ドラッグ.pdf')).toBeVisible()
+  await cdp.detach()
 })
 
 test('Scrubber: キーで刻み・10 倍・端へ動き、押した位置へ飛ぶ', async ({ page }) => {
