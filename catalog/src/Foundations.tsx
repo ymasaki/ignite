@@ -1,5 +1,5 @@
 import { IconBell, IconChartBar, IconCheck, IconPencil, IconSearch, IconSettings, IconTrash, IconUsers } from '@tabler/icons-react'
-import { AnimatedList, Appear, Avatar, Button, Code, Collapse, CollapseInline, CopyText, EntityRow, Expandable, KeyValues, MonthStepper, Prose, RollingNumber, Skeleton, Stat, Switch } from '@ymasaki/ignite'
+import { AnimatedList, Appear, Avatar, Button, Code, Collapse, CollapseInline, CopyText, EntityRow, Expandable, KeyValues, MonthStepper, Prose, RollingNumber, RollingWord, Skeleton, Stat, Switch, WaveText } from '@ymasaki/ignite'
 import { useState } from 'react'
 import { STEPPER_MONTHS, MONTHS, PROJECTS } from './data'
 import { Case, Cases, Page, Spec } from './kit'
@@ -93,6 +93,8 @@ export function MotionPage({ target }: { target?: string | null }) {
   const [count, setCount] = useState(2)
   const [month, setMonth] = useState(MONTHS[MONTHS.length - 1])
   const [loaded, setLoaded] = useState(false)
+  const [save, setSave] = useState(0)
+  const SAVE = ['未保存', '保存中', '保存しました'] as const
   return (
     <Page page={p} target={target}>
       <Spec page={p} id="rolling">
@@ -130,6 +132,17 @@ export function MotionPage({ target }: { target?: string | null }) {
           {loaded ? <Appear><KeyValues rows={[['担当', '佐藤 葵'], ['期限', '2026年11月']]} /></Appear> : <Skeleton lines={2} heading={false} />}
         </div>
         <div className="cat-row"><Button onClick={() => setLoaded(!loaded)}>{loaded ? '読み込みに戻す' : '読み込みを終える'}</Button></div>
+      </Spec>
+      <Spec page={p} id="word">
+        <Cases>
+          <Case label="状態の語"><span className="cat-row"><Button onClick={() => setSave((save + 1) % 3)}>状態を進める</Button><span>下書き: <b><RollingWord>{SAVE[save]}</RollingWord></b></span></span></Case>
+        </Cases>
+      </Spec>
+      <Spec page={p} id="wave">
+        <Cases>
+          <Case label="読み込み中"><WaveText>読み込んでいます</WaveText></Case>
+          <Case label="処理中"><WaveText>集計しています…</WaveText></Case>
+        </Cases>
       </Spec>
     </Page>
   )

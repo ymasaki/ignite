@@ -1,0 +1,20 @@
+/* ファイルを落とす場所（ui/FileDrop.tsx）。破線の枠のある部品（8 章: ホバーで枠と文字を主要色、押している間は地 --press）。角丸は入力欄と同じ 10px（面の中の枠に数えない。7 章） */
+.filedrop{display:block;width:100%}
+.fd-zone{display:grid;justify-items:center;gap:2px;width:100%;padding:var(--space-5) var(--space-4);border:1.5px dashed var(--line-2);border-radius:10px;background:var(--panel);color:var(--ink-2);font-size:var(--fs-13);text-align:center;cursor:pointer;
+  transition:border-color var(--dur-fast) ease-out,background-color var(--dur-fast) ease-out}
+.fd-zone:hover{border-color:var(--pri);color:var(--pri-ink)}
+.fd-zone:active{background:var(--press)}
+.fd-zone:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.fd-icon{display:grid;place-items:center;width:40px;height:40px;margin-bottom:var(--space-1);border-radius:50%;background:var(--panel-2);color:var(--ink-2);transition:translate var(--dur-slow) var(--ease-spring),background-color var(--dur-fast) ease-out,color var(--dur-fast) ease-out}
+.fd-t{font-weight:700;color:var(--ink)}
+.fd-sub{color:var(--ink-3)}
+.fd-pick{margin-left:4px;font-weight:600;color:var(--link)}
+.fd-hint{margin-top:var(--space-1);font-size:var(--fs-12);color:var(--ink-3)}
+/* 持って来ているあいだ: 枠と地を主要色にし、矢印を持ち上げる */
+.filedrop.over .fd-zone{border-style:solid;border-color:var(--pri);background:var(--pri-soft)}
+.filedrop.over .fd-icon{translate:0 -4px;background:var(--pri-soft-2);color:var(--pri-ink-2)}
+/* 受け取った直後: 矢印が上から落ちて、少し沈んでから収まる */
+.fd-icon.landed{animation:fdLand var(--dur-slow) var(--ease-spring)}
+@keyframes fdLand{from{translate:0 -8px;opacity:.4}to{translate:0 0;opacity:1}}
+.filedrop.invalid .fd-zone{border-color:var(--danger)}
+.filedrop.off{opacity:.45;pointer-events:none}

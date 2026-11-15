@@ -139,6 +139,14 @@ export function useFocusShortcut(ref: { current: HTMLInputElement | null }, enab
         e.preventDefault()
         input.focus()
         input.select()
+        // 欄の右端の印（F / ⌘K）を、キーを離すまで沈める（Button の shortcut のキャップと同じ手応え）
+        const kbd = input.parentElement?.querySelector<HTMLElement>(':scope > .kbd-key')
+        if (kbd) {
+          kbd.classList.add('down')
+          const release = () => (kbd.classList.remove('down'), window.removeEventListener('keyup', release))
+          window.addEventListener('keyup', release)
+          window.setTimeout(release, 400)
+        }
       })
     }
     const entry = { ref, priority, seq: ++shortcutSeq }

@@ -53,12 +53,16 @@ export function RadioGroup<T extends string>({ value, options, onChange, label, 
   )
 }
 
-/** 押すとすぐ効く入/切（保存のボタンのある画面では Checkbox を使う）。つまみが --ease-spring で動く */
+/** 押すとすぐ効く入/切（保存のボタンのある画面では Checkbox を使う）。つまみが --ease-spring で動き、入になると止まったつまみにチェックを描く */
 export function Switch({ checked, onChange, label, hideLabel = false, disabled = false }: { checked: boolean; onChange: (v: boolean) => void; label?: string; hideLabel?: boolean; disabled?: boolean }) {
   const f = useField(label)
   return (
     <button type="button" role="switch" className="switch" id={f.id} aria-checked={checked} aria-label={hideLabel ? f.label : undefined} aria-describedby={f.describedBy} aria-invalid={f.invalid || undefined} disabled={disabled} onClick={() => onChange(!checked)}>
-      <span className="sw-track" aria-hidden="true"><span className="sw-thumb" /></span>
+      <span className="sw-track" aria-hidden="true">
+        <span className="sw-thumb">
+          <svg viewBox="0 0 16 16"><path d="M4.6 8.4 7 10.7l4.4-5" pathLength={1} /></svg>
+        </span>
+      </span>
       {!hideLabel && <span>{f.label}</span>}
     </button>
   )

@@ -1,0 +1,22 @@
+/* 帯をなぞって数を決める（ui/Scrubber.tsx）。高さと角丸は入力欄と同じ（36px・10px）。枠のある部品として、ホバーで枠を主要色にする。
+   値までの地は --pri-soft、位置の線は --pri。ホバー・フォーカス・ドラッグ中は線がつまみ（地の色の縁つき）に膨らむ（--ease-spring） */
+.scrubber{position:relative;display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);width:100%;height:36px;padding:0 12px;overflow:hidden;border:1px solid var(--line-2);border-radius:10px;background:var(--panel);font-size:var(--fs-13);cursor:ew-resize;touch-action:none;user-select:none;--scrub:0;
+  transition:border-color var(--dur-fast) ease-out}
+.scrubber:hover{border-color:var(--pri)}
+.scrubber:focus-visible{outline:none;border-color:var(--focus);box-shadow:0 0 0 3px var(--focus-ring)}
+:root[data-input="pointer"]:not([data-focus="always"]) .scrubber:focus-visible{box-shadow:none}
+.scr-fill{position:absolute;inset:0 auto 0 0;width:calc(var(--scrub) * 100%);background:var(--pri-soft);pointer-events:none}
+.scrubber:is(:active,.drag) .scr-fill{background:var(--pri-soft-2)}
+.scr-ticks{position:absolute;inset:0;pointer-events:none}
+.scr-ticks > i{position:absolute;bottom:6px;width:1px;height:6px;background:var(--line-2)}
+.scr-thumb{position:absolute;top:50%;width:2px;height:18px;border-radius:99px;background:var(--pri);translate:-50% -50%;pointer-events:none;
+  transition:width var(--dur-base) var(--ease-spring),height var(--dur-base) var(--ease-spring),box-shadow var(--dur-fast) ease-out}
+.scrubber:is(:hover,:focus-visible,.drag) .scr-thumb{width:6px;height:24px;box-shadow:0 0 0 2px var(--panel)}
+/* 位置。端では、つまみを帯の内側に収める（半分が枠の外で切れないように） */
+.scr-thumb{left:clamp(4px,calc(var(--scrub) * 100%),calc(100% - 4px))}
+.scr-label,.scr-value{position:relative;z-index:1;pointer-events:none;white-space:nowrap}
+.scr-label{min-width:0;overflow:hidden;text-overflow:ellipsis;color:var(--ink-2)}
+.scr-value{margin-left:auto;font-family:var(--font-num);font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink)}
+.scrubber.invalid{border-color:var(--danger)}
+.scrubber.off{opacity:.45;pointer-events:none;cursor:default}
+@media (forced-colors: active){.scr-fill{background:Highlight;opacity:.35}.scr-thumb{background:Highlight}}

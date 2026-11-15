@@ -303,6 +303,7 @@
 - 例外：読み込み中の光（`Skeleton`、1.4s の繰り返し）、ツールチップは 0.25s 待ってから出す。
 - 画面の途中に要素が差し込まれて下が押し下げられるときは `Collapse` で包む。読み込み中 → 中身は `Skeleton` → `Appear`。開閉は `Expandable`。画面側で独自のアニメーションを書かず、部品を使う。
 - 閉じるものは「縮めるアニメーションを見せてから閉じる」。
+- 文字の入れ替えは、数字は `RollingNumber`、語は `RollingWord`。待ちの文は `WaveText`（1.6s の繰り返し。`Skeleton` と同じく例外）。
 
 ## 7. 部品
 
@@ -313,23 +314,29 @@
 
 | 部品 | ファイル / CSS | 使いどころ・決まり |
 |---|---|---|
-| `Button` | `Button.tsx` / `button.css` | 通常と `variant="primary"`（1 画面に 1 つまで）、`variant="danger"`（取り消せない操作の確定だけ。一覧の行などに常に並べない）。`active` で押し込まれた状態、`icon` で先頭のアイコン、`loading` で処理中（アイコンが回転に替わり、フォーカスを保ったまま押せなくなる）、`type="submit"` はフォームを送る（処理中は送らない） |
+| `Button` | `Button.tsx` / `button.css` | 通常と `variant="primary"`（1 画面に 1 つまで）、`variant="danger"`（取り消せない操作の確定だけ。一覧の行などに常に並べない）。`active` で押し込まれた状態、`icon` で先頭のアイコン、`loading` で処理中（アイコンが回転に替わり、フォーカスを保ったまま押せなくなる）、`type="submit"` はフォームを送る（処理中は送らない。文字のある送信のボタンの `loading` は、幅を保ったまま文字を上へ抜き、中央の回転でボタンそのものを待ちの印にする）。`shortcut`（`mod+k`・`shift+n`・`e`。`mod` は Mac で ⌘、ほかで Ctrl）で右にキーのキャップを添え、そのキーで押す（`aria-keyshortcuts`）。押しているキーのキャップは 1px 沈んで影が消え、ボタンも押した形になる。修飾キーのない 1 文字は入力中と設定で切ったときは受けず、キャップも出さない。押せない・見えない・開いた窓の外のボタンは受けない |
+| `KeyCaps` / `useShortcut` | `Shortcut.tsx` / `button.css` | キーのキャップの並び（飾り）/ ショートカットを受けて要素を押し、押しているキーを返す（`Button` の `shortcut` の下の仕組み）。書き方の読み取りは `parseShortcut`、照合は `matchShortcut`、キャップの文字は `shortcutCaps`、読み上げの形は `ariaShortcut`。キーボードのない端末ではキャップを出さない |
 | `IconButton` | 同上 | アイコンだけのボタン。`label` は必須（`aria-label` と `data-tip` になる）。`size="lg"` はヘッダー。置き場所で大きさ・枠・角丸を変えるときは `--icon-btn-size` / `--icon-btn-border` / `--icon-btn-radius` |
+| `TipGroup` | `TipGroup.tsx` / `tipgroup.css` | 同じまとまりのアイコンのボタン（書式・道具の並び）の吹き出しを 1 つにまとめる。最初は通常の吹き出しと同じく 0.25s 待って出し、出ているあいだに隣へ移ると待たずに位置と幅を滑らせて移る。中のボタンの `data-tip` は出さない。`label` はまとまりの読み上げ名。Esc・押す・外れると消える。窓の端では横に寄せる（`tipShift`） |
 | `LinkButton` / `ExternalLink` | 同上 | 文字だけのボタン / 外部のページへのリンク（新しいタブ、末尾に外部リンクのアイコン） |
 | `CopyText` | `CopyText.tsx` / `button.css` | 値そのものがコピーのボタン。コピー後は「コピーしました」。地を文字の外へ広げる負の余白の分だけ上限を広げ、狭い入れ物でも値とアイコンを重ねない |
 | `Code` / `CodeBlock` | `Code.tsx`・`codeTokens.ts` / `code.css` | 文中の短いコード / 複数行のコード・JSON・SQL・ログ・CLI の表示。`language`（`ts`・`json`・`sql`・`shell`・`log`。既定は色分けなしの `plain`）で色を分ける（構文は解釈しない軽い色分け。色はトークンなのでスキンに従う）。見出しの帯に `title` と言語、コピーのボタンを出す。`lineNumbers` で行番号（コピーに入らない）、`wrap` で折り返し（既定は横スクロール）、`maxLines` で見せる行数の上限。はみ出す欄は Tab で入り矢印キーで送れる |
 | `Segmented` | `Controls.tsx` / `controls.css` | 排他の切り替え。`count` で件数。選択中の地がスライドする（`--ease-spring`）。選択中は「淡い選択」（`--thumb` の地・`--pri-ink-2` の文字。枠は付けない。`Tabs` も同じ）で、ベタ塗りにしない。文字の太さは選択で変えない。狭いときの修飾: `hideCounts`（件数をなめらかに隠す）/ `fill`（置き場所の幅いっぱいに伸ばす）/ `dense`（ボタンの左右の余白 10 → 6px）/ `short`（選択肢の `short` を出す）。件数の最小幅は置き場所で `--seg-n-min` |
-| `SearchField` | 同上 | 一覧の絞り込みの入力欄。先頭に虫眼鏡。placeholder は対象 3 つまで。画面の主な検索欄は `shortcut`（F / ⌘K）。F の行き先は画面に 1 つだけで、`useFocusShortcut` の `priority` の大きい欄（アプリのヘッダーの検索など）が優先。行き先になっている欄にだけ右端に「F」の印を出す（キーボードのない端末では出さない）。入力欄の地は `.field`（`lg` は幅いっぱいの大きい欄、左右の余白は置き場所で `--field-pl` / `--field-pr`） |
+| `SearchField` | 同上 | 一覧の絞り込みの入力欄。先頭に虫眼鏡。placeholder は対象 3 つまで。画面の主な検索欄は `shortcut`（F / ⌘K）。F の行き先は画面に 1 つだけで、`useFocusShortcut` の `priority` の大きい欄（アプリのヘッダーの検索など）が優先。行き先になっている欄にだけ右端に「F」の印を出す（キーボードのない端末では出さない。ショートカットで移ると印がキーを離すまで 1px 沈む）。入力欄の地は `.field`（`lg` は幅いっぱいの大きい欄、左右の余白は置き場所で `--field-pl` / `--field-pr`） |
 | `SearchSuggest` | `Search.tsx`（照合は `format/search.ts`）/ `search.css` | 検索欄の下に候補を出す（画面を移らずに 1 つへ飛ぶ検索。その場の一覧を絞るだけなら `SearchField`）。候補は `groups`（見出しと件数）で渡し、行は `lead`・`title`・`titleExtra`・`sub`・`trailing`。`text` は名前のほかに探せる文字、`reading` はよみ。かな・カタカナ・全角半角の違いを吸収し、語の先頭で当たる行を前に出す。よみを渡すと英字でも当たる（表記の揺れを含む。辞書は持たない）。`limit` はまとまりごとの行数、`more` は一覧の下の操作を 1 つ（押しても閉じない）、自前で絞るなら `filter={false}`。↑↓ と Enter で選び、Esc は候補だけを閉じる。変換の確定の Enter では選ばない。`shortcut` で F / ⌘K |
 | `MarkPicker` | `Mark.tsx` / `controls.css` | マーカー色を選ぶ丸い見本の並び（なし・黄・緑・青・紫・桃。選んだものは `aria-pressed` とチェック）。名前は `MARK_NAMES` |
 | `TextArea` / `TextField` | `TextArea.tsx` / `controls.css` | 文字を書く入力欄。`TextArea` は複数行（`.field.area`）、`TextField` は 1 行で幅いっぱい（`.field.wide`。設定の行に置くと値の側が広がる。`secret` でトークンなどを伏せる）。`type`（`email`・`tel`・`url`）・`autoComplete`・`name`・`autoCapitalize` で欄の種類をブラウザと端末に伝える。上限は `maxLength` で止め、残りの字数は出さない |
+| `PasswordStrength` | `PasswordStrength.tsx` / `password.css` | 新しいパスワードを決める欄（`PasswordField` の `new-password`）の下に置く強さの目安。4 本の棒が左から伸び、「弱い」（`--danger`）・「やや弱い」（`--warn`）・「強い」「とても強い」（`--ok-ink`）の言葉が `RollingWord` で回る。強い未満は強くする 1 文を添える。判定は `passwordStrength`（長さ・文字の種類・繰り返しや並びやよくある語）の目安で、サーバーの検証の代わりにしない。ログインの欄には置かない。読み上げは `meter` |
+| `OtpField` | `OtpField.tsx` / `otp.css` | 2 段階認証などの確認コード（既定 6 桁の数字）。升は入力欄と同じ枠で、入った数字は弾んで入り、打つ位置の升に印が点滅する。本物の入力欄は 1 つ（`one-time-code`・数字のキーボード・貼り付けをブラウザに任せる）で、全角や区切りは数字に直す（`otpDigits`）。そろうと `onComplete`。`FormField` の `error` で升が 1 回揺れる |
+| `FileDrop` | `FileDrop.tsx` / `filedrop.css` | ファイルを落とす・押して選ぶ場所（破線の枠、角丸は入力欄と同じ 10px）。持って来ると枠と地が主要色になり、矢印が持ち上がって文言が「ここで離す」に回る。受け取ると矢印が落ちて収まる。`accept`・`maxSize`・`multiple` で分け（`splitFiles`・`acceptFile`）、`onFiles(受け取った, 外した)` に渡す。ファイルの一覧・送信はアプリが持つ。`hint` に受け付ける種類と大きさを書く |
+| `Scrubber` | `Scrubber.tsx` / `scrubber.css` | 帯をなぞって数を決める（明るさ・音量・拡大率など、見ながら合わせる値）。高さと角丸は入力欄と同じ。名前（`label` を直接渡したとき。`FormField` の中では見出しが名前）と値を帯の中に書き、値までを `--pri-soft` で塗る。位置の線はホバー・フォーカス・ドラッグ中につまみに膨らむ。押した位置へ飛びドラッグで合わせる。キーは ←→↑↓・PageUp・PageDown（10 倍）・Home・End。`ticks` で目盛り、`format` で値の表記（`scrubValue` が刻みにそろえる）。読み上げは `slider`。決まった少数の値から選ぶなら `Segmented` |
 | `PasswordField` | `TextArea.tsx` / `controls.css` | パスワードの欄。右端のボタンで打った文字を確かめられ（`aria-pressed`）、フォームを送ると伏せた形へ戻す。`autoComplete` はログインなら既定の `current-password`、新しく決める欄は `new-password`。トークンなど覚えさせない値は `TextField` の `secret` |
 | `AuthScreen` / `LoginForm` | `Auth.tsx` / `auth.css` | ログインの画面の型（`AppShell` の外に置く。7 章「画面の型」）/ ログインの入力。認証は持たず、`onSubmit` に検証済みの値を渡し、結果を `loading`・`error` で受け取る。`identifierType` と `identifierLabel` でユーザー名に、`remember`・`onForgot`・`alternatives` で項目を足す |
 | `ProviderLogo` | `Auth.tsx` | 外部認証の提供元の公式ロゴ（`google`・`apple`・`microsoft`・`github`・`okta`）。`LoginForm` の `alternatives` に置く `Button` の `icon` に使う。形と色は各社の決まりなのでトークンにせず、スキンでも変えない（Google の 4 色の「G」・Microsoft の 4 色の四角。単色の Apple・GitHub・Okta は文字の色）。読み上げない（ボタンの文字が名前になる）。既定は 16px |
 | `FormField` | `Field.tsx` / `form.css` | 入力欄の見出し（上）・補足 `hint`・エラー `error`・`required`（「必須」の印）を 1 つにまとめる枠。中に入力の部品を 1 つ置き、その部品の `label` は省ける（見出しが名前になり、補足とエラーは欄と一緒に読まれる）。複数の項目を選ぶ部品は `group`。送信で検証に失敗したら `focusFirstInvalid()` で最初のエラーへ移す。検証のタイミングは「欄を離れたとき」か「送信のとき」で、打っている途中にエラーを出さない |
 | `Checkbox` | `Form.tsx` / `form.css` | 1 項目の入/切。保存のボタンと一緒に使う（押してすぐ効くなら `Switch`）。`hint` で補足、`indeterminate` で一部選択、`hideLabel` で名前を隠す（表の中） |
 | `RadioGroup` | 同上 | 文面まで見せて 1 つを選ぶ。選択肢が短く 5 つまでなら `Segmented`、多いなら `Select`。`hint` で各項目の補足、`inline` で横並び |
-| `Switch` | 同上 | 押すとすぐ効く入/切（設定の行など）。保存のボタンのある画面には置かない。つまみは `--ease-spring` |
+| `Switch` | 同上 | 押すとすぐ効く入/切（設定の行など）。保存のボタンのある画面には置かない。つまみは `--ease-spring`、入になるとつまみが止まるころにチェックを線で描く（切では待たずに消す） |
 | `NumberField` | 同上 | 数の欄。↑↓ と − ＋ で増減（変えた直後だけ欄の数字を `RollingNumber` と同じように桁で回す。打ち込みの途中は回さない。回る数字は飾りで、読み上げは欄の値）、全角の数字も読む、欄を離れるとき・Enter を押したときに `min`・`max` へ収めて確定する（フォームの中の Enter は打った値で送信する）。`step` の桁で端数を出さない。`unit` は欄の右の単位。読めない文字は欄を離れると空に戻す |
 | `Combobox` | 同上 | 打って絞り込み、候補から 1 つを選ぶ。候補が 10 を超えるとき（少なければ `Select`）。候補の見た目は `Select` と同じ。変換の確定の Enter では選ばない。欄を空にして離れると選択を外す。候補は `SelectOption` |
 | `DatePicker` | `DatePicker.tsx`（計算は `calendar.ts`）/ `form.css` | 1 日を選ぶカレンダー。開いた面は日付の表に合う幅に収め、フォームの幅には引き伸ばさない。値は `2026-09-27` の文字列で、表記は 9 章の `fmtDate`。`min`・`max`、`clearable`（選択を外す）、`weekStart`（週の始まり、既定は日曜）。週末・祝日を色で塗り分けない。キーは ←→↑↓・Home・End・PageUp・PageDown（Shift で年） |
@@ -368,6 +375,7 @@
 | `Notice` / `EmptyState` | 同上 | 普段と違う状態の知らせ（既定は `--warn` の帯、`tone` で `danger`・`ok`・`info`。`warn` 以外はアイコンが付く。`info` は主要色にせず灰色（赤のスキンで危険の知らせと見分けられなくなるため）。1 文 32 字まで）/ 該当なし（`title` ありは画面いっぱいの案内） |
 | `CollapseInline` | `Motion.tsx` / `motion.css` | 帯の中の操作を、中身の実際の幅でなめらかに出し入れする（`Collapse` の横向き） |
 | `Skeleton` / `Appear` / `Collapse` / `AnimatedList` / `RollingNumber` / `Expandable` | `Motion.tsx` / `motion.css` | 6 章の動き。`Skeleton` の `variant`: `compact`（一覧の中の短い読み込み）/ `row`（顔と 1 行の読み込み） |
+| `RollingWord` / `WaveText` | `Motion.tsx` / `motion.css` | 数字でない短い語の入れ替え（「保存中」→「保存しました」など。前の語を上へ、新しい語を下から回して入れ、幅も動かす。数字は `RollingNumber`）/ 待ちの文（「読み込んでいます」。字の太さと濃さの山が流れ続ける。`role="status"`。領域の読み込みは `Skeleton` で、これは文だけで待ちを伝える場所に 1 つだけ） |
 | `SideStatus` / `SideAccount` / `SideIconButton` | `Shell.tsx` / `shell.css` | 左メニューの下の状態の 1 行（最終同期など。`state` で更新中・更新済みを見出しと入れ替え、畳むとアイコンと吹き出し。「更新しました」はしばらくで消え、動きを減らす設定でも薄れさせずに同じ時間だけ見せる）/ 一番下のアカウントの欄（`EntityRow` を置く）/ 畳んだ列のアイコンのボタン（高さは `SIDE_ICON_SIZE`。`useFitCount` と `fitSlots` で入る数だけ並べ、残りは「+N」） |
 | `AppShell` / `Brand` / `SideNav` | `Shell.tsx` / `shell.css` | アプリの枠。領域で組む（5 章の手順 1）: `side`（左メニューの中身。`close` と畳み方の状態を受け取る）・`foot`（一番下の欄。畳むと出さない）・`collapse`（渡すとアイコンの列に畳める。つまみ・`[` キー・動きは枠が持つ）・`title` / `titleAfter`・`search` / `tools`（ヘッダーの右。860px 以下で検索は入らないときだけ 2 段目へ。検索欄がなければ範囲選択を詰めて道具を 1 段目の右端に保つ。狭いと道具の `data-fit="extra"` を落とす）・`actions`（詰めない右の要素）・`aux`（補助の帯。低い横長で出さない）・`band`・`children`（主役）・`panel`（詳細パネル。`id` は中身の別、`peek` は畳んだときの 1 行。中から `useShell().revealMain()` で畳む）・`sizes`（寸法）。600px 以下で左メニューを引き出しに（影は開いているときだけ。Esc で閉じるが、中で開いた一覧・ポップオーバーが先に Esc を受けたときは閉じない）し、メニューのボタンと画面名を 1 つのボタンにまとめる、詳細パネルを詰める・左メニューを畳む・重ねるは `shellLayout`（窓の幅と寸法から決める純粋な関数）。ヘッダーの高さは右に操作がなくても `--control-h` の段にそろえる / 左メニューの一番上（`onClick` で押せる。名前は畳むと消える）/ 左メニューの項目（選んでいる項目は `aria-current="page"`、`collapsed` で名前を吹き出しに。選択中の地は選んだ項目にその場で付け、項目の間をスライドさせない（左メニューは何度も押すので動きがうるさい）。項目の `group` でまとまりの見出しを出す。畳むと文字だけ消し、項目の位置は動かさない） |
 

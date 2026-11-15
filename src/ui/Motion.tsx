@@ -316,3 +316,56 @@ export function RollingText({ children }: { children: ReactNode }) {
   const parts = children.split(/(\d+(?:\.\d+)?)/)
   return <>{parts.map((x, i) => (i % 2 ? <RollingNumber key={i} value={Number(x)} decimals={x.split('.')[1]?.length ?? 0} /> : x))}</>
 }
+
+/**
+ * 語の入れ替え（「保存」→「保存中」→「保存しました」など、数字でない短い文字）。前の語を上へ回して抜き、新しい語を下から回して入れる。
+ * 幅は新しい語の幅へなめらかに動かす。読み上げは今の語だけ（回っている字は飾り）。初めの表示では動かさない。数字は RollingNumber
+ */
+export function RollingWord({ children }: { children: string }) {
+  const [state, setState] = useState({ text: children, prev: null as string | null, n: 0 })
+  // 描いている途中に語が変わったら、前の語を抜ける側へ回す（描く前に入れ替えて、ちらつかせない）
+  if (state.text !== children) setState({ text: children, prev: state.text, n: state.n + 1 })
+  const box = useRef<HTMLSpanElement>(null)
+  const cur = useRef<HTMLSpanElement>(null)
+  useLayoutEffect(() => {
+    const b = box.current
+    const c = cur.current
+    if (!b || !c) return
+    // 初めは幅を決めずに置き、2 回目からは新しい語の幅へ動かす
+    if (state.n === 0) return
+    if (!b.style.width) b.style.width = `${b.getBoundingClientRect().width}px`
+    void b.offsetWidth
+    b.style.width = `${c.getBoundingClientRect().width}px`
+  }, [state.n])
+  useEffect(() => {
+    if (state.prev === null) return
+    const t = window.setTimeout(() => setState((s) => ({ ...s, prev: null })), 360)
+    return () => clearTimeout(t)
+  }, [state.n, state.prev])
+  return (
+    // 動き終えたら幅を中身に任せ直す（文字の大きさの設定が変わっても切れないように）
+    <span className="rword" ref={box} onTransitionEnd={(e) => e.target === box.current && e.propertyName === 'width' && box.current.style.removeProperty('width')}>
+      <span className="sr-only">{state.text}</span>
+      {state.prev !== null && <span className="rw-out" key={`o${state.n}`} aria-hidden="true">{state.prev}</span>}
+      <span className={state.n ? 'rw-in' : undefined} key={`i${state.n}`} ref={cur} aria-hidden="true">{state.text}</span>
+    </span>
+  )
+}
+
+/**
+ * 読み込み中・処理中の文（「読み込んでいます」など）。字の太さと濃さの山が左から右へ流れ続ける。
+ * 読み上げは文のまま（role="status"）。動きを減らす設定では止まり、ふつうの文になる。待ちが長く読めない処理に 1 か所だけ置く
+ */
+export function WaveText({ children }: { children: string }) {
+  const chars = [...children]
+  return (
+    <span className="wave" role="status">
+      <span className="sr-only">{children}</span>
+      <span aria-hidden="true">
+        {chars.map((c, i) => (
+          <span key={i} style={{ '--i': i - chars.length } as CSSProperties}>{c}</span>
+        ))}
+      </span>
+    </span>
+  )
+}

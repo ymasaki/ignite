@@ -69,3 +69,17 @@
 
 /* テーマ（色の組）の切り替えは、画面全体を 0.3s で入れ替える（ui/Motion.tsx の withFade。View Transitions） */
 ::view-transition-old(root),::view-transition-new(root){animation-duration:.3s}
+
+/* 語の入れ替え（RollingWord）: 前の語と新しい語を同じ升に重ね、縦にだけ切る（横は幅の動きの間もはみ出しを見せる）。
+   入りは下から --dur-slow の ease-in-out、出は上へ短く ease-in。幅は新しい語の幅へ同じ長さで動かす */
+.rword{display:inline-grid;vertical-align:baseline;overflow:visible clip;white-space:nowrap;transition:width var(--dur-slow) var(--ease-in-out)}
+.rword > [aria-hidden]{grid-area:1/1;justify-self:start}
+.rw-in{animation:rwIn var(--dur-slow) var(--ease-in-out) both}
+.rw-out{animation:rwOut var(--dur-base) ease-in both}
+@keyframes rwIn{from{opacity:0;translate:0 90%}to{opacity:1;translate:0 0}}
+@keyframes rwOut{from{opacity:1;translate:0 0}to{opacity:0;translate:0 -90%}}
+
+/* 太さの波（WaveText）: 字ごとに太さと濃さの山を少しずつ遅らせて流す。--i は字の番号から字数を引いた負の数で、初めから波の途中を見せる */
+.wave{color:var(--ink-3)}
+.wave > [aria-hidden] > span{animation:waveWeight 1.6s var(--ease-in-out) calc(var(--i) * .08s) infinite}
+@keyframes waveWeight{0%,60%,100%{font-weight:400;color:var(--ink-3)}30%{font-weight:700;color:var(--ink)}}

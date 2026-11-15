@@ -31,3 +31,8 @@
 @import './components/overlay.css';
 @import './components/navigation.css';
 @import './components/progress.css';
+@import './components/tipgroup.css';
+@import './components/filedrop.css';
+@import './components/otp.css';
+@import './components/password.css';
+@import './components/scrubber.css';

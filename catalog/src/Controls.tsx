@@ -1,5 +1,5 @@
-import { IconBookmark, IconCopy, IconDownload, IconFilter, IconPencil, IconPlus, IconRefresh, IconSearch, IconSettings, IconShare, IconTrash } from '@tabler/icons-react'
-import { Accordion, Button, CopyText, Crumbs, ExternalLink, IconButton, KeyValues, LinkButton, Menu, MonthStepper, Pagination, Popover, ProviderLogo, Segmented, Stepper, Steps, Tabs, toast } from '@ymasaki/ignite'
+import { IconBold, IconBookmark, IconCopy, IconDownload, IconFilter, IconItalic, IconLink, IconList, IconPencil, IconPlus, IconRefresh, IconSearch, IconSend, IconSettings, IconShare, IconTrash, IconUnderline } from '@tabler/icons-react'
+import { Accordion, Button, CopyText, FormField, KeyCaps, TextField, TipGroup, Crumbs, ExternalLink, IconButton, KeyValues, LinkButton, Menu, MonthStepper, Pagination, Popover, ProviderLogo, Segmented, Stepper, Steps, Tabs, toast } from '@ymasaki/ignite'
 import { useEffect, useState } from 'react'
 import { STEPPER_MONTHS, MONTHS } from './data'
 import { Case, Cases, Page, Spec } from './kit'
@@ -13,6 +13,18 @@ export function useTick() {
     const t = setInterval(() => setTick((n) => n + 1), 1000)
     return () => clearInterval(t)
   }, [])
+}
+
+/** 送信のボタン。送っているあいだはボタンそのものが待ちの印になり、終わると文字が戻る */
+function SubmitDemo() {
+  const [busy, setBusy] = useState(false)
+  const [memo, setMemo] = useState('週次の報告')
+  return (
+    <form className="cat-form" onSubmit={(e) => { e.preventDefault(); setBusy(true); setTimeout(() => { setBusy(false); toast('送信しました', { tone: 'ok' }) }, 1600) }}>
+      <FormField label="件名"><TextField value={memo} onChange={setMemo} /></FormField>
+      <div className="cat-row"><Button type="submit" variant="primary" icon={<IconSend {...I} />} loading={busy}>送信する</Button><Button type="submit" loading>保存する</Button></div>
+    </form>
+  )
 }
 
 export function ActionsPage({ target }: { target?: string | null }) {
@@ -30,11 +42,29 @@ export function ActionsPage({ target }: { target?: string | null }) {
           <Case label="押せない"><Button disabled>保存する</Button></Case>
         </Cases>
       </Spec>
+      <Spec page={p} id="submit"><SubmitDemo /></Spec>
+      <Spec page={p} id="shortcut">
+        <Cases>
+          <Case label="修飾キーと組む"><Button icon={<IconPlus {...I} />} shortcut="shift+n" onClick={() => toast('新しい項目を作りました')}>新規作成</Button></Case>
+          <Case label="主ボタン"><Button variant="primary" shortcut="mod+enter" onClick={() => toast('公開しました', { tone: 'ok' })}>公開する</Button></Case>
+          <Case label="1 文字"><Button icon={<IconPencil {...I} />} shortcut="e" onClick={() => toast('編集を開きました')}>編集する</Button></Case>
+          <Case label="キャップだけ"><KeyCaps shortcut="mod+shift+p" /></Case>
+        </Cases>
+      </Spec>
       <Spec page={p} id="icon">
         <Cases>
           <Case label="標準"><div className="cat-row"><IconButton label="設定を開く"><IconSettings {...I} /></IconButton><IconButton label="共有する"><IconShare {...I} /></IconButton><IconButton label="保存する"><IconBookmark {...I} /></IconButton></div></Case>
           <Case label="ヘッダー"><IconButton size="lg" label="更新する"><IconRefresh size={18} stroke={1.8} /></IconButton></Case>
         </Cases>
+      </Spec>
+      <Spec page={p} id="tipgroup">
+        <TipGroup label="文字の書式">
+          <IconButton label="太字"><IconBold {...I} /></IconButton>
+          <IconButton label="斜体"><IconItalic {...I} /></IconButton>
+          <IconButton label="下線"><IconUnderline {...I} /></IconButton>
+          <IconButton label="リンクを付ける"><IconLink {...I} /></IconButton>
+          <IconButton label="箇条書き"><IconList {...I} /></IconButton>
+        </TipGroup>
       </Spec>
       <Spec page={p} id="text">
         <Cases>

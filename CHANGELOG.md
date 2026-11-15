@@ -2,6 +2,25 @@
 
 採用アプリは `npx ignite upgrade ./vendor/次の版.tgz`（[採用手順](docs/adopting.md#更新を取り込む)）でこの内容を確かめて取り込む。形式は [docs/releasing.md](docs/releasing.md)。
 
+## 1.17.0（2026-11-15）
+
+### 追加
+
+- `TipGroup`: 同じまとまりのアイコンのボタンの吹き出しを 1 つにまとめ、隣のボタンへ移ると待たずに位置と幅を滑らせて移す
+- `FileDrop`: ファイルを落とす・押して選ぶ場所。種類（`accept`）・大きさ（`maxSize`）・数で受け取るものと外すものを分けて `onFiles` に渡す（判定は `splitFiles`・`acceptFile`）
+- `OtpField`: 2 段階認証などの確認コードの欄。升に数字が弾んで入り、`one-time-code` の自動入力と貼り付けを受け、全角や区切りは数字に直す（`otpDigits`）。そろうと `onComplete`
+- `PasswordStrength`: 新しいパスワードの強さの目安（4 段の棒と言葉、強くする 1 文）。判定は `passwordStrength`
+- `Scrubber`: 帯をなぞって数を決める部品（名前と値を帯の中に書き、位置の線がホバー・ドラッグでつまみに膨らむ。キー操作と `slider` の読み上げ）。値の換算は `scrubValue`
+- `RollingWord`: 数字でない語の入れ替えを、上下に回して見せる（`RollingNumber` の語の版）
+- `WaveText`: 読み込み中の文で、字の太さと濃さの山を流す
+- `Button` の `shortcut`: キーのキャップを添え、そのキーで押す。押している間はキャップが沈み、ボタンも押した形になる。下の仕組みの `KeyCaps`・`useShortcut`・`parseShortcut`・`matchShortcut`・`shortcutCaps`・`ariaShortcut` も公開する
+
+### 変更
+
+- 文字のある `type="submit"` の `Button` の `loading` は、幅を保ったまま文字を抜き、中央の回転でボタンそのものを待ちの印にする（ほかの `loading` は従来どおり先頭のアイコンが回転に替わる）
+- `Switch` は、入になるとつまみが止まるころにチェックを線で描く
+- 検索欄の「F」「⌘K」の印は、ショートカットで移るとキーを離すまで沈む
+
 ## 1.16.4（2026-11-14）
 
 ### 修正

@@ -1,4 +1,4 @@
-import { Avatar, Button, Checkbox, Combobox, DatePicker, focusFirstInvalid, FormField, LinkButton, NumberField, RadioGroup, SearchField, SearchSuggest, Select, Switch, Tag, TextArea, type SuggestGroup, TextField, toast } from '@ymasaki/ignite'
+import { Avatar, Button, Checkbox, Chip, Combobox, DatePicker, FileDrop, focusFirstInvalid, FormField, LinkButton, NumberField, OtpField, PasswordField, PasswordStrength, RadioGroup, Scrubber, SearchField, SearchSuggest, Select, Switch, Tag, TextArea, type SuggestGroup, TextField, toast } from '@ymasaki/ignite'
 import { useMemo, useRef, useState, type ReactNode } from 'react'
 import { useTick } from './Controls'
 import { PROJECTS } from './data'
@@ -19,6 +19,39 @@ function SuggestDemo() {
     return [{ key: 'people', label: 'メンバー', items: on.map(person) }, { key: 'work', label: 'プロジェクト', items: on.map(work) }]
   }, [wide])
   return <SearchSuggest label="人やプロジェクトを探す" placeholder="名前・読み・ローマ字" value={q} onChange={(v) => { setQ(v); setWide(false) }} groups={groups} onSelect={(it) => { setQ(''); toast(`${it.title} を開きました`) }} more={wide ? undefined : { label: `完了も含めて探す（${rest}件）`, onSelect: () => setWide(true) }} />
+}
+
+/** 確認コード。そろったら確かめ、違えばエラー（升が揺れる）。打ち直すとエラーを消す */
+function OtpDemo() {
+  const [code, setCode] = useState('')
+  const [wrong, setWrong] = useState(false)
+  return (
+    <FormField label="確認コード" hint="メールで届いた 6 桁（見本は 123456）" error={wrong ? 'コードが違います' : undefined}>
+      <OtpField value={code} onChange={(v) => (setWrong(false), setCode(v))} onComplete={(v) => (v === '123456' ? toast('確認しました', { tone: 'ok' }) : setWrong(true))} />
+    </FormField>
+  )
+}
+
+/** 新しいパスワードと強さの目安 */
+function PasswordDemo() {
+  const [pw, setPw] = useState('')
+  return (
+    <div className="cat-form">
+      <FormField label="新しいパスワード"><PasswordField value={pw} onChange={setPw} autoComplete="new-password" /></FormField>
+      <PasswordStrength value={pw} />
+    </div>
+  )
+}
+
+/** ファイルを受け取り、名前を取り消せるタグで並べる */
+function FileDemo() {
+  const [files, setFiles] = useState<string[]>([])
+  return (
+    <div className="cat-form">
+      <FormField label="添付"><FileDrop accept=".pdf,image/*" maxSize={10 * 1024 * 1024} hint="PDF・画像、10MB まで" onFiles={(ok, ng) => { setFiles([...files, ...ok.map((f) => f.name)]); if (ng.length) toast(`${ng.length} 件は追加できません（種類か大きさ）`, { tone: 'danger' }) }} /></FormField>
+      {!!files.length && <div className="cat-row">{files.map((n, i) => <Chip key={`${n}-${i}`} removeLabel={`${n} を外す`} removeTip="外す" onRemove={() => setFiles(files.filter((_, j) => j !== i))}>{n}</Chip>)}</div>}
+    </div>
+  )
 }
 
 /** 枠の中の最初のエラーへ移す例 */
@@ -49,6 +82,8 @@ export function FormsPage({ target }: { target?: string | null }) {
   const [channel, setChannel] = useState<string | null>(null)
   const [q, setQ] = useState('')
   const [sel, setSel] = useState('recent')
+  const [light, setLight] = useState(60)
+  const [zoom, setZoom] = useState(1)
   return (
     <Page page={p} target={target}>
       <Spec page={p} id="field">
@@ -108,6 +143,15 @@ export function FormsPage({ target }: { target?: string | null }) {
         </div>
       </Spec>
       <Spec page={p} id="suggest"><SuggestDemo /></Spec>
+      <Spec page={p} id="otp"><OtpDemo /></Spec>
+      <Spec page={p} id="password"><PasswordDemo /></Spec>
+      <Spec page={p} id="file"><FileDemo /></Spec>
+      <Spec page={p} id="scrubber">
+        <div className="cat-form">
+          <Scrubber label="明るさ" value={light} onChange={setLight} unit="%" ticks={3} />
+          <FormField label="拡大率" hint="0.5〜2 倍"><Scrubber value={zoom} onChange={setZoom} min={0.5} max={2} step={0.1} format={(v) => `${v.toFixed(1)} 倍`} /></FormField>
+        </div>
+      </Spec>
       <Spec page={p} id="error">
         <div className="cat-form two">
           <ErrorCase label="スイッチ"><FormField label="同意" error="同意してください"><Switch checked={false} onChange={() => undefined} /></FormField></ErrorCase>
