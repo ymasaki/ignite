@@ -1943,14 +1943,14 @@ test('FileDrop: ドラッグ中はファイルのカードがつき、離すと�
   const box = (await zone.boundingBox())!
   const at = { clientX: box.x + box.width * 0.6, clientY: box.y + box.height * 0.5 }
   await zone.dispatchEvent('dragenter', { dataTransfer: data, ...at })
-  await zone.dispatchEvent('dragover', { dataTransfer: data, ...at })
   // ブラウザは離すまで名前を見せないので、カードは種類を出す
   const chip = zone.locator('.fd-chip')
   await expect(chip).toHaveText('PDF')
-  // 入った直後からカーソルの右下に出る
+  // dragover を待たず、入った直後からカーソルの右下に出る
   const cb = (await chip.boundingBox())!
   expect(Math.abs(cb.x - at.clientX)).toBeLessThan(40)
   expect(Math.abs(cb.y - at.clientY)).toBeLessThan(40)
+  await zone.dispatchEvent('dragover', { dataTransfer: data, ...at })
   await zone.dispatchEvent('drop', { dataTransfer: data, ...at })
   // 離すと丸の位置へ向かって消える
   const icon = (await zone.locator('.fd-layer .fd-icon').first().boundingBox())!
