@@ -1947,11 +1947,22 @@ test('FileDrop: ドラッグ中はファイルのカードがつき、離すと�
   // ブラウザは離すまで名前を見せないので、カードは種類を出す
   const chip = zone.locator('.fd-chip')
   await expect(chip).toHaveText('PDF')
+  // 入った直後からカーソルの右下に出る
+  const cb = (await chip.boundingBox())!
+  expect(Math.abs(cb.x - at.clientX)).toBeLessThan(40)
+  expect(Math.abs(cb.y - at.clientY)).toBeLessThan(40)
   await zone.dispatchEvent('drop', { dataTransfer: data, ...at })
+  // 離すと丸の位置へ向かって消える
+  const icon = (await zone.locator('.fd-layer .fd-icon').first().boundingBox())!
+  const target = await chip.evaluate((el) => [parseFloat((el as HTMLElement).style.getPropertyValue('--x')), parseFloat((el as HTMLElement).style.getPropertyValue('--y')), (el as HTMLElement).offsetWidth, (el as HTMLElement).offsetHeight])
+  // 丸は離した瞬間に持ち上がりから落ちる動きに入るので、丸の内側（半径以内）を目指していればよい
+  expect(Math.hypot(box.x + target[0] + target[2] / 2 - (icon.x + icon.width / 2), box.y + target[1] + target[3] / 2 - (icon.y + icon.height / 2))).toBeLessThan(icon.width / 2)
   await expect(chip).toHaveCount(0)
   const state = zone.locator('.fd-state')
   await expect(state.locator('.fd-t')).toHaveText('送信中')
   await expect(state.locator('.fd-ring')).toBeVisible()
+  // 読み上げでは欄の説明として今の割合と量を確かめられる
+  await expect(zone).toHaveAccessibleDescription(/^送信中 \d+%、brief\.pdf、[0-9.]+[KM]?B \/ 2\.4MB$/)
   await expect(state.locator('.fd-name')).toHaveText('brief.pdf')
   await expect(zone).toHaveAttribute('aria-disabled', 'true')
   expect((await zone.boundingBox())!.height).toBe(height)
@@ -1960,6 +1971,12 @@ test('FileDrop: ドラッグ中はファイルのカードがつき、離すと�
   await expect(state.locator('.fd-meta')).toHaveText('brief.pdf・2.4MB')
   expect((await zone.boundingBox())!.height).toBe(height)
   await expect(zone).not.toHaveAttribute('aria-disabled', 'true')
+  // 送り終えたあとに次のファイルを持って来ると「ここで離す」に戻り、離れると完了の表示に戻る
+  await zone.dispatchEvent('dragenter', { dataTransfer: data, ...at })
+  await expect(zone.locator('.fd-state')).toHaveCount(0)
+  await expect(zone.locator('.fd-layer .rword > .sr-only')).toHaveText('ここで離す')
+  await zone.dispatchEvent('dragleave', { dataTransfer: data, ...at })
+  await expect(state.locator('.fd-t')).toHaveText('送信しました')
   await expect.poll(() => page.evaluate(() => (window as unknown as { notes: string[] }).notes)).toEqual(expect.arrayContaining(['brief.pdf を送信しています', 'brief.pdf を送信しました']))
 })
 

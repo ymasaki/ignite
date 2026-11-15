@@ -2,7 +2,7 @@
 // ファイルは持たず、受け取ったものを onFiles に渡すだけ。送信はアプリが持ち、その状態を upload で渡すと枠の中に進み具合と完了を出す
 
 import { IconCheck, IconExclamationMark, IconFile, IconFileMusic, IconFileTypePdf, IconMovie, IconPhoto, IconUpload } from '@tabler/icons-react'
-import { useEffect, useRef, useState, type DragEvent, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type CSSProperties, type DragEvent, type ReactNode } from 'react'
 import { fmtBytes } from '../format/bytes'
 import { announce } from './A11y'
 import { fieldProps, useField } from './Field'
@@ -90,9 +90,12 @@ export function FileDrop({ onFiles, accept, maxSize, multiple = true, label, tit
   const [over, setOver] = useState(false)
   const [got, setGot] = useState(0)
   // ドラッグ中のカード。land は離したあと丸へ吸い込まれている途中
-  const [chip, setChip] = useState<{ types: string[]; land: boolean } | null>(null)
+  const [chip, setChip] = useState<{ types: string[]; land: boolean; x: number; y: number } | null>(null)
+  const stateId = useId()
   const status = upload ? upload.status ?? 'uploading' : null
   const busy = status === 'uploading'
+  // 完了・失敗のあとでも、次のファイルを持って来ているあいだは待機の中身（「ここで離す」）を見せ、離れたら戻す
+  const shown = over ? null : status
   const take = (list: FileList | null) => {
     const { accepted, rejected } = splitFiles(Array.from(list ?? []), { accept, maxSize, multiple })
     if (!accepted.length && !rejected.length) return
@@ -112,11 +115,15 @@ export function FileDrop({ onFiles, accept, maxSize, multiple = true, label, tit
     else announce(`${upload.name} を送信できませんでした${upload.error ? `。${upload.error}` : ''}`, { assertive: true })
   }, [upload, status])
   // カードをカーソルの右下に置く（描き直さずに位置だけ動かす）
-  const follow = (e: DragEvent) => {
+  const at = (e: DragEvent) => {
     const z = zone.current?.getBoundingClientRect()
-    if (!z || !chipEl.current) return
-    chipEl.current.style.setProperty('--x', `${e.clientX - z.left + 10}px`)
-    chipEl.current.style.setProperty('--y', `${e.clientY - z.top + 8}px`)
+    return z ? { x: e.clientX - z.left + 10, y: e.clientY - z.top + 8 } : { x: 0, y: 0 }
+  }
+  const follow = (e: DragEvent) => {
+    if (!chipEl.current) return
+    const p = at(e)
+    chipEl.current.style.setProperty('--x', `${p.x}px`)
+    chipEl.current.style.setProperty('--y', `${p.y}px`)
   }
   const has = (e: DragEvent) => e.dataTransfer.types.includes('Files')
   const types = (e: DragEvent) => Array.from(e.dataTransfer.items ?? []).filter((it) => it.kind === 'file').map((it) => it.type)
@@ -137,6 +144,7 @@ export function FileDrop({ onFiles, accept, maxSize, multiple = true, label, tit
         className="fd-zone"
         aria-label={f.label}
         {...fieldProps(f)}
+        aria-describedby={[f.describedBy, status ? stateId : ''].filter(Boolean).join(' ') || undefined}
         disabled={disabled}
         aria-disabled={busy || undefined}
         onClick={() => !busy && input.current?.click()}
@@ -144,7 +152,8 @@ export function FileDrop({ onFiles, accept, maxSize, multiple = true, label, tit
           if (!has(e) || busy) return
           e.preventDefault()
           depth.current += 1
-          if (depth.current === 1) setChip({ types: types(e), land: false })
+          // 最初の描画からカーソルの位置に出す
+          if (depth.current === 1) setChip({ types: types(e), land: false, ...at(e) })
           setOver(true)
           follow(e)
         }}
@@ -167,7 +176,7 @@ export function FileDrop({ onFiles, accept, maxSize, multiple = true, label, tit
           if (busy) return setChip(null)
           // カードを丸の位置へ動かして消す（動きを減らす設定では待たずに消える）
           const z = zone.current?.getBoundingClientRect()
-          const icon = zone.current?.querySelector('.fd-icon-box')?.getBoundingClientRect()
+          const icon = zone.current?.querySelector('.fd-layer .fd-icon')?.getBoundingClientRect()
           const c = chipEl.current
           if (z && icon && c) {
             c.style.setProperty('--x', `${icon.left - z.left + icon.width / 2 - c.offsetWidth / 2}px`)
@@ -179,27 +188,29 @@ export function FileDrop({ onFiles, accept, maxSize, multiple = true, label, tit
         }}
       >
         {/* 待機の中身と送信の中身を同じ場所に重ねる。枠の高さは待機の中身で決まり、送信の中身は上下の中央に置く */}
-        <span className={`fd-layer${status ? ' gone' : ''}`}>
+        <span className={`fd-layer${shown ? ' gone' : ''}`}>
           <span className={`fd-icon${got ? ' landed' : ''}`} key={got} aria-hidden="true"><IconUpload size={22} stroke={1.8} /></span>
           <span className="fd-t"><RollingWord>{over ? 'ここで離す' : title}</RollingWord></span>
           <span className="fd-sub">または<span className="fd-pick">押して選ぶ</span></span>
           {hint && <span className="fd-hint">{hint}</span>}
         </span>
-        {upload && status && (
-          <span className="fd-layer fd-state" key={status}>
+        {/* 読み上げで今の状態（送信中の割合と量）を確かめられるように、欄の説明に結ぶ */}
+        {upload && status && <span id={stateId} className="sr-only">{status === 'uploading' ? `送信中 ${pct == null ? '' : `${Math.round(pct)}%、`}${upload.name}、${fmtBytes(upload.loaded)} / ${fmtBytes(upload.total)}` : status === 'done' ? `送信しました、${upload.name}、${fmtBytes(upload.total)}` : `送信できませんでした、${upload.name}${upload.error ? `、${upload.error}` : ''}`}</span>}
+        {upload && shown && (
+          <span className="fd-layer fd-state" key={shown}>
             <span className="fd-icon-box" aria-hidden="true">
-              {status === 'uploading' ? <Ring value={pct} /> : status === 'done' ? <span className="fd-icon fd-done"><IconCheck size={20} stroke={2.6} /></span> : <span className="fd-icon fd-fail"><IconExclamationMark size={20} stroke={2.4} /></span>}
+              {shown === 'uploading' ? <Ring value={pct} /> : shown === 'done' ? <span className="fd-icon fd-done"><IconCheck size={20} stroke={2.6} /></span> : <span className="fd-icon fd-fail"><IconExclamationMark size={20} stroke={2.4} /></span>}
             </span>
-            <span className="fd-t">{status === 'uploading' ? '送信中' : status === 'done' ? '送信しました' : '送信できませんでした'}</span>
-            {status === 'error' ? (
+            <span className="fd-t">{shown === 'uploading' ? '送信中' : shown === 'done' ? '送信しました' : '送信できませんでした'}</span>
+            {shown === 'error' ? (
               <span className="fd-sub fd-meta"><span className="fd-err">{upload.error ?? upload.name}</span><span className="fd-pick">押して選び直す</span></span>
             ) : (
-              <span className="fd-sub fd-meta">{name}<span className="num">・{status === 'uploading' ? `${fmtBytes(upload.loaded)} / ` : ''}{fmtBytes(upload.total)}</span></span>
+              <span className="fd-sub fd-meta">{name}<span className="num">・{shown === 'uploading' ? `${fmtBytes(upload.loaded)} / ` : ''}{fmtBytes(upload.total)}</span></span>
             )}
           </span>
         )}
         {chip && (
-          <span ref={chipEl} className={`fd-chip${chip.land ? ' land' : ''}`} aria-hidden="true">
+          <span ref={chipEl} className={`fd-chip${chip.land ? ' land' : ''}`} style={{ '--x': `${chip.x}px`, '--y': `${chip.y}px` } as CSSProperties} aria-hidden="true">
             <ChipIcon size={16} stroke={1.8} />
             {dragLabel(chip.types)}
           </span>

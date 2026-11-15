@@ -25,6 +25,8 @@
 .fd-layer{grid-area:1/1;display:grid;justify-items:center;align-content:center;gap:2px;min-width:0;max-width:100%}
 .fd-layer.gone{visibility:hidden}
 .fd-state{animation:fdFade var(--dur-base) ease-out}
+/* 状態の見出しと補足は 1 行にして、待機の中身（見出し・補足・hint）より高くしない */
+.fd-state > .fd-t{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @keyframes fdFade{from{opacity:0}to{opacity:1}}
 .fd-icon-box{display:grid;place-items:center;width:40px;height:40px;margin-bottom:var(--space-1)}
 .fd-icon-box > .fd-icon{margin-bottom:0}
