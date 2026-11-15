@@ -77,7 +77,7 @@ function Ring({ value }: { value: number | null }) {
  * ファイルを落とす・押して選ぶ場所。onFiles に受け取ったファイル、外したファイル（種類・大きさ・数）を渡す。
  * 持って来ると枠が主要色になり、矢印が持ち上がって文言が「ここで離す」に回り、ファイルのカード（種類か件数）がカーソルについて動く。
  * 離すとカードが丸へ吸い込まれる。
- * upload を渡すと同じ枠の中で、丸が進み具合の輪（中央に %）に変わって「送信中」、終わると緑のチェックで「送信しました」、
+ * upload を渡すと同じ枠の中で、丸が進み具合の輪（中央に %）に変わって「名前 を送信中」と送った量、終わると緑のチェックで「送信しました」、
  * 送れなければ「送信できませんでした」と error を出す。状態が替わっても枠の高さは変えない。送信中は新しいファイルを受けない。
  * hint は受け付ける種類と大きさ（「PDF・画像、10MB まで」）。Enter・Space で選ぶ画面を開く
  */
@@ -201,11 +201,14 @@ export function FileDrop({ onFiles, accept, maxSize, multiple = true, label, tit
             <span className="fd-icon-box" aria-hidden="true">
               {shown === 'uploading' ? <Ring value={pct} /> : shown === 'done' ? <span className="fd-icon fd-done"><IconCheck size={20} stroke={2.6} /></span> : <span className="fd-icon fd-fail"><IconExclamationMark size={20} stroke={2.4} /></span>}
             </span>
-            <span className="fd-t">{shown === 'uploading' ? '送信中' : shown === 'done' ? '送信しました' : '送信できませんでした'}</span>
+            {/* 送信中は見出しに名前を入れる（長い名前は途中を省き、拡張子は残す） */}
+            {shown === 'uploading' ? <span className="fd-t fd-meta">{name}<span>&nbsp;を送信中</span></span> : <span className="fd-t">{shown === 'done' ? '送信しました' : '送信できませんでした'}</span>}
             {shown === 'error' ? (
               <span className="fd-sub fd-meta"><span className="fd-err">{upload.error ?? upload.name}</span><span className="fd-pick">押して選び直す</span></span>
+            ) : shown === 'uploading' ? (
+              <span className="fd-sub num">{fmtBytes(upload.loaded)} / {fmtBytes(upload.total)}</span>
             ) : (
-              <span className="fd-sub fd-meta">{name}<span className="num">・{shown === 'uploading' ? `${fmtBytes(upload.loaded)} / ` : ''}{fmtBytes(upload.total)}</span></span>
+              <span className="fd-sub fd-meta">{name}<span className="num">・{fmtBytes(upload.total)}</span></span>
             )}
           </span>
         )}

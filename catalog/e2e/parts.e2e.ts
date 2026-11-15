@@ -1959,7 +1959,9 @@ test('FileDrop: ドラッグ中はファイルのカードがつき、離すと�
   expect(Math.hypot(box.x + target[0] + target[2] / 2 - (icon.x + icon.width / 2), box.y + target[1] + target[3] / 2 - (icon.y + icon.height / 2))).toBeLessThan(icon.width / 2)
   await expect(chip).toHaveCount(0)
   const state = zone.locator('.fd-state')
-  await expect(state.locator('.fd-t')).toHaveText('送信中')
+  // 参照と同じく、見出しに名前、下の行に送った量
+  await expect(state.locator('.fd-t')).toHaveText('brief.pdf を送信中')
+  await expect(state.locator('.fd-sub')).toHaveText(/^[0-9.]+[KM]?B \/ 2\.4MB$/)
   await expect(state.locator('.fd-ring')).toBeVisible()
   // 読み上げでは欄の説明として今の割合と量を確かめられる
   await expect(zone).toHaveAccessibleDescription(/^送信中 \d+%、brief\.pdf、[0-9.]+[KM]?B \/ 2\.4MB$/)
