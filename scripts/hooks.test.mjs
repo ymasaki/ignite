@@ -148,16 +148,18 @@ test('指定indexを使い、検査中のindex更新と中断を成功にしな�
   assert.equal(f.commit().status, 0)
   // 実tscのテストとは別に、停止位置を制御して競合とGit環境の分離を確認する。
   await fs.rm(path.join(f.root, 'node_modules'))
-  await fs.mkdir(path.join(f.root, 'node_modules/typescript/bin'), { recursive: true })
+  await fs.mkdir(path.join(f.root, 'node_modules/.bin'), { recursive: true })
   const ready = path.join(f.root, 'scratch/ready')
   const release = path.join(f.root, 'scratch/release')
-  await fs.writeFile(path.join(f.root, 'node_modules/typescript/bin/tsc'), `
+  const compiler = path.join(f.root, 'node_modules/.bin/tsc')
+  await fs.writeFile(compiler, `#!/usr/bin/env node
 const fs = require('node:fs');
 setTimeout(() => process.exit(21), 10000).unref();
 if (Object.keys(process.env).some(name => name.startsWith('GIT_'))) process.exit(19);
 fs.writeFileSync(${JSON.stringify(ready)}, process.cwd());
 const timer = setInterval(() => { if (fs.existsSync(${JSON.stringify(release)})) { clearInterval(timer); } }, 10);
 `)
+  await fs.chmod(compiler, 0o755)
   const alternate = path.join(f.root, 'scratch/alternate-index')
   await fs.copyFile(path.join(f.root, '.git/index'), alternate)
   const env = { ...f.env, GIT_INDEX_FILE: alternate }

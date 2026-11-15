@@ -30,7 +30,7 @@ Ignite 自身を変更するときの案内。デザインの規約は [DESIGN.m
 | `ignite` | `cli/index.ts` | `dist/cli.js` |
 | `@ymasaki/ignite/DESIGN.md`・`@ymasaki/ignite/package.json` | 同名ファイル | 規約と版・入口の定義 |
 
-`npm run build` は `scripts/build.mjs` を実行する。JavaScript は esbuild、型定義は `tsconfig.build.json` による TypeScript、CSS は import の順を保った展開で作る。React・アイコン、監査の Playwright・axe は外部依存として残す。`prepack` も同じビルドを行う。
+`npm run build` は `scripts/build.mjs` を実行する。JavaScript は esbuild、型定義は `tsconfig.build.json` による TypeScript 7、CSS は import の順を保った展開で作る。React・アイコン、監査の Playwright・axe は外部依存として残す。`prepack` も同じビルドを行う。 TypeScript 7 は `@typescript/native` の npm alias で導入し、型検査・型定義出力・コミット前検査は `node_modules/.bin/tsc` を使う。JavaScript API を必要とする品質解析には、`typescript` の alias で公式の `@typescript/typescript6` 互換APIを残す。
 
 `dist/` とともに `DESIGN.md`・`CHANGELOG.md`・`docs/`・`templates/` を配る。README は npm が同梱する。AGENTS・CLAUDE・この文書は開発リポジトリ用で、配布対象に加えない。生成した `dist/`・`catalog-dist/`・検査結果・`releases/` は Git に追加しない。
 
