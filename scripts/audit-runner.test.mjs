@@ -268,14 +268,26 @@ process.kill = (pid, signal) => {
       await gone()
     })
     await t.test('所有者が入れ替わり続けても全体の上限で打ち切る', async () => {
-      const child = run(await fixture('starved', '', shortWaitSource))
-      let done = false
-      child.done.then(() => { done = true })
-      await rotateOwners(i => done || i === 10)
-      const result = await finishWithin(child)
+      // 実時間と別プロセスの書き込み間隔に依存せず、所有者交代と経過時間を固定する。
+      // 同一所有者の期限より短い間隔で交代しても、全体の期限は延長されない。
+      const start = shortWaitSource.indexOf('async function acquire()')
+      const end = shortWaitSource.indexOf('async function signalGroup')
+      const acquire = shortWaitSource.slice(start, end)
+        .replace('  const holdLimit', '  let testNow = 0\n  const holdLimit')
+        .replaceAll('Date.now()', 'testNow')
+        .replace("owner = JSON.parse(await readFile(`${lock}/owner.json`, 'utf8'))",
+          'owner = {pid: process.pid, root: `queued-${testNow}`}')
+        .replace('await delay(200)', 'testNow += 1000')
+      const fixtureSource = shortWaitSource.slice(0, start) + acquire + shortWaitSource.slice(end)
+      await mkdir(lock)
+      const owner = JSON.stringify({pid: process.pid, root: '先行監査'})
+      await writeFile(path.join(lock, 'owner.json'), owner)
+      const result = await finishWithin(run(await fixture('starved', '', fixtureSource)))
       assert.notEqual(result.code, 0)
       assert.match(result.output, /全体で3時間を超えました/)
-      await access(lock)
+      assert.doesNotMatch(result.output, /30分を超えて保持/)
+      assert.match(result.output, /queued-8000/)
+      assert.equal(await readFile(path.join(lock, 'owner.json'), 'utf8'), owner)
       await rm(lock, {recursive:true})
     })
   } finally { await rm(dir, {recursive:true, force:true}) }
