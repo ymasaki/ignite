@@ -31,17 +31,16 @@
 .plot-median{stroke:var(--chart-1);stroke-width:3;stroke-linecap:round}
 .plot-out{fill:var(--panel);stroke:var(--chart-1);stroke-width:1.5}
 
-/* 散布図。点は HTML で重ね（吹き出しを出すため）、半透明の 1 色で重なりを濃さで見せる */
+/* 散布図。点は HTML で重ね（吹き出しを出すため）、半透明の 1 色で重なりを濃さで見せる。点の近くのポインタは一番近い点を選ぶ（data-chart-on） */
 .xy-pts{position:absolute;inset:0;pointer-events:none}
 .xy-pt{position:absolute;width:var(--d);height:var(--d);margin:calc(var(--d) / -2) 0 0 calc(var(--d) / -2);border-radius:50%;
   background:color-mix(in srgb,var(--chart-1) 60%,transparent);box-shadow:inset 0 0 0 1.5px var(--chart-1);pointer-events:auto}
 .xy-pt.bubble{background:color-mix(in srgb,var(--chart-1) 32%,transparent)}
 .xy-pt.muted{background:color-mix(in srgb,var(--line-2) 70%,transparent);box-shadow:inset 0 0 0 1.5px var(--ink-3)}
-.xy-pt:hover{z-index:1;background:var(--chart-1);box-shadow:0 0 0 2px var(--panel)}
+.xy-pt:is(:hover,[data-chart-on]){z-index:1;background:var(--chart-1);box-shadow:0 0 0 2px var(--panel)}
 
 /* レーダー。主な系列は面、soft は淡い破線 */
 .plot-ring{fill:none}
-.radar-hit{fill:transparent}
 .plot-radar{fill:color-mix(in srgb,var(--chart-1) 18%,transparent);stroke:var(--chart-1);stroke-width:2;stroke-linejoin:round}
 .plot-radar.soft{fill:none;stroke:var(--chart-3);stroke-dasharray:4 3}
 .plot .line-key.soft{background:var(--chart-3)}
@@ -50,9 +49,10 @@
 .radar-l.mid{transform:translate(-50%,-50%)}
 .radar-l.right{transform:translate(0,-50%)}
 .radar-l.left{transform:translate(-100%,-50%)}
-.radar-l:hover{color:var(--ink)}
+/* 面の中のポインタで選ばれた項目（data-chart-on）もホバーと同じに強調する */
+.radar-l:is(:hover,[data-chart-on]){color:var(--ink)}
 /* 名前を切り取る overflow で吹き出しが消えないよう、ホバー中は切り取らない */
-.radar-l:hover{overflow:visible}
+.radar-l:is(:hover,[data-chart-on]){overflow:visible}
 
 /* ヒートマップ。濃さは --r（0〜1）で --chart-1 と --chart-5 を混ぜる（TileMap と同じ） */
 .heatmap{position:relative;display:grid;gap:8px;min-width:0}

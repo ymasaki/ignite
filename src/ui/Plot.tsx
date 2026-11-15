@@ -328,6 +328,9 @@ export function BoxPlot({ items, unit = '', height = 220 }: { items: BoxItem[]; 
 
 // ---- 散布図 ----
 
+/** 散布図で、点の縁からこの距離（px）までのポインタを一番近い点に寄せる */
+const SCATTER_NEAR = 32
+
 export interface ScatterPoint {
   /** 吹き出しと読み上げの名前 */
   label?: string
@@ -361,8 +364,18 @@ export function ScatterChart({ points, xLabel, yLabel, sizeLabel = '大きさ', 
   const tip = (p: ScatterPoint) => [p.label, `${xLabel} ${clean(p.x)}${xUnit}`, `${yLabel} ${clean(p.y)}${yUnit}`, ...(bubble ? [`${sizeLabel} ${valueText(p.size, sizeUnit)}`] : [])].filter(Boolean).join('　')
   // 大きい点を先に描き、小さい点が隠れないようにする
   const order = points.map((p, i) => ({ p, i })).sort((a, b) => r(b.p) - r(a.p))
+  // 点の上でなくても、点の縁から NEAR px 以内なら一番近い点の値を出す（小さな点に正確に載せなくてよい）
+  const nearest = (cx: number, cy: number) => {
+    let best: HTMLElement | null = null, bestD = SCATTER_NEAR
+    ref.current?.querySelectorAll<HTMLElement>('.xy-pt').forEach((el) => {
+      const b = el.getBoundingClientRect()
+      const d = Math.hypot(cx - (b.left + b.width / 2), cy - (b.top + b.height / 2)) - b.width / 2
+      if (d <= bestD) { best = el; bestD = d }
+    })
+    return best
+  }
   return (
-    <ChartTooltip>
+    <ChartTooltip nearest={nearest}>
     <div className="plot" ref={ref}>
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${xLabel}と${yLabel}、${points.length}点`}>
         <YGrid ticks={yt} y={y} L={L} R={R} W={W} />
@@ -400,8 +413,17 @@ export function RadarChart({ axes, series, max, unit = '', height = 260 }: { axe
   }
   const poly = (vs: number[]) => axes.map((_, i) => at(i, vs[i] ?? 0).map((c) => c.toFixed(1)).join(',')).join(' ')
   const ordered = [...series.filter((s) => s.soft), ...series.filter((s) => !s.soft)]
+  // 面・頂点・輪の中では、ポインタの向きに一番近い項目の内訳を出す（吹き出しは項目名に添える。キー操作と同じ対象）
+  const nearest = (px: number, py: number) => {
+    const svg = ref.current?.querySelector('svg')
+    if (!svg) return null
+    const b = svg.getBoundingClientRect(), dx = px - b.left - cx, dy = py - b.top - cy
+    if (Math.hypot(dx, dy) > R + 12) return null
+    const i = ((Math.round((Math.atan2(dx, -dy) / (Math.PI * 2)) * n) % n) + n) % n
+    return ref.current?.querySelectorAll<HTMLElement>('.radar-l')[i] ?? null
+  }
   return (
-    <ChartTooltip>
+    <ChartTooltip nearest={nearest}>
     <div className="plot" ref={ref}>
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={series.map((s) => `${s.label} ${axes.map((a, i) => `${a} ${valueText(s.values[i], unit)}`).join('・')}`).join('、')}>
         {[0.25, 0.5, 0.75, 1].map((f) => <polygon key={f} className="line-grid plot-ring" points={poly(axes.map(() => top * f))} />)}
@@ -409,10 +431,6 @@ export function RadarChart({ axes, series, max, unit = '', height = 260 }: { axe
         <text className="line-ax" x={cx + 5} y={cy - R + 14}>{tick(top)}</text>
         {ordered.map((s) => <polygon key={s.label} className={`plot-radar${s.soft ? ' soft' : ''}`} points={poly(s.values)} />)}
         {ordered.filter((s) => !s.soft).map((s) => axes.map((_, i) => <circle key={`${s.label}-${i}`} className="line-dot" cx={at(i, s.values[i] ?? 0)[0]} cy={at(i, s.values[i] ?? 0)[1]} r={3} />))}
-        {/* 点の近くでも、項目名と同じ内訳を確認できる（キー操作は下の項目名から）。 */}
-        <g aria-hidden="true">
-          {series.map((s, k) => axes.map((a, i) => <circle key={`${k}-${i}`} className="radar-hit" cx={at(i, s.values[i] ?? 0)[0]} cy={at(i, s.values[i] ?? 0)[1]} r={10} data-chart-tip={[a, ...series.map((x) => `${series.length > 1 ? `${x.label} ` : ''}${valueText(x.values[i], unit)}`)].join('　')} />))}
-        </g>
       </svg>
       <div className="radar-axes">
         {axes.map((a, i) => {

@@ -14,7 +14,11 @@ const targetOf = (node: EventTarget | null) => node instanceof Element ? node.cl
 
 let dismissCurrent: (() => void) | undefined
 
-export function ChartTooltip({ children, inline = false }: { children: ReactNode; inline?: boolean }) {
+/**
+ * nearest は、ポインタの下に吹き出しのある要素がないときに対象を選ぶ（散布図の近くの点、レーダーの面の中の項目など）。
+ * 画面の座標を受け取り、data-chart-tip を持つ要素か null を返す。選ばれた要素には data-chart-on を付けてホバーと同じ強調にする
+ */
+export function ChartTooltip({ children, inline = false, nearest }: { children: ReactNode; inline?: boolean; nearest?: (x: number, y: number) => HTMLElement | SVGElement | null }) {
   const Tag = inline ? 'span' : 'div'
   const [revision, setRevision] = useState(0)
   const [target, setTarget] = useState<HTMLElement | SVGElement | null>(null)
@@ -22,6 +26,8 @@ export function ChartTooltip({ children, inline = false }: { children: ReactNode
   const tip = useRef<HTMLSpanElement>(null)
   const dismissedFocus = useRef<HTMLElement | SVGElement | null>(null)
   const leaving = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  // nearest で選んだ対象（ポインタが要素の上にないので、mouseout ではなく移動で離脱を判断する）
+  const near = useRef<HTMLElement | SVGElement | null>(null)
   const cancelLeave = () => clearTimeout(leaving.current)
   const localTarget = (node: EventTarget | null) => root.current?.contains(node as Node | null) ? targetOf(node) : null
   const focused = () => {
@@ -42,6 +48,7 @@ export function ChartTooltip({ children, inline = false }: { children: ReactNode
     }
     dismissCurrent?.()
     dismissCurrent = close
+    target.setAttribute('data-chart-on', '')
     const el = tip.current!
     // top layer で表示するため、dialog や overflow の背面に隠れない。
     if (!el.matches(':popover-open')) el.showPopover()
@@ -70,6 +77,7 @@ export function ChartTooltip({ children, inline = false }: { children: ReactNode
     document.addEventListener('scroll', scroll, true)
     window.addEventListener('resize', close)
     return () => {
+      target.removeAttribute('data-chart-on')
       updates.disconnect()
       if (dismissCurrent === close) dismissCurrent = undefined
       document.removeEventListener('keydown', escape, true)
@@ -83,13 +91,31 @@ export function ChartTooltip({ children, inline = false }: { children: ReactNode
         const next = targetOf(e.target)
         if (next || (e.target instanceof Element && e.target.closest('.chart-tip'))) cancelLeave()
         if (next && next !== targetOf(e.relatedTarget) && matchMedia('(hover:hover)').matches) {
+          near.current = null
           if (dismissedFocus.current === next) dismissedFocus.current = null
           setTarget(next)
         }
       }}
+      onMouseMove={nearest && ((e) => {
+        if (targetOf(e.target) || (e.target instanceof Element && e.target.closest('.chart-tip')) || !matchMedia('(hover:hover)').matches) return
+        const next = nearest(e.clientX, e.clientY)
+        if (next) {
+          cancelLeave()
+          near.current = next
+          if (dismissedFocus.current === next) dismissedFocus.current = null
+          setTarget(next)
+        } else if (near.current) {
+          near.current = null
+          leave()
+        }
+      })}
       onMouseOut={(e) => {
         if (e.relatedTarget instanceof Element && e.relatedTarget.closest('.chart-tip')) return
-        if (targetOf(e.target) !== targetOf(e.relatedTarget)) leave()
+        // 近くの要素を選んでいる間は、図の中の線や面をまたいでも閉じない（外へ出たときだけ閉じる）
+        if (near.current && root.current?.contains(e.relatedTarget as Node | null) && !targetOf(e.relatedTarget)) return
+        const wasNear = !!near.current
+        near.current = null
+        if (wasNear || targetOf(e.target) !== targetOf(e.relatedTarget)) leave()
       }}
       onFocus={(e) => { dismissedFocus.current = null; setTarget(targetOf(e.target)) }}
       onBlur={(e) => setTarget(localTarget(e.relatedTarget))}>

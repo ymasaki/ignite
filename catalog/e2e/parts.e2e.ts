@@ -1161,15 +1161,77 @@ test('グラフ共通: 狭い窓の長い吹き出し・ダークモード・リ
   await expect(tip).not.toBeVisible()
 })
 
-test('グラフ共通: レーダーの点でも項目名と同じ内訳を出す', async ({ page }) => {
+test('グラフ共通: レーダーは面の中でもポインタの向きの項目の内訳を出す', async ({ page }) => {
   await open(page, 'charts')
-  const hit = page.locator('.radar-hit').first()
-  await hit.hover()
-  await expect(page.getByRole('tooltip')).toContainText('速さ')
-  await expect(page.getByRole('tooltip')).toContainText('今期 4')
-  await page.mouse.move(0, 0)
-  await page.locator('.radar-l').first().focus()
-  await expect(page.getByRole('tooltip')).toContainText('今期 4')
+  const fig = page.locator('[data-spec="radar"] .plot').first()
+  await fig.scrollIntoViewIfNeeded()
+  const labels = fig.locator('.radar-l')
+  const n = await labels.count()
+  const tip = page.getByRole('tooltip')
+  // 図の中心から各項目の向きへ、輪の内側（半径の 4 割）にポインタを置く。頂点や線の上でなくても出る。
+  const spot = (i: number, f: number) => fig.evaluate((el, [i, n, f]) => {
+    const svg = el.querySelector('svg')!.getBoundingClientRect()
+    const ring = [...el.querySelectorAll('.plot-ring')].at(-1)!.getBoundingClientRect()
+    const r = Math.max(ring.width, ring.height) / 2, a = (i / n) * Math.PI * 2
+    const cx = svg.left + svg.width / 2, cy = svg.top + svg.height / 2
+    return { x: cx + r * f * Math.sin(a), y: cy - r * f * Math.cos(a) }
+  }, [i, n, f] as const)
+  for (let i = 0; i < n; i++) {
+    const p = await spot(i, 0.4)
+    await page.mouse.move(p.x, p.y, { steps: 3 })
+    await expect(tip).toHaveText((await labels.nth(i).getAttribute('data-chart-tip'))!)
+    await expect(labels.nth(i)).toHaveAttribute('data-chart-on', '')
+    await expect(tip).toBeVisible()
+  }
+  // 面と線をまたいで別の項目へ動いても閉じずに移る
+  const a = await spot(0, 0.7), b = await spot(1, 0.7)
+  await page.mouse.move(a.x, a.y)
+  await expect(tip).toContainText('速さ')
+  await page.mouse.move(b.x, b.y, { steps: 8 })
+  await expect(tip).toHaveText((await labels.nth(1).getAttribute('data-chart-tip'))!)
+  await expect(labels.nth(0)).not.toHaveAttribute('data-chart-on', '')
+  // 輪の外（図の隅）へ出ると閉じる
+  const box = (await fig.locator('svg').boundingBox())!
+  await page.mouse.move(box.x + 4, box.y + 4, { steps: 4 })
+  await expect(tip).toHaveCount(0)
+  await expect(fig.locator('[data-chart-on]')).toHaveCount(0)
+  await labels.first().focus()
+  await expect(tip).toContainText('今期 4')
+})
+
+test('グラフ共通: 散布図は点の近くでも一番近い点の値を出し、離れると閉じる', async ({ page }) => {
+  await open(page, 'charts')
+  const fig = page.locator('[data-spec="scatter"] .plot').first()
+  await fig.scrollIntoViewIfNeeded()
+  const tip = page.getByRole('tooltip')
+  // 点の縁から 12px 外の位置と、そこで一番近い点（縁からの距離）を求める
+  const near = await fig.evaluate(el => {
+    const pts = [...el.querySelectorAll<HTMLElement>('.xy-pt')].map(p => { const b = p.getBoundingClientRect(); return { p, x: b.left + b.width / 2, y: b.top + b.height / 2, r: b.width / 2 } })
+    const dist = (x: number, y: number) => pts.map(q => ({ q, d: Math.hypot(x - q.x, y - q.y) - q.r })).sort((a, b) => a.d - b.d)[0]
+    for (const q of pts) for (let k = 0; k < 8; k++) {
+      const a = (k / 8) * Math.PI * 2, x = q.x + (q.r + 12) * Math.cos(a), y = q.y + (q.r + 12) * Math.sin(a)
+      const best = dist(x, y)
+      if (best.q === q && document.elementFromPoint(x, y)?.closest('.xy-pt') == null) return { x, y, text: q.p.getAttribute('data-chart-tip') }
+    }
+    return null
+  })
+  expect(near).not.toBeNull()
+  await page.mouse.move(near!.x, near!.y, { steps: 3 })
+  await expect(tip).toHaveText(near!.text!)
+  await expect(tip).toBeVisible()
+  await expect(fig.locator('.xy-pt[data-chart-on]')).toHaveCount(1)
+  // どの点からも 32px より遠い場所では出さない
+  const far = await fig.evaluate(el => {
+    const svg = el.querySelector('svg')!.getBoundingClientRect()
+    const pts = [...el.querySelectorAll<HTMLElement>('.xy-pt')].map(p => p.getBoundingClientRect())
+    for (let y = svg.top + 30; y < svg.bottom - 40; y += 8) for (let x = svg.left + 50; x < svg.right - 20; x += 8)
+      if (pts.every(b => Math.hypot(x - b.left - b.width / 2, y - b.top - b.height / 2) - b.width / 2 > 40)) return { x, y }
+    return null
+  })
+  expect(far).not.toBeNull()
+  await page.mouse.move(far!.x, far!.y, { steps: 4 })
+  await expect(tip).toHaveCount(0)
+  await expect(fig.locator('[data-chart-on]')).toHaveCount(0)
 })
 
 test('グラフ共通: 表示中の値の更新に追随し、対象の削除で閉じる', async ({ page }) => {
