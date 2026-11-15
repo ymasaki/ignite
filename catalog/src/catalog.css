@@ -42,7 +42,6 @@
 .cat-form .span{grid-column:1 / -1}
 .cat-sheet{min-width:0}
 .pb > .cat-row{margin-top:16px}
-.cat-detail{display:flex;flex-direction:column;gap:16px;padding:0 18px 18px}
 .cat-end{display:flex;justify-content:flex-end;align-items:center;gap:8px}
 
 /* 基礎 */

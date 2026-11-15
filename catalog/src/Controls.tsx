@@ -82,7 +82,7 @@ export function ActionsPage({ target }: { target?: string | null }) {
       <Spec page={p} id="popover">
         <div className="cat-row">
           <Popover trigger={(open, toggle) => <Button active={open} aria-expanded={open} onClick={toggle} icon={<IconSearch {...I} />}>担当を見る</Button>}>
-            <div className="cat-detail"><KeyValues rows={[['担当', '佐藤 葵'], ['期限', '2026年11月']]} /></div>
+            <KeyValues rows={[['担当', '佐藤 葵'], ['期限', '2026年11月']]} />
           </Popover>
         </div>
       </Spec>
