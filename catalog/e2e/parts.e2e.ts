@@ -1801,8 +1801,13 @@ test('PasswordStrength: 打つたびに強さが変わり、言葉が読み上�
 test('FileDrop: Enter とラベルのクリックで選ぶ画面を開き、種類が合うものだけを受け取る', async ({ page }) => {
   await open(page, 'forms')
   const zone = page.getByRole('button', { name: '添付' })
+  // スクロールとフォーカスを確認し、対象を指定した実キー操作で開く。
+  await zone.scrollIntoViewIfNeeded()
+  await expect(zone).toBeVisible()
+  await expect(zone).toBeEnabled()
   await zone.focus()
-  const [chooser] = await Promise.all([page.waitForEvent('filechooser'), page.keyboard.press('Enter')])
+  await expect(zone).toBeFocused()
+  const [chooser] = await Promise.all([page.waitForEvent('filechooser'), zone.press('Enter')])
   await chooser.setFiles([
     { name: '見積.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF') },
     { name: 'メモ.txt', mimeType: 'text/plain', buffer: Buffer.from('x') },
