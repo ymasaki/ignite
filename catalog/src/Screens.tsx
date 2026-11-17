@@ -1,6 +1,6 @@
 import { IconChartLine, IconChecks, IconLicense, IconClock, IconListCheck, IconPencil, IconShare } from '@tabler/icons-react'
-import { AssistSettings, AuthScreen, Avatar, BarList, Board, Button, ChartCard, ChartGrid, Chip, DashboardScreen, Delta, EmptyState, EntityRow, ExternalLink, Funnel, IconBox, IconButton, KeyValues, Kpi, KpiBand, LineChart, LinkButton, ListScreen, LoginForm, PanelBody, PanelFrame, PanelHeader, ProviderLogo, Prose, ReleasePanel, SearchField, Section, Segmented, SettingBody, SettingGroup, SettingKey, SettingRow, SettingsScreen, Sparkline, StackColumns, Stat, tabPanelProps, Tabs, Tag, ThemeSettings, TileMap, toast } from '@ymasaki/ignite'
-import { useRef, useState, type ReactNode } from 'react'
+import { AssistSettings, AuthScreen, Avatar, BarList, Board, Button, ChartCard, ChartGrid, Chip, DashboardScreen, Delta, EmptyState, EntityRow, ExternalLink, Funnel, IconBox, IconButton, KeyValues, Kpi, KpiBand, LineChart, LinkButton, ListScreen, LoginForm, PanelBody, PanelFrame, PanelHeader, ProviderLogo, Prose, ReleasePanel, SearchField, Section, Segmented, SettingBody, SettingGroup, SettingKey, SettingRow, SettingsScreen, Sparkline, StackColumns, Stat, tabPanelProps, Tabs, Tag, ThemeSettings, TileMap, toast, TwoFactorForm } from '@ymasaki/ignite'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { VALUES } from './Charts'
 import { DEVELOPER, licenseDetail, licenseText, OSS_LICENSES, RELEASES, RELEASES_DETAIL, VERSION } from './about'
 import { MONTHS, PROJECTS, UPDATES } from './data'
@@ -86,44 +86,50 @@ export function DashboardPage() {
 }
 DashboardPage.Band = Band
 
-/** ログインの型。見本なので、送ると少し待って必ず失敗する */
+/** ログインの型。見本なので、送ると少し待って必ず失敗する。2 段階認証の形はパスワードを通して確認コードの段へ進み、123456 なら通す */
 export function LoginPage({ mark }: { mark: ReactNode }) {
   const [kind, setKind] = useState('basic')
+  const [step, setStep] = useState<'login' | 'code'>('login')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string>()
   const timer = useRef(0)
-  const submit = () => {
+  useEffect(() => () => window.clearTimeout(timer.current), [])
+  const wait = (then: () => void) => {
     setError(undefined)
     setLoading(true)
     window.clearTimeout(timer.current)
-    timer.current = window.setTimeout(() => {
-      setLoading(false)
-      setError('メールアドレスかパスワードが違います')
-    }, 800)
+    timer.current = window.setTimeout(() => (setLoading(false), then()), 800)
   }
+  const reset = () => (window.clearTimeout(timer.current), setLoading(false), setError(undefined), setStep('login'))
+  const submit = () => wait(() => (kind === '2fa' ? setStep('code') : setError('メールアドレスかパスワードが違います')))
+  const verify = (code: string) => wait(() => (code === '123456' ? (reset(), toast('ログインしました', { tone: 'ok' })) : setError('コードが違います')))
   return (
     <AuthScreen
       mark={mark}
       name="Ignite"
       title="ログイン"
       footer={
-        <Segmented label="見本の形" value={kind} onChange={setKind} options={[{ value: 'basic', label: '基本' }, { value: 'alt', label: '外部認証あり' }]} />
+        <Segmented label="見本の形" value={kind} onChange={(v) => (reset(), setKind(v))} options={[{ value: 'basic', label: '基本' }, { value: 'alt', label: '外部認証あり' }, { value: '2fa', label: '2 段階認証' }]} />
       }
     >
-      <LoginForm
-        onSubmit={submit}
-        loading={loading}
-        error={error}
-        remember
-        onForgot={() => undefined}
-        alternatives={kind === 'alt' ? (
-          <>
-            <Button icon={<ProviderLogo provider="google" />}>Google でログインする</Button>
-            <Button icon={<ProviderLogo provider="apple" />}>Apple でログインする</Button>
-            <Button icon={<ProviderLogo provider="okta" />}>Okta でログインする</Button>
-          </>
-        ) : undefined}
-      />
+      {step === 'code' ? (
+        <TwoFactorForm onSubmit={verify} loading={loading} error={error} hint="認証アプリに表示された 6 桁（見本は 123456）" onResend={() => toast('コードを送り直しました')} onBack={reset} />
+      ) : (
+        <LoginForm
+          onSubmit={submit}
+          loading={loading}
+          error={error}
+          remember
+          onForgot={() => undefined}
+          alternatives={kind === 'alt' ? (
+            <>
+              <Button icon={<ProviderLogo provider="google" />}>Google でログインする</Button>
+              <Button icon={<ProviderLogo provider="apple" />}>Apple でログインする</Button>
+              <Button icon={<ProviderLogo provider="okta" />}>Okta でログインする</Button>
+            </>
+          ) : undefined}
+        />
+      )}
     </AuthScreen>
   )
 }

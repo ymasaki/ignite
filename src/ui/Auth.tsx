@@ -8,6 +8,7 @@ import { FormField } from './Field'
 import { Checkbox } from './Form'
 import { Notice } from './Layout'
 import { Collapse } from './Motion'
+import { OtpField } from './OtpField'
 import { useShell } from './Shell'
 import { PasswordField, TextField } from './TextArea'
 
@@ -116,6 +117,71 @@ export function LoginForm({ onSubmit, loading = false, error, identifierLabel = 
         </>
       )}
     </div>
+  )
+}
+
+/** 確認コードの送る前の検証。桁が足りなければエラーの文を返す */
+export function validateCode(code: string, length: number): string | undefined {
+  if (!code) return '確認コードを入れてください'
+  return code.length < length ? `${length} 桁のコードを入れてください` : undefined
+}
+
+/**
+ * 2 段階認証の確認コードの入力（LoginForm の次の段）。コードの値は部品が持ち、桁がそろうと（貼り付け・端末の自動入力を含む）すぐ onSubmit へ渡す。
+ * 認証そのものは持たない。結果は loading と error で受け取り、error を受け取ると欄の下に出して升を揺らし、コードを空にして欄へ戻る。打ち直すと消える。
+ * hint はコードの届き先（「認証アプリに表示された 6 桁」など）。onResend を渡すと送り直しのリンクを出し、押すと resendWait 秒は押せない。onBack はログインの入力へ戻るリンク
+ */
+export function TwoFactorForm({ onSubmit, loading = false, error, length = 6, hint = `認証アプリに表示された ${length} 桁`, onResend, resendWait = 30, onBack, submitLabel = '確かめる' }: { onSubmit: (code: string) => void; loading?: boolean; error?: string; length?: number; hint?: ReactNode; onResend?: () => void; resendWait?: number; onBack?: () => void; submitLabel?: string }) {
+  const [code, setCode] = useState('')
+  const [shown, setShown] = useState<string>()
+  const [wait, setWait] = useState(0)
+  const form = useRef<HTMLFormElement>(null)
+  const failed = !!error && !loading
+
+  useEffect(() => {
+    if (!failed || !error) return
+    setShown(error)
+    setCode('')
+    announce(error, { assertive: true })
+    form.current?.querySelector<HTMLInputElement>('[autocomplete="one-time-code"]')?.focus()
+  }, [failed, error])
+
+  // 送り直しの待ち。1 秒ずつ減らし、0 で止める
+  useEffect(() => {
+    if (wait <= 0) return
+    const t = window.setTimeout(() => setWait(wait - 1), 1000)
+    return () => window.clearTimeout(t)
+  }, [wait])
+
+  const send = (value: string) => {
+    if (loading) return
+    const found = validateCode(value, length)
+    setShown(found)
+    if (found) {
+      requestAnimationFrame(() => form.current && focusFirstInvalid(form.current))
+      return
+    }
+    onSubmit(value)
+  }
+
+  return (
+    <form ref={form} className="login-form" noValidate aria-label="2 段階認証" onSubmit={(e: FormEvent) => (e.preventDefault(), send(code))}>
+      <FormField label="確認コード" hint={hint} error={shown}>
+        <OtpField value={code} length={length} autoFocus onChange={(v) => { setCode(v); setShown(undefined) }} onComplete={send} />
+      </FormField>
+      {(onBack || onResend) && (
+        <div className="login-row">
+          {onBack && <LinkButton onClick={onBack}>ログインの入力へ戻る</LinkButton>}
+          {onResend && (
+            // 押した直後に disabled にするとフォーカスが外れるので、待つあいだは aria-disabled で受けない
+            <LinkButton className="login-forgot" aria-disabled={wait > 0 || undefined} onClick={() => { if (wait > 0) return; setWait(resendWait); onResend() }}>
+              {wait > 0 ? `コードを送り直す（${wait} 秒後）` : 'コードを送り直す'}
+            </LinkButton>
+          )}
+        </div>
+      )}
+      <Button type="submit" variant="primary" className="login-submit" loading={loading}>{submitLabel}</Button>
+    </form>
   )
 }
 

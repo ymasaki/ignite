@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { validateLogin } from '../src/ui/Auth'
+import { validateCode, validateLogin } from '../src/ui/Auth'
 import { filterOptions, parseNumber, stepNumber } from '../src/ui/Form'
 import { addDays, addMonths, clampDate, monthGrid } from '../src/ui/calendar'
 import { pageItems } from '../src/ui/Navigation'
@@ -68,6 +68,14 @@ describe('数の入力', () => {
     expect(stepNumber(10, 1, 1, 0, 10)).toBe(10)
     expect(stepNumber(null, 1, 1, 5)).toBe(6)
     expect(stepNumber(0, 1e-7, 1e-7)).toBe(1e-7)
+  })
+})
+
+describe('確認コードの検証', () => {
+  it('空と桁の不足をエラーにし、そろえば通す', () => {
+    expect(validateCode('', 6)).toBe('確認コードを入れてください')
+    expect(validateCode('123', 6)).toBe('6 桁のコードを入れてください')
+    expect(validateCode('1234', 4)).toBeUndefined()
   })
 })
 

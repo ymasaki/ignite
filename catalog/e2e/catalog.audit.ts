@@ -54,6 +54,8 @@ defineIgniteAudit({
     { name: 'ログインの型（入力エラー）', path: '/?nav=login', act: async (page) => { await page.getByRole('button', { name: 'ログインする' }).click(); await page.waitForTimeout(350) } },
     { name: 'ログインの型（失敗）', path: '/?nav=login&skin=blue', act: async (page) => { await page.getByRole('textbox', { name: 'メールアドレス' }).fill('a@example.com'); await page.getByRole('textbox', { name: 'パスワード' }).fill('secret'); await page.keyboard.press('Enter'); await page.getByRole('status').filter({ hasText: '違います' }).waitFor() } },
     { name: 'ログインの型（外部認証）', path: '/?nav=login&mode=dark', act: async (page) => { await page.getByRole('button', { name: '外部認証あり' }).click(); await page.getByText('または').waitFor() } },
+    { name: 'ログインの型（2 段階認証）', path: '/?nav=login', act: async (page) => { await page.getByRole('button', { name: '2 段階認証' }).click(); await page.getByRole('textbox', { name: 'メールアドレス' }).fill('a@example.com'); await page.getByRole('textbox', { name: 'パスワード' }).fill('secret'); await page.keyboard.press('Enter'); await page.getByRole('textbox', { name: '確認コード' }).waitFor() } },
+    { name: 'ログインの型（2 段階認証の失敗）', path: '/?nav=login&mode=dark', act: async (page) => { await page.getByRole('button', { name: '2 段階認証' }).click(); await page.getByRole('textbox', { name: 'メールアドレス' }).fill('a@example.com'); await page.getByRole('textbox', { name: 'パスワード' }).fill('secret'); await page.keyboard.press('Enter'); await page.getByRole('textbox', { name: '確認コード' }).fill('111111'); await page.locator('.ff-error').filter({ hasText: 'コードが違います' }).waitFor(); await page.waitForTimeout(350) } },
     { name: '一覧の型（ダーク）', path: '/?nav=list&mode=dark' },
     { name: '概要（ダーク）', path: '/?mode=dark' },
     { name: 'ダッシュボードの型（ブルー）', path: '/?nav=dashboard&skin=blue' },

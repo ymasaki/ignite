@@ -15,6 +15,8 @@
 @keyframes otpIn{from{opacity:0;translate:0 6px;scale:.7}to{opacity:1;translate:0 0;scale:1}}
 /* エラー: 枠を危険の色にし、並びを 1 回だけ横に揺らす */
 .otp.invalid .otp-cell{border-color:var(--danger)}
+/* エラー中のホバーは入力欄と同じく赤い縁に 1px の輪を足す（打つ位置の升は次の行のフォーカスの輪が勝つ） */
+.otp.invalid:hover .otp-cell{box-shadow:0 0 0 1px var(--danger)}
 .otp.invalid .otp-cell.cur{box-shadow:0 0 0 3px color-mix(in srgb,var(--danger) 22%,transparent)}
 .otp.invalid{animation:otpShake .36s var(--ease-in-out)}
 @keyframes otpShake{20%{translate:-4px 0}40%{translate:4px 0}60%{translate:-2px 0}80%{translate:2px 0}}
