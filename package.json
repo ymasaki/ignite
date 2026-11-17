@@ -1,6 +1,6 @@
 {
   "name": "@ymasaki/ignite",
-  "version": "1.18.2",
+  "version": "1.18.3",
   "description": "Web・デスクトップのアプリで同じ見た目と使い勝手をそろえるデザインシステム",
   "type": "module",
   "license": "UNLICENSED",
@@ -87,7 +87,7 @@
     "eslint": "10.15.0",
     "eslint-plugin-sonarjs": "4.2.2",
     "jscpd": "5.4.3",
-    "jsdom": "26.1.0",
+    "jsdom": "31.0.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "typescript": "npm:@typescript/typescript6@6.0.2",
