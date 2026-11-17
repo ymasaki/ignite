@@ -13,13 +13,15 @@ import { useScrollFocus } from '../src/ui/A11y';
 import { useRef } from 'react';
 import { domSetup, render, el, event, frame, resize, advance } from './dom';
 domSetup();
-it('回る数字は桁ごとに帯の要素を 1 つだけ作り、0〜9 を 1 つの文字列で持つ', () => {
+it('回る数字は桁ごとに帯の要素を 1 つだけ作り、文字として置くのは今の数字だけにする', () => {
     render(<RollingNumber value={1280} />);
     expect(document.querySelectorAll('.roll-col')).toHaveLength(4);
     expect(document.querySelectorAll('.roll *')).toHaveLength(4 * 2 + 1);
-    const strip = el('.roll-strip');
-    expect(strip.childElementCount).toBe(0);
-    expect(strip.textContent).toBe('0\n1\n2\n3\n4\n5\n6\n7\n8\n9');
+    const strips = [...document.querySelectorAll<HTMLElement>('.roll-strip')];
+    expect(strips.map(s => s.childElementCount)).toEqual([0, 0, 0, 0]);
+    expect(strips.map(s => s.textContent)).toEqual(['1', '2', '8', '0']);
+    expect(strips.map(s => s.dataset.d)).toEqual(['1', '2', '8', '0']);
+    expect(strips.map(s => s.style.transform)).toEqual(['translateY(-10%)', 'translateY(-20%)', 'translateY(-80%)', 'translateY(0%)']);
 });
 it('測る処理は先にすべて呼び、書き込みはそのあとでまとめて行う', async () => {
     const order: string[] = [];

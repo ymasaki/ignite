@@ -163,14 +163,10 @@ export function measure(page: Page, args: MeasureArgs): Promise<Measured[]> {
       // 枠の中の字のはみ出しが見えないので、字の幅（Range）で測る。消えていく桁（.gone）は幅 0 が正しい
       for (const col of document.querySelectorAll<HTMLElement>('.roll-col:not(.gone)')) {
         const strip = col.querySelector<HTMLElement>('.roll-strip')
-        const shift = strip && /translateY\((-?[\d.]+)%\)/.exec(strip.style.transform)
-        // 帯は 0〜9 を改行で区切った 1 つの文字列（数字 d は 2d 文字目）
-        const text = strip?.firstChild
-        const at = shift ? Math.round(-parseFloat(shift[1]) / 10) * 2 : -1
-        if (!text || text.nodeType !== Node.TEXT_NODE || at < 0 || at >= (text.textContent?.length ?? 0) || !visible(col)) continue
+        // 帯に文字として置かれているのは、見えている数字だけ（上下に続く数字は CSS が描く）
+        if (!strip?.textContent || !/translateY\(/.test(strip.style.transform) || !visible(col)) continue
         const range = document.createRange()
-        range.setStart(text, at)
-        range.setEnd(text, at + 1)
+        range.selectNodeContents(strip)
         const glyph = range.getBoundingClientRect().width
         const box = col.getBoundingClientRect().width
         if (glyph > box + 0.5) out.push({ rule: '横のはみ出し（5 章）', where: parentWho(col.parentElement || col), expected: '数字の字が桁の枠に収まる', actual: `字 ${glyph.toFixed(1)}px > 桁 ${box.toFixed(1)}px` })

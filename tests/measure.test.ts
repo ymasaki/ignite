@@ -101,7 +101,7 @@ describe('描画監査の境界と例外', () => {
         expect(await run()).toEqual([]);
     });
     it('回る数字の見えている桁だけ、字と枠の0.5pxの差を測る', async () => {
-        document.body.innerHTML = '<div class="roll"><span class="roll-col"><span class="roll-strip" style="transform:translateY(-10%)">0\n1</span></span></div>';
+        document.body.innerHTML = '<div class="roll"><span class="roll-col"><span class="roll-strip" style="transform:translateY(-10%)">1</span></span></div>';
         box('.roll-col', 0, 0, 8, 20);
         Object.defineProperty(Range.prototype, 'getBoundingClientRect', { configurable: true, value: () => ({ width: 8.5 }) });
         expect(await run()).toEqual([]);
