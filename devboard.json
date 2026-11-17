@@ -27,501 +27,501 @@
   "dependencies": {
     "waiting": [
       {
-        "id": "npm|@babel/helper-string-parser|package-lock.json",
+        "id": "npm|@babel/helper-string-parser|registry.npmjs.org",
         "versions": [
           "7.29.14"
         ],
         "reason": "2026-11-18確認。更新先 8.1.2 を親の依存範囲で解決できない。magicast@0.5.5 → @babel/types ^7.29.7 → @babel/types@7.29.14 → @babel/helper-string-parser ^7.29.14。解決済みの制約は @babel/types@7.29.14 (^7.29.14)。https://registry.npmjs.org/magicast/0.5.5",
-        "parent": "npm|magicast|package-lock.json",
+        "parent": "npm|magicast|registry.npmjs.org",
         "parentVersion": "0.5.5"
       },
       {
-        "id": "npm|@babel/helper-validator-identifier|package-lock.json",
+        "id": "npm|@babel/helper-validator-identifier|registry.npmjs.org",
         "versions": [
           "7.29.7"
         ],
         "reason": "2026-11-18確認。更新先 8.0.6 を親の依存範囲で解決できない。magicast@0.5.5 → @babel/types ^7.29.7 → @babel/types@7.29.14 → @babel/helper-validator-identifier ^7.29.7。解決済みの制約は @babel/types@7.29.14 (^7.29.7)。https://registry.npmjs.org/magicast/0.5.5",
-        "parent": "npm|magicast|package-lock.json",
+        "parent": "npm|magicast|registry.npmjs.org",
         "parentVersion": "0.5.5"
       },
       {
-        "id": "npm|@babel/parser|package-lock.json",
+        "id": "npm|@babel/parser|registry.npmjs.org",
         "versions": [
           "7.29.14"
         ],
         "reason": "2026-11-18確認。更新先 8.1.2 を親の依存範囲で解決できない。magicast@0.5.5 → @babel/parser ^7.29.7。解決済みの制約は magicast@0.5.5 (^7.29.7)。https://registry.npmjs.org/magicast/0.5.5",
-        "parent": "npm|magicast|package-lock.json",
+        "parent": "npm|magicast|registry.npmjs.org",
         "parentVersion": "0.5.5"
       },
       {
-        "id": "npm|@babel/types|package-lock.json",
+        "id": "npm|@babel/types|registry.npmjs.org",
         "versions": [
           "7.29.14"
         ],
         "reason": "2026-11-18確認。更新先 8.1.2 を親の依存範囲で解決できない。magicast@0.5.5 → @babel/types ^7.29.7。解決済みの制約は @babel/parser@7.29.14 (^7.29.14)、magicast@0.5.5 (^7.29.7)。https://registry.npmjs.org/magicast/0.5.5",
-        "parent": "npm|magicast|package-lock.json",
+        "parent": "npm|magicast|registry.npmjs.org",
         "parentVersion": "0.5.5"
       },
       {
-        "id": "npm|eslint-visitor-keys|package-lock.json",
+        "id": "npm|eslint-visitor-keys|registry.npmjs.org",
         "versions": [
           "3.4.3",
           "5.0.1"
         ],
         "reason": "2026-11-18確認。更新先 5.0.1 を親の依存範囲で解決できない。@eslint-community/eslint-utils@4.10.1 → eslint-visitor-keys ^3.4.3。解決済みの制約は @eslint-community/eslint-utils@4.10.1 (^3.4.3)。https://registry.npmjs.org/%40eslint-community%2Feslint-utils/4.10.1",
-        "parent": "npm|@eslint-community/eslint-utils|package-lock.json",
+        "parent": "npm|@eslint-community/eslint-utils|registry.npmjs.org",
         "parentVersion": "4.10.1"
       },
       {
-        "id": "npm|@humanfs/core|package-lock.json",
+        "id": "npm|@humanfs/core|registry.npmjs.org",
         "versions": [
           "0.19.2"
         ],
         "reason": "2026-11-18確認。更新先 0.20.0 を親の依存範囲で解決できない。eslint@10.15.0 → @humanfs/node ^0.16.8 → @humanfs/node@0.16.8 → @humanfs/core ^0.19.2。解決済みの制約は @humanfs/node@0.16.8 (^0.19.2)。https://registry.npmjs.org/eslint/10.15.0",
-        "parent": "npm|eslint|package-lock.json",
+        "parent": "npm|eslint|registry.npmjs.org",
         "parentVersion": "10.15.0"
       },
       {
-        "id": "npm|@humanfs/node|package-lock.json",
+        "id": "npm|@humanfs/node|registry.npmjs.org",
         "versions": [
           "0.16.8"
         ],
         "reason": "2026-11-18確認。更新先 0.17.0 を親の依存範囲で解決できない。eslint@10.15.0 → @humanfs/node ^0.16.8。解決済みの制約は eslint@10.15.0 (^0.16.8)。https://registry.npmjs.org/eslint/10.15.0",
-        "parent": "npm|eslint|package-lock.json",
+        "parent": "npm|eslint|registry.npmjs.org",
         "parentVersion": "10.15.0"
       },
       {
-        "id": "npm|@humanfs/types|package-lock.json",
+        "id": "npm|@humanfs/types|registry.npmjs.org",
         "versions": [
           "0.15.0"
         ],
         "reason": "2026-11-18確認。更新先 0.16.0 を親の依存範囲で解決できない。eslint@10.15.0 → @humanfs/node ^0.16.8 → @humanfs/node@0.16.8 → @humanfs/core ^0.19.2 → @humanfs/core@0.19.2 → @humanfs/types ^0.15.0。解決済みの制約は @humanfs/core@0.19.2 (^0.15.0)、@humanfs/node@0.16.8 (^0.15.0)。https://registry.npmjs.org/eslint/10.15.0",
-        "parent": "npm|eslint|package-lock.json",
+        "parent": "npm|eslint|registry.npmjs.org",
         "parentVersion": "10.15.0"
       },
       {
-        "id": "npm|@keyv/bigmap|package-lock.json",
+        "id": "npm|@keyv/bigmap|registry.npmjs.org",
         "versions": [
           "1.3.1"
         ],
         "reason": "2026-11-18確認。更新先 6.1.0 を親の依存範囲で解決できない。@cacheable/memory@2.2.0 → @keyv/bigmap ^1.3.1。解決済みの制約は @cacheable/memory@2.2.0 (^1.3.1)。https://registry.npmjs.org/%40cacheable%2Fmemory/2.2.0",
-        "parent": "npm|@cacheable/memory|package-lock.json",
+        "parent": "npm|@cacheable/memory|registry.npmjs.org",
         "parentVersion": "2.2.0"
       },
       {
-        "id": "npm|@napi-rs/wasm-runtime|package-lock.json",
+        "id": "npm|@napi-rs/wasm-runtime|registry.npmjs.org",
         "versions": [
           "1.2.6"
         ],
         "reason": "2026-11-18確認。更新先 1.2.7 を親の依存範囲で解決できない。vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-wasm32-wasi 1.2.19 → @rolldown/binding-wasm32-wasi@1.2.19 → @napi-rs/wasm-runtime 1.2.6。解決済みの制約は @rolldown/binding-wasm32-wasi@1.2.19 (1.2.6)。https://registry.npmjs.org/vite/8.3.8 Rolldown 1.3.2 の WASI バインディングも 1.2.6 を固定。https://registry.npmjs.org/%40rolldown%2Fbinding-wasm32-wasi/1.3.2",
-        "parent": "npm|vite|package-lock.json",
+        "parent": "npm|vite|registry.npmjs.org",
         "parentVersion": "8.3.8"
       },
       {
-        "id": "npm|@oxc-project/types|package-lock.json",
+        "id": "npm|@oxc-project/types|registry.npmjs.org",
         "versions": [
           "0.156.0"
         ],
         "reason": "2026-11-18確認。更新先 0.159.0 を親の依存範囲で解決できない。vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @oxc-project/types =0.156.0。解決済みの制約は rolldown@1.2.19 (=0.156.0)。https://registry.npmjs.org/vite/8.3.8 Rolldown 1.3.2 も =0.158.0 を指定し、0.159.0 は選ばない。https://registry.npmjs.org/rolldown/1.3.2",
-        "parent": "npm|vite|package-lock.json",
+        "parent": "npm|vite|registry.npmjs.org",
         "parentVersion": "8.3.8"
       },
       {
-        "id": "npm|@rolldown/binding-android-arm-eabi|package-lock.json",
+        "id": "npm|@rolldown/binding-android-arm-eabi|registry.npmjs.org",
         "versions": [
           "1.2.19"
         ],
         "reason": "2026-11-18確認。更新先 1.3.2 を親の依存範囲で解決できない。vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-android-arm-eabi 1.2.19。解決済みの制約は rolldown@1.2.19 (1.2.19)。https://registry.npmjs.org/vite/8.3.8",
-        "parent": "npm|vite|package-lock.json",
+        "parent": "npm|vite|registry.npmjs.org",
         "parentVersion": "8.3.8"
       },
       {
-        "id": "npm|@rolldown/binding-android-arm64|package-lock.json",
+        "id": "npm|@rolldown/binding-android-arm64|registry.npmjs.org",
         "versions": [
           "1.2.19"
         ],
         "reason": "2026-11-18確認。更新先 1.3.2 を親の依存範囲で解決できない。vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-android-arm64 1.2.19。解決済みの制約は rolldown@1.2.19 (1.2.19)。https://registry.npmjs.org/vite/8.3.8",
-        "parent": "npm|vite|package-lock.json",
+        "parent": "npm|vite|registry.npmjs.org",
         "parentVersion": "8.3.8"
       },
       {
-        "id": "npm|@rolldown/binding-darwin-arm64|package-lock.json",
+        "id": "npm|@rolldown/binding-darwin-arm64|registry.npmjs.org",
         "versions": [
           "1.2.19"
         ],
         "reason": "2026-11-18確認。更新先 1.3.2 を親の依存範囲で解決できない。vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-darwin-arm64 1.2.19。解決済みの制約は rolldown@1.2.19 (1.2.19)。https://registry.npmjs.org/vite/8.3.8",
-        "parent": "npm|vite|package-lock.json",
+        "parent": "npm|vite|registry.npmjs.org",
         "parentVersion": "8.3.8"
       },
       {
-        "id": "npm|@rolldown/binding-darwin-x64|package-lock.json",
+        "id": "npm|@rolldown/binding-darwin-x64|registry.npmjs.org",
         "versions": [
           "1.2.19"
         ],
         "reason": "2026-11-18確認。更新先 1.3.2 を親の依存範囲で解決できない。vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-darwin-x64 1.2.19。解決済みの制約は rolldown@1.2.19 (1.2.19)。https://registry.npmjs.org/vite/8.3.8",
-        "parent": "npm|vite|package-lock.json",
+        "parent": "npm|vite|registry.npmjs.org",
         "parentVersion": "8.3.8"
       },
       {
-        "id": "npm|@rolldown/binding-freebsd-x64|package-lock.json",
+        "id": "npm|@rolldown/binding-freebsd-x64|registry.npmjs.org",
         "versions": [
           "1.2.19"
         ],
         "reason": "2026-11-18確認。更新先 1.3.2 を親の依存範囲で解決できない。vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-freebsd-x64 1.2.19。解決済みの制約は rolldown@1.2.19 (1.2.19)。https://registry.npmjs.org/vite/8.3.8",
-        "parent": "npm|vite|package-lock.json",
+        "parent": "npm|vite|registry.npmjs.org",
         "parentVersion": "8.3.8"
       },
       {
-        "id": "npm|@rolldown/binding-linux-arm-gnueabihf|package-lock.json",
+        "id": "npm|@rolldown/binding-linux-arm-gnueabihf|registry.npmjs.org",
         "versions": [
           "1.2.19"
         ],
         "reason": "2026-11-18確認。更新先 1.3.2 を親の依存範囲で解決できない。vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-linux-arm-gnueabihf 1.2.19。解決済みの制約は rolldown@1.2.19 (1.2.19)。https://registry.npmjs.org/vite/8.3.8",
-        "parent": "npm|vite|package-lock.json",
+        "parent": "npm|vite|registry.npmjs.org",
         "parentVersion": "8.3.8"
       },
       {
-        "id": "npm|@rolldown/binding-linux-arm64-gnu|package-lock.json",
+        "id": "npm|@rolldown/binding-linux-arm64-gnu|registry.npmjs.org",
         "versions": [
           "1.2.19"
         ],
         "reason": "2026-11-18確認。更新先 1.3.2 を親の依存範囲で解決できない。vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-linux-arm64-gnu 1.2.19。解決済みの制約は rolldown@1.2.19 (1.2.19)。https://registry.npmjs.org/vite/8.3.8",
-        "parent": "npm|vite|package-lock.json",
+        "parent": "npm|vite|registry.npmjs.org",
         "parentVersion": "8.3.8"
       },
       {
-        "id": "npm|@rolldown/binding-linux-arm64-musl|package-lock.json",
+        "id": "npm|@rolldown/binding-linux-arm64-musl|registry.npmjs.org",
         "versions": [
           "1.2.19"
         ],
         "reason": "2026-11-18確認。更新先 1.3.2 を親の依存範囲で解決できない。vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-linux-arm64-musl 1.2.19。解決済みの制約は rolldown@1.2.19 (1.2.19)。https://registry.npmjs.org/vite/8.3.8",
-        "parent": "npm|vite|package-lock.json",
+        "parent": "npm|vite|registry.npmjs.org",
         "parentVersion": "8.3.8"
       },
       {
-        "id": "npm|@rolldown/binding-linux-ppc64-gnu|package-lock.json",
+        "id": "npm|@rolldown/binding-linux-ppc64-gnu|registry.npmjs.org",
         "versions": [
           "1.2.19"
         ],
         "reason": "2026-11-18確認。更新先 1.3.2 を親の依存範囲で解決できない。vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-linux-ppc64-gnu 1.2.19。解決済みの制約は rolldown@1.2.19 (1.2.19)。https://registry.npmjs.org/vite/8.3.8",
-        "parent": "npm|vite|package-lock.json",
+        "parent": "npm|vite|registry.npmjs.org",
         "parentVersion": "8.3.8"
       },
       {
-        "id": "npm|@rolldown/binding-linux-s390x-gnu|package-lock.json",
+        "id": "npm|@rolldown/binding-linux-s390x-gnu|registry.npmjs.org",
         "versions": [
           "1.2.19"
         ],
         "reason": "2026-11-18確認。更新先 1.3.2 を親の依存範囲で解決できない。vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-linux-s390x-gnu 1.2.19。解決済みの制約は rolldown@1.2.19 (1.2.19)。https://registry.npmjs.org/vite/8.3.8",
-        "parent": "npm|vite|package-lock.json",
+        "parent": "npm|vite|registry.npmjs.org",
         "parentVersion": "8.3.8"
       },
       {
-        "id": "npm|@rolldown/binding-linux-x64-gnu|package-lock.json",
+        "id": "npm|@rolldown/binding-linux-x64-gnu|registry.npmjs.org",
         "versions": [
           "1.2.19"
         ],
         "reason": "2026-11-18確認。更新先 1.3.2 を親の依存範囲で解決できない。vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-linux-x64-gnu 1.2.19。解決済みの制約は rolldown@1.2.19 (1.2.19)。https://registry.npmjs.org/vite/8.3.8",
-        "parent": "npm|vite|package-lock.json",
+        "parent": "npm|vite|registry.npmjs.org",
         "parentVersion": "8.3.8"
       },
       {
-        "id": "npm|@rolldown/binding-linux-x64-musl|package-lock.json",
+        "id": "npm|@rolldown/binding-linux-x64-musl|registry.npmjs.org",
         "versions": [
           "1.2.19"
         ],
         "reason": "2026-11-18確認。更新先 1.3.2 を親の依存範囲で解決できない。vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-linux-x64-musl 1.2.19。解決済みの制約は rolldown@1.2.19 (1.2.19)。https://registry.npmjs.org/vite/8.3.8",
-        "parent": "npm|vite|package-lock.json",
+        "parent": "npm|vite|registry.npmjs.org",
         "parentVersion": "8.3.8"
       },
       {
-        "id": "npm|@rolldown/binding-openharmony-arm64|package-lock.json",
+        "id": "npm|@rolldown/binding-openharmony-arm64|registry.npmjs.org",
         "versions": [
           "1.2.19"
         ],
         "reason": "2026-11-18確認。更新先 1.3.2 を親の依存範囲で解決できない。vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-openharmony-arm64 1.2.19。解決済みの制約は rolldown@1.2.19 (1.2.19)。https://registry.npmjs.org/vite/8.3.8",
-        "parent": "npm|vite|package-lock.json",
+        "parent": "npm|vite|registry.npmjs.org",
         "parentVersion": "8.3.8"
       },
       {
-        "id": "npm|@rolldown/binding-wasm32-wasi|package-lock.json",
+        "id": "npm|@rolldown/binding-wasm32-wasi|registry.npmjs.org",
         "versions": [
           "1.2.19"
         ],
         "reason": "2026-11-18確認。更新先 1.3.2 を親の依存範囲で解決できない。vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-wasm32-wasi 1.2.19。解決済みの制約は rolldown@1.2.19 (1.2.19)。https://registry.npmjs.org/vite/8.3.8",
-        "parent": "npm|vite|package-lock.json",
+        "parent": "npm|vite|registry.npmjs.org",
         "parentVersion": "8.3.8"
       },
       {
-        "id": "npm|@rolldown/binding-win32-arm64-msvc|package-lock.json",
+        "id": "npm|@rolldown/binding-win32-arm64-msvc|registry.npmjs.org",
         "versions": [
           "1.2.19"
         ],
         "reason": "2026-11-18確認。更新先 1.3.2 を親の依存範囲で解決できない。vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-win32-arm64-msvc 1.2.19。解決済みの制約は rolldown@1.2.19 (1.2.19)。https://registry.npmjs.org/vite/8.3.8",
-        "parent": "npm|vite|package-lock.json",
+        "parent": "npm|vite|registry.npmjs.org",
         "parentVersion": "8.3.8"
       },
       {
-        "id": "npm|@rolldown/binding-win32-x64-msvc|package-lock.json",
+        "id": "npm|@rolldown/binding-win32-x64-msvc|registry.npmjs.org",
         "versions": [
           "1.2.19"
         ],
         "reason": "2026-11-18確認。更新先 1.3.2 を親の依存範囲で解決できない。vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-win32-x64-msvc 1.2.19。解決済みの制約は rolldown@1.2.19 (1.2.19)。https://registry.npmjs.org/vite/8.3.8",
-        "parent": "npm|vite|package-lock.json",
+        "parent": "npm|vite|registry.npmjs.org",
         "parentVersion": "8.3.8"
       },
       {
-        "id": "npm|@sonarsource/analyzer-commons-configurations|package-lock.json",
+        "id": "npm|@sonarsource/analyzer-commons-configurations|registry.npmjs.org",
         "versions": [
           "2.31.0-5284"
         ],
         "reason": "2026-11-18確認。更新先 2.36.0-15632 を親の依存範囲で解決できない。eslint-plugin-sonarjs@4.2.2 → @sonarsource/analyzer-commons-configurations ^2.31.0-5284。解決済みの制約は eslint-plugin-sonarjs@4.2.2 (^2.31.0-5284)。https://registry.npmjs.org/eslint-plugin-sonarjs/4.2.2 上流は 2.36.0.15632 として公開済み。npm 上の 2.36.0-15632 は現在の親の範囲に含まれない。https://github.com/SonarSource/sonar-analyzer-commons/releases/tag/2.36.0.15632",
-        "parent": "npm|eslint-plugin-sonarjs|package-lock.json",
+        "parent": "npm|eslint-plugin-sonarjs|registry.npmjs.org",
         "parentVersion": "4.2.2"
       },
       {
-        "id": "npm|typescript|package-lock.json",
+        "id": "npm|typescript|registry.npmjs.org",
         "versions": [
           "6.0.3",
           "7.0.2"
         ],
         "reason": "2026-11-18確認。更新先 7.0.2 を親の依存範囲で解決できない。eslint-plugin-sonarjs@4.2.2 → typescript >=5 <6.1.0。解決済みの制約は @typescript/typescript6@6.0.2 (npm:typescript@^6)。https://registry.npmjs.org/eslint-plugin-sonarjs/4.2.2 解析側の @typescript/typescript6@6.0.2 が @typescript/old に npm:typescript@^6 を指定。@typescript-eslint/parser@8.73.0 の peer は >=4.8.4 <6.1.0。型検査は引き続き本家の 7.0.2 を使用。https://registry.npmjs.org/%40typescript%2Ftypescript6/6.0.2 https://registry.npmjs.org/%40typescript-eslint%2Fparser/8.73.0",
-        "parent": "npm|eslint-plugin-sonarjs|package-lock.json",
+        "parent": "npm|eslint-plugin-sonarjs|registry.npmjs.org",
         "parentVersion": "4.2.2"
       },
       {
-        "id": "npm|ajv|package-lock.json",
+        "id": "npm|ajv|registry.npmjs.org",
         "versions": [
           "6.15.0"
         ],
         "reason": "2026-11-18確認。更新先 8.20.0 を親の依存範囲で解決できない。eslint@10.15.0 → ajv ^6.14.0。解決済みの制約は eslint@10.15.0 (^6.14.0)。https://registry.npmjs.org/eslint/10.15.0",
-        "parent": "npm|eslint|package-lock.json",
+        "parent": "npm|eslint|registry.npmjs.org",
         "parentVersion": "10.15.0"
       },
       {
-        "id": "npm|balanced-match|package-lock.json",
+        "id": "npm|balanced-match|registry.npmjs.org",
         "versions": [
           "4.0.4"
         ],
         "reason": "2026-11-18確認。更新先 5.0.0 を親の依存範囲で解決できない。brace-expansion@5.0.13 → balanced-match ^4.0.2。解決済みの制約は brace-expansion@5.0.13 (^4.0.2)。https://registry.npmjs.org/brace-expansion/5.0.13",
-        "parent": "npm|brace-expansion|package-lock.json",
+        "parent": "npm|brace-expansion|registry.npmjs.org",
         "parentVersion": "5.0.13"
       },
       {
-        "id": "npm|builtin-modules|package-lock.json",
+        "id": "npm|builtin-modules|registry.npmjs.org",
         "versions": [
           "3.3.0"
         ],
         "reason": "2026-11-18確認。更新先 5.5.0 を親の依存範囲で解決できない。eslint-plugin-sonarjs@4.2.2 → builtin-modules ^3.3.0。解決済みの制約は eslint-plugin-sonarjs@4.2.2 (^3.3.0)。https://registry.npmjs.org/eslint-plugin-sonarjs/4.2.2",
-        "parent": "npm|eslint-plugin-sonarjs|package-lock.json",
+        "parent": "npm|eslint-plugin-sonarjs|registry.npmjs.org",
         "parentVersion": "4.2.2"
       },
       {
-        "id": "npm|es-module-lexer|package-lock.json",
+        "id": "npm|es-module-lexer|registry.npmjs.org",
         "versions": [
           "2.3.2"
         ],
         "reason": "2026-11-18確認。更新先 3.0.5 を親の依存範囲で解決できない。vitest@5.1.0 → es-module-lexer ^2.3.2。解決済みの制約は vitest@5.1.0 (^2.3.2)。https://registry.npmjs.org/vitest/5.1.0",
-        "parent": "npm|vitest|package-lock.json",
+        "parent": "npm|vitest|registry.npmjs.org",
         "parentVersion": "5.1.0"
       },
       {
-        "id": "npm|escape-string-regexp|package-lock.json",
+        "id": "npm|escape-string-regexp|registry.npmjs.org",
         "versions": [
           "4.0.0"
         ],
         "reason": "2026-11-18確認。更新先 5.0.0 を親の依存範囲で解決できない。eslint@10.15.0 → escape-string-regexp ^4.0.0。解決済みの制約は eslint@10.15.0 (^4.0.0)。https://registry.npmjs.org/eslint/10.15.0",
-        "parent": "npm|eslint|package-lock.json",
+        "parent": "npm|eslint|registry.npmjs.org",
         "parentVersion": "10.15.0"
       },
       {
-        "id": "npm|fast-levenshtein|package-lock.json",
+        "id": "npm|fast-levenshtein|registry.npmjs.org",
         "versions": [
           "2.0.6"
         ],
         "reason": "2026-11-18確認。更新先 3.0.0 を親の依存範囲で解決できない。optionator@0.9.4 → fast-levenshtein ^2.0.6。解決済みの制約は optionator@0.9.4 (^2.0.6)。https://registry.npmjs.org/optionator/0.9.4",
-        "parent": "npm|optionator|package-lock.json",
+        "parent": "npm|optionator|registry.npmjs.org",
         "parentVersion": "0.9.4"
       },
       {
-        "id": "npm|find-up|package-lock.json",
+        "id": "npm|find-up|registry.npmjs.org",
         "versions": [
           "5.0.0"
         ],
         "reason": "2026-11-18確認。更新先 8.0.0 を親の依存範囲で解決できない。eslint@10.15.0 → find-up ^5.0.0。解決済みの制約は eslint@10.15.0 (^5.0.0)。https://registry.npmjs.org/eslint/10.15.0",
-        "parent": "npm|eslint|package-lock.json",
+        "parent": "npm|eslint|registry.npmjs.org",
         "parentVersion": "10.15.0"
       },
       {
-        "id": "npm|hashery|package-lock.json",
+        "id": "npm|hashery|registry.npmjs.org",
         "versions": [
           "1.5.1"
         ],
         "reason": "2026-11-18確認。更新先 3.0.6 を親の依存範囲で解決できない。@cacheable/utils@2.5.0 → hashery ^1.5.1。解決済みの制約は @cacheable/utils@2.5.0 (^1.5.1)、@keyv/bigmap@1.3.1 (^1.4.0)。https://registry.npmjs.org/%40cacheable%2Futils/2.5.0",
-        "parent": "npm|@cacheable/utils|package-lock.json",
+        "parent": "npm|@cacheable/utils|registry.npmjs.org",
         "parentVersion": "2.5.0"
       },
       {
-        "id": "npm|hookified|package-lock.json",
+        "id": "npm|hookified|registry.npmjs.org",
         "versions": [
           "1.15.1",
           "2.2.0"
         ],
         "reason": "2026-11-18確認。更新先 3.1.0 を親の依存範囲で解決できない。@cacheable/memory@2.2.0 → hookified ^1.15.1。解決済みの制約は @cacheable/memory@2.2.0 (^1.15.1)、@keyv/bigmap@1.3.1 (^1.15.0)、cacheable@2.5.0 (^1.15.0)、flat-cache@6.1.23 (^1.15.0)、hashery@1.5.1 (^1.15.0)、qified@0.10.1 (^2.1.1)。https://registry.npmjs.org/%40cacheable%2Fmemory/2.2.0",
-        "parent": "npm|@cacheable/memory|package-lock.json",
+        "parent": "npm|@cacheable/memory|registry.npmjs.org",
         "parentVersion": "2.2.0"
       },
       {
-        "id": "npm|ignore|package-lock.json",
+        "id": "npm|ignore|registry.npmjs.org",
         "versions": [
           "5.3.2"
         ],
         "reason": "2026-11-18確認。更新先 7.0.16 を親の依存範囲で解決できない。eslint@10.15.0 → ignore ^5.2.0。解決済みの制約は eslint@10.15.0 (^5.2.0)。https://registry.npmjs.org/eslint/10.15.0",
-        "parent": "npm|eslint|package-lock.json",
+        "parent": "npm|eslint|registry.npmjs.org",
         "parentVersion": "10.15.0"
       },
       {
-        "id": "npm|isexe|package-lock.json",
+        "id": "npm|isexe|registry.npmjs.org",
         "versions": [
           "2.0.0"
         ],
         "reason": "2026-11-18確認。更新先 4.0.0 を親の依存範囲で解決できない。cross-spawn@7.0.6 → which ^2.0.1 → which@2.0.2 → isexe ^2.0.0。解決済みの制約は which@2.0.2 (^2.0.0)。https://registry.npmjs.org/cross-spawn/7.0.6",
-        "parent": "npm|cross-spawn|package-lock.json",
+        "parent": "npm|cross-spawn|registry.npmjs.org",
         "parentVersion": "7.0.6"
       },
       {
-        "id": "npm|json-schema-traverse|package-lock.json",
+        "id": "npm|json-schema-traverse|registry.npmjs.org",
         "versions": [
           "0.4.1"
         ],
         "reason": "2026-11-18確認。更新先 1.0.0 を親の依存範囲で解決できない。eslint@10.15.0 → ajv ^6.14.0 → ajv@6.15.0 → json-schema-traverse ^0.4.1。解決済みの制約は ajv@6.15.0 (^0.4.1)。https://registry.npmjs.org/eslint/10.15.0",
-        "parent": "npm|eslint|package-lock.json",
+        "parent": "npm|eslint|registry.npmjs.org",
         "parentVersion": "10.15.0"
       },
       {
-        "id": "npm|keyv|package-lock.json",
+        "id": "npm|keyv|registry.npmjs.org",
         "versions": [
           "5.6.0"
         ],
         "reason": "2026-11-18確認。更新先 6.1.0 を親の依存範囲で解決できない。@cacheable/memory@2.2.0 → keyv ^5.6.0。解決済みの制約は @cacheable/memory@2.2.0 (^5.6.0)、@cacheable/utils@2.5.0 (^5.6.0)、@keyv/bigmap@1.3.1 (^5.6.0)、cacheable@2.5.0 (^5.6.0)。https://registry.npmjs.org/%40cacheable%2Fmemory/2.2.0",
-        "parent": "npm|@cacheable/memory|package-lock.json",
+        "parent": "npm|@cacheable/memory|registry.npmjs.org",
         "parentVersion": "2.2.0"
       },
       {
-        "id": "npm|locate-path|package-lock.json",
+        "id": "npm|locate-path|registry.npmjs.org",
         "versions": [
           "6.0.0"
         ],
         "reason": "2026-11-18確認。更新先 8.0.0 を親の依存範囲で解決できない。eslint@10.15.0 → find-up ^5.0.0 → find-up@5.0.0 → locate-path ^6.0.0。解決済みの制約は find-up@5.0.0 (^6.0.0)。https://registry.npmjs.org/eslint/10.15.0",
-        "parent": "npm|eslint|package-lock.json",
+        "parent": "npm|eslint|registry.npmjs.org",
         "parentVersion": "10.15.0"
       },
       {
-        "id": "npm|nanoid|package-lock.json",
+        "id": "npm|nanoid|registry.npmjs.org",
         "versions": [
           "3.3.20"
         ],
         "reason": "2026-11-18確認。更新先 6.0.2 を親の依存範囲で解決できない。postcss@8.5.33 → nanoid ^3.3.20。解決済みの制約は postcss@8.5.33 (^3.3.20)。https://registry.npmjs.org/postcss/8.5.33",
-        "parent": "npm|postcss|package-lock.json",
+        "parent": "npm|postcss|registry.npmjs.org",
         "parentVersion": "8.5.33"
       },
       {
-        "id": "npm|p-limit|package-lock.json",
+        "id": "npm|p-limit|registry.npmjs.org",
         "versions": [
           "3.1.0"
         ],
         "reason": "2026-11-18確認。更新先 7.3.3 を親の依存範囲で解決できない。eslint@10.15.0 → find-up ^5.0.0 → find-up@5.0.0 → locate-path ^6.0.0 → locate-path@6.0.0 → p-locate ^5.0.0 → p-locate@5.0.0 → p-limit ^3.0.2。解決済みの制約は p-locate@5.0.0 (^3.0.2)。https://registry.npmjs.org/eslint/10.15.0",
-        "parent": "npm|eslint|package-lock.json",
+        "parent": "npm|eslint|registry.npmjs.org",
         "parentVersion": "10.15.0"
       },
       {
-        "id": "npm|p-locate|package-lock.json",
+        "id": "npm|p-locate|registry.npmjs.org",
         "versions": [
           "5.0.0"
         ],
         "reason": "2026-11-18確認。更新先 7.0.0 を親の依存範囲で解決できない。eslint@10.15.0 → find-up ^5.0.0 → find-up@5.0.0 → locate-path ^6.0.0 → locate-path@6.0.0 → p-locate ^5.0.0。解決済みの制約は locate-path@6.0.0 (^5.0.0)。https://registry.npmjs.org/eslint/10.15.0",
-        "parent": "npm|eslint|package-lock.json",
+        "parent": "npm|eslint|registry.npmjs.org",
         "parentVersion": "10.15.0"
       },
       {
-        "id": "npm|path-exists|package-lock.json",
+        "id": "npm|path-exists|registry.npmjs.org",
         "versions": [
           "4.0.0"
         ],
         "reason": "2026-11-18確認。更新先 5.0.0 を親の依存範囲で解決できない。eslint@10.15.0 → find-up ^5.0.0 → find-up@5.0.0 → path-exists ^4.0.0。解決済みの制約は find-up@5.0.0 (^4.0.0)。https://registry.npmjs.org/eslint/10.15.0",
-        "parent": "npm|eslint|package-lock.json",
+        "parent": "npm|eslint|registry.npmjs.org",
         "parentVersion": "10.15.0"
       },
       {
-        "id": "npm|path-key|package-lock.json",
+        "id": "npm|path-key|registry.npmjs.org",
         "versions": [
           "3.1.1"
         ],
         "reason": "2026-11-18確認。更新先 4.0.0 を親の依存範囲で解決できない。cross-spawn@7.0.6 → path-key ^3.1.0。解決済みの制約は cross-spawn@7.0.6 (^3.1.0)。https://registry.npmjs.org/cross-spawn/7.0.6",
-        "parent": "npm|cross-spawn|package-lock.json",
+        "parent": "npm|cross-spawn|registry.npmjs.org",
         "parentVersion": "7.0.6"
       },
       {
-        "id": "npm|qified|package-lock.json",
+        "id": "npm|qified|registry.npmjs.org",
         "versions": [
           "0.10.1"
         ],
         "reason": "2026-11-18確認。更新先 0.13.3 を親の依存範囲で解決できない。cacheable@2.5.0 → qified ^0.10.1。解決済みの制約は cacheable@2.5.0 (^0.10.1)。https://registry.npmjs.org/cacheable/2.5.0",
-        "parent": "npm|cacheable|package-lock.json",
+        "parent": "npm|cacheable|registry.npmjs.org",
         "parentVersion": "2.5.0"
       },
       {
-        "id": "npm|rolldown|package-lock.json",
+        "id": "npm|rolldown|registry.npmjs.org",
         "versions": [
           "1.2.19"
         ],
         "reason": "2026-11-18確認。更新先 1.3.2 を親の依存範囲で解決できない。vite@8.3.8 → rolldown ~1.2.18。解決済みの制約は vite@8.3.8 (~1.2.18)。https://registry.npmjs.org/vite/8.3.8",
-        "parent": "npm|vite|package-lock.json",
+        "parent": "npm|vite|registry.npmjs.org",
         "parentVersion": "8.3.8"
       },
       {
-        "id": "npm|shebang-regex|package-lock.json",
+        "id": "npm|shebang-regex|registry.npmjs.org",
         "versions": [
           "3.0.0"
         ],
         "reason": "2026-11-18確認。更新先 4.0.0 を親の依存範囲で解決できない。shebang-command@2.0.0 → shebang-regex ^3.0.0。解決済みの制約は shebang-command@2.0.0 (^3.0.0)。https://registry.npmjs.org/shebang-command/2.0.0",
-        "parent": "npm|shebang-command|package-lock.json",
+        "parent": "npm|shebang-command|registry.npmjs.org",
         "parentVersion": "2.0.0"
       },
       {
-        "id": "npm|undici-types|package-lock.json",
+        "id": "npm|undici-types|registry.npmjs.org",
         "versions": [
           "8.9.0"
         ],
         "reason": "2026-11-18確認。更新先 8.12.4 を親の依存範囲で解決できない。@types/node@26.6.6 → undici-types ~8.9.0。解決済みの制約は @types/node@26.6.6 (~8.9.0)。https://registry.npmjs.org/%40types%2Fnode/26.6.6",
-        "parent": "npm|@types/node|package-lock.json",
+        "parent": "npm|@types/node|registry.npmjs.org",
         "parentVersion": "26.6.6"
       },
       {
-        "id": "npm|which|package-lock.json",
+        "id": "npm|which|registry.npmjs.org",
         "versions": [
           "2.0.2"
         ],
         "reason": "2026-11-18確認。更新先 7.0.0 を親の依存範囲で解決できない。cross-spawn@7.0.6 → which ^2.0.1。解決済みの制約は cross-spawn@7.0.6 (^2.0.1)。https://registry.npmjs.org/cross-spawn/7.0.6",
-        "parent": "npm|cross-spawn|package-lock.json",
+        "parent": "npm|cross-spawn|registry.npmjs.org",
         "parentVersion": "7.0.6"
       },
       {
-        "id": "npm|why-is-node-running|package-lock.json",
+        "id": "npm|why-is-node-running|registry.npmjs.org",
         "versions": [
           "3.2.1"
         ],
         "reason": "2026-11-18確認。更新先 3.2.3 を親の依存範囲で解決できない。vitest@5.1.0 → why-is-node-running 3.2.1。解決済みの制約は vitest@5.1.0 (3.2.1)。https://registry.npmjs.org/vitest/5.1.0",
-        "parent": "npm|vitest|package-lock.json",
+        "parent": "npm|vitest|registry.npmjs.org",
         "parentVersion": "5.1.0"
       },
       {
-        "id": "npm|yocto-queue|package-lock.json",
+        "id": "npm|yocto-queue|registry.npmjs.org",
         "versions": [
           "0.1.0"
         ],
         "reason": "2026-11-18確認。更新先 1.2.2 を親の依存範囲で解決できない。eslint@10.15.0 → find-up ^5.0.0 → find-up@5.0.0 → locate-path ^6.0.0 → locate-path@6.0.0 → p-locate ^5.0.0 → p-locate@5.0.0 → p-limit ^3.0.2 → p-limit@3.1.0 → yocto-queue ^0.1.0。解決済みの制約は p-limit@3.1.0 (^0.1.0)。https://registry.npmjs.org/eslint/10.15.0",
-        "parent": "npm|eslint|package-lock.json",
+        "parent": "npm|eslint|registry.npmjs.org",
         "parentVersion": "10.15.0"
       }
     ]
