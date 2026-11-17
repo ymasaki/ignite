@@ -158,9 +158,9 @@ test('本体の中で角丸の枠の外に置いた中身を拾い、枠・帯�
 
 test('回る数字の桁が字を切るのを拾い、収まる桁・消えていく桁は拾わない', async ({ page }) => {
   // 桁 1 つ分の帯。cut は字より狭い窓（以前の 1ch が古い書体のまま残った状態）、fit は帯の幅に任せた窓
-  const strip = (d: number) => `<span class="roll-strip" data-d="${d}" style="transform: translateY(-${d * 10}%)">${d}</span>`
+  const strip = (d: number) => `<span class="roll-strip" style="transform: translateY(-${d * 10}%)"></span>${d}`
   await page.setContent(`<style>
-    body{margin:0;font-size:32px;font-weight:700} .roll-col{display:inline-block;height:37px;overflow:hidden} .roll-strip{display:block;white-space:pre;line-height:37px} .roll-strip::before{content:'0\\A 1\\A 2\\A 3\\A 4\\A 5\\A 6\\A 7\\A '} .roll-strip[data-d='0']::before{content:none}
+    body{margin:0;font-size:32px;font-weight:700} .roll-col{display:inline-block;height:37px;overflow:hidden} .roll-strip{display:block;white-space:pre;line-height:37px} .roll-strip::before{content:'0\\A 1\\A 2\\A 3\\A 4\\A 5\\A 6\\A 7\\A 8\\A 9'}
     .cut .roll-col{width:8px} .roll-col.gone{width:0}
   </style><span class="roll fit"><span class="roll-col">${strip(8)}</span></span>
     <span class="roll cut"><span class="roll-col">${strip(8)}</span></span>

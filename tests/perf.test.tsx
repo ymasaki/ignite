@@ -15,13 +15,17 @@ import { domSetup, render, el, event, frame, resize, advance } from './dom';
 domSetup();
 it('回る数字は桁ごとに帯の要素を 1 つだけ作り、文字として置くのは今の数字だけにする', () => {
     render(<RollingNumber value={1280} />);
-    expect(document.querySelectorAll('.roll-col')).toHaveLength(4);
+    const cols = [...document.querySelectorAll<HTMLElement>('.roll-col')];
+    expect(cols).toHaveLength(4);
     expect(document.querySelectorAll('.roll *')).toHaveLength(4 * 2 + 1);
-    const strips = [...document.querySelectorAll<HTMLElement>('.roll-strip')];
-    expect(strips.map(s => s.childElementCount)).toEqual([0, 0, 0, 0]);
-    expect(strips.map(s => s.textContent)).toEqual(['1', '2', '8', '0']);
-    expect(strips.map(s => s.dataset.d)).toEqual(['1', '2', '8', '0']);
+    expect(cols.map(c => c.textContent)).toEqual(['1', '2', '8', '0']);
+    const strips = cols.map(c => c.querySelector<HTMLElement>('.roll-strip')!);
+    expect(strips.map(s => s.childNodes.length)).toEqual([0, 0, 0, 0]);
     expect(strips.map(s => s.style.transform)).toEqual(['translateY(-10%)', 'translateY(-20%)', 'translateY(-80%)', 'translateY(0%)']);
+    // 値が変わっても帯は作り直さず、位置と今の数字の文字だけが変わる
+    render(<RollingNumber value={1295} />);
+    expect([...document.querySelectorAll('.roll-strip')]).toEqual(strips);
+    expect(cols.map(c => c.textContent)).toEqual(['1', '2', '9', '5']);
 });
 it('測る処理は先にすべて呼び、書き込みはそのあとでまとめて行う', async () => {
     const order: string[] = [];

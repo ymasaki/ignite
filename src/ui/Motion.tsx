@@ -288,11 +288,13 @@ export function RollingNumber({ value, decimals = 0 }: { value: number; decimals
   const padded = [...Array(total - n).fill('0'), ...digits]
   // 幅 0 にする桁: 消えていく桁（先頭の 0）と、増えたばかりの桁
   const gone = (i: number) => i < total - n || i < n - cols
-  // 帯（.roll-strip）に置く文字は今の数字だけ。上下に続く 0〜9 は CSS が data-d から描く（motion.css）。数字ごとに要素を作ると、
-  // 数字の多い画面で要素の半分が帯になる。見えていない数字を文字として置くと、読み上げ名と見える文字を比べる検査がそれも拾う
+  // 帯（.roll-strip）の 0〜9 は CSS が描く（motion.css。数字ごとに要素を作ると、数字の多い画面で要素の半分が帯になる）。
+  // 今の数字は、帯の後ろ（桁の枠に切られて見えない行）に文字として置く。読み上げ名と見える文字を比べる検査と、字の幅を測る監査がこれを読む。
+  // 値が変わっても帯は位置が動くだけで、組み直すのはこの 1 文字で済む
   const col = (d: string, key: string, off = false) => (
     <span className={`roll-col ${off ? 'gone' : ''}`} key={key} aria-hidden="true">
-      <span className="roll-strip" data-d={d} style={{ transform: `translateY(${-Number(d) * 10}%)` }}>{d}</span>
+      <span className="roll-strip" style={{ transform: `translateY(${-Number(d) * 10}%)` }} />
+      {d}
     </span>
   )
   return (

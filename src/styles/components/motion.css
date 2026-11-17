@@ -62,19 +62,10 @@
 /* 消える桁・増えた直後の桁は幅 0（幅の変化をなめらかに） */
 .roll-col.gone{max-width:0;opacity:0}
 .roll-dot{display:inline-block;height:var(--roll-h);line-height:var(--roll-h)}
-/* 帯は 0〜9 を 1 行ずつ縦に並べる（1 行が 1 桁の高さ）。数字ごとの要素は作らず、文字として置くのは今の数字（data-d）だけで、
-   その上に続く数字を ::before、下に続く数字を ::after が改行で区切って描く */
+/* 帯は 0〜9 を 1 行ずつ縦に並べる（1 行が 1 桁の高さ）。数字ごとの要素は作らず、改行で区切った 1 つの生成内容で描く。
+   今の数字の文字は帯の後ろの行に置かれ、桁の枠（高さ 1 行・overflow:hidden）に切られて見えない */
 .roll-strip{display:block;white-space:pre;line-height:var(--roll-h);text-align:center;transition:transform .6s var(--ease-spring)}
-.roll-strip[data-d="0"]::after{content:'\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9'}
-.roll-strip[data-d="1"]::before{content:'0\A '}.roll-strip[data-d="1"]::after{content:'\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9'}
-.roll-strip[data-d="2"]::before{content:'0\A 1\A '}.roll-strip[data-d="2"]::after{content:'\A 3\A 4\A 5\A 6\A 7\A 8\A 9'}
-.roll-strip[data-d="3"]::before{content:'0\A 1\A 2\A '}.roll-strip[data-d="3"]::after{content:'\A 4\A 5\A 6\A 7\A 8\A 9'}
-.roll-strip[data-d="4"]::before{content:'0\A 1\A 2\A 3\A '}.roll-strip[data-d="4"]::after{content:'\A 5\A 6\A 7\A 8\A 9'}
-.roll-strip[data-d="5"]::before{content:'0\A 1\A 2\A 3\A 4\A '}.roll-strip[data-d="5"]::after{content:'\A 6\A 7\A 8\A 9'}
-.roll-strip[data-d="6"]::before{content:'0\A 1\A 2\A 3\A 4\A 5\A '}.roll-strip[data-d="6"]::after{content:'\A 7\A 8\A 9'}
-.roll-strip[data-d="7"]::before{content:'0\A 1\A 2\A 3\A 4\A 5\A 6\A '}.roll-strip[data-d="7"]::after{content:'\A 8\A 9'}
-.roll-strip[data-d="8"]::before{content:'0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A '}.roll-strip[data-d="8"]::after{content:'\A 9'}
-.roll-strip[data-d="9"]::before{content:'0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A '}
+.roll-strip::before{content:'0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9'}
 
 @media (prefers-reduced-motion: reduce){
   .roll-strip,.roll-col{transition:none}
