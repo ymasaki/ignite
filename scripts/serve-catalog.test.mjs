@@ -35,6 +35,7 @@ test('ネイティブ依存なしで配信し、境界・競合・停止を守�
     await writeFile(path.join(work, 'catalog-dist/assets/app.js'), 'export {}')
     await writeFile(path.join(work, 'catalog-dist/assets/app.css'), 'body{}')
     await writeFile(path.join(work, 'catalog-dist/favicon.svg'), '<svg/>')
+    await writeFile(path.join(work, 'catalog-dist/THIRD_PARTY_LICENSES.txt'), '権利表記')
     await writeFile(path.join(work, 'secret'), '秘密')
     await symlink(path.join(work, 'secret'), path.join(work, 'catalog-dist/link'))
     child = start(undefined, { PORT: '0', HOST: '127.0.0.1' })
@@ -55,7 +56,7 @@ test('ネイティブ依存なしで配信し、境界・競合・停止を守�
     assert.equal(index.body, '<title>Ignite</title>')
     assert.match(index.headers['content-type'], /text\/html/)
     assert.equal(index.headers['cache-control'], 'no-store')
-    for (const [url, type] of [['/assets/app.js', 'text/javascript'], ['/assets/app.css', 'text/css'], ['/favicon.svg', 'image/svg+xml']]) {
+    for (const [url, type] of [['/assets/app.js', 'text/javascript'], ['/assets/app.css', 'text/css'], ['/favicon.svg', 'image/svg+xml'], ['/THIRD_PARTY_LICENSES.txt', 'text/plain; charset=utf-8']]) {
       const response = await request(port, url)
       assert.equal(response.status, 200)
       assert.ok(response.headers['content-type'].startsWith(type))

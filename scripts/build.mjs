@@ -3,16 +3,22 @@ import { build } from 'esbuild'
 import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
+import { collectNotices, renderNotices, NOTICES_FILE } from './third-party-notices.mjs'
 
 const root = path.resolve(import.meta.dirname, '..')
 const dist = path.join(root, 'dist')
 fs.rmSync(dist, { recursive: true, force: true })
 fs.mkdirSync(dist, { recursive: true })
 
-await build({ entryPoints: [path.join(root, 'src/index.ts')], outfile: path.join(dist, 'index.js'), bundle: true, format: 'esm', jsx: 'automatic', target: 'es2022', external: ['react', 'react/jsx-runtime', 'react-dom', '@tabler/icons-react'] })
-await build({ entryPoints: [path.join(root, 'audit/index.ts')], outfile: path.join(dist, 'audit.js'), bundle: true, format: 'esm', platform: 'node', target: 'node20', external: ['@playwright/test', '@axe-core/playwright'] })
-await build({ entryPoints: [path.join(root, 'cli/index.ts')], outfile: path.join(dist, 'cli.js'), bundle: true, format: 'esm', platform: 'node', target: 'node20', banner: { js: '#!/usr/bin/env node' } })
+const builds = []
+builds.push(await build({ absWorkingDir: root, metafile: true, entryPoints: [path.join(root, 'src/index.ts')], outfile: path.join(dist, 'index.js'), bundle: true, format: 'esm', jsx: 'automatic', target: 'es2022', external: ['react', 'react/jsx-runtime', 'react-dom', '@tabler/icons-react'] }))
+builds.push(await build({ absWorkingDir: root, metafile: true, entryPoints: [path.join(root, 'audit/index.ts')], outfile: path.join(dist, 'audit.js'), bundle: true, format: 'esm', platform: 'node', target: 'node20', external: ['@playwright/test', '@axe-core/playwright'] }))
+builds.push(await build({ absWorkingDir: root, metafile: true, entryPoints: [path.join(root, 'cli/index.ts')], outfile: path.join(dist, 'cli.js'), bundle: true, format: 'esm', platform: 'node', target: 'node20', banner: { js: '#!/usr/bin/env node' } }))
 fs.chmodSync(path.join(dist, 'cli.js'), 0o755)
+// 外部パッケージのコードを同梱したときだけ、その権利表記を dist に添える（いまは react などを利用者側で入れるので同梱しない）
+const bundled = builds.flatMap(result => Object.keys(result.metafile.inputs).map(input => path.resolve(root, input)))
+const notices = collectNotices(bundled, root)
+if (notices.length) fs.writeFileSync(path.join(dist, NOTICES_FILE), renderNotices(notices, '@ymasaki/ignite'))
 
 /** @import の順に中身を展開する（読む順がカスケードの決まりなので、順番を変えない） */
 function inline(file) {

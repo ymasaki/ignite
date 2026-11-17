@@ -54,6 +54,19 @@ GitHubでは `v<版>` のdraftを作り、不足する3添付（tgz・`SHA256SUM
 
 最初の一度だけ、人がリポジトリの Settings → Pages の Source を「GitHub Actions」にします。
 
+## 外部パッケージの権利表記
+
+配布物が外部パッケージのコードを同梱したら、その著作権表示・ライセンス文・NOTICE を `THIRD_PARTY_LICENSES.txt` として一緒に配ります。手で書かず、ビルドが同梱したモジュールから毎回作り直します（`scripts/third-party-notices.mjs`）。依存を足す・上げるだけで表記も追従します。
+
+| 配布物 | 同梱する外部コード | 表記 |
+|---|---|---|
+| パッケージ（tgz） | なし。React・アイコン・Playwright・axe は外部依存として残し、利用者が自分で入れる | 同梱が起きたときだけ `scripts/build.mjs` が `dist/THIRD_PARTY_LICENSES.txt` を作る |
+| カタログ（ステージング・GitHub Pages） | `react`・`react-dom`・`scheduler`・`@tabler/icons-react` と、Vite・Rolldown が差し込む補助コード | `catalog/vite.config.ts` が毎回 `THIRD_PARTY_LICENSES.txt` を出し、`index.html` の `<link rel="license">` から指す |
+
+開発依存（ビルド・型・テスト・解析の道具）は配布物に入らないので表記の対象外です。台帳で Apache-2.0・LGPL・MPL に分類される TypeScript・Playwright・ESLint 系・`eslint-plugin-sonarjs`・`axe-core`・`lightningcss` などもこれに当たります。`@axe-core/playwright`（MPL-2.0）は任意の peer で、利用者が入れたものを使い、配布物には含めません。
+
+同梱したパッケージのライセンスが表記の同梱だけで済むもの（MIT・ISC・BSD・0BSD・Apache-2.0・Zlib・BlueOak-1.0.0・CC0-1.0）でない場合や、ライセンス文のファイルがない場合は、ビルドが止まります。止まったら、同梱をやめる（外部依存として残す・peer にする）か、置き換えを検討します。GPL・LGPL・MPL などのソース公開の義務がかかるものを許可に足すのは、オーナーの判断を経てからにします。ライセンスの記載は `package.json` を手がかりにしつつ、食い違いがあれば取得元の LICENSE を正とします。
+
 ## 代替経路: レジストリへの発行
 
 現在の `production.command` はレジストリへ発行しません。以下は GitHub Packages を使う場合の手動手順です。切り替え条件は [採用手順](adopting.md#github-packagesへ切り替える条件)を確認します。

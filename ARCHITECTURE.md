@@ -30,7 +30,7 @@ Ignite 自身を変更するときの案内。デザインの規約は [DESIGN.m
 | `ignite` | `cli/index.ts` | `dist/cli.js` |
 | `@ymasaki/ignite/DESIGN.md`・`@ymasaki/ignite/package.json` | 同名ファイル | 規約と版・入口の定義 |
 
-`npm run build` は `scripts/build.mjs` を実行する。JavaScript は esbuild、型定義は `tsconfig.build.json` による TypeScript 7、CSS は import の順を保った展開で作る。React・アイコン、監査の Playwright・axe は外部依存として残す。`prepack` も同じビルドを行う。 TypeScript 7 は `typescript-native` の npm alias で導入し、型検査・型定義出力・コミット前検査は `node node_modules/typescript-native/bin/tsc` を明示し、6系と共通の `.bin/tsc` の導入順には依存しない。解析パーサが任意で使う実験版の `@typescript/native` とは名前を分ける。JavaScript API を必要とする品質解析には、`typescript` の alias で公式の `@typescript/typescript6` 互換APIを残す。
+`npm run build` は `scripts/build.mjs` を実行する。JavaScript は esbuild、型定義は `tsconfig.build.json` による TypeScript 7、CSS は import の順を保った展開で作る。React・アイコン、監査の Playwright・axe は外部依存として残す。外部パッケージのコードを同梱したときだけ、その権利表記を `dist/THIRD_PARTY_LICENSES.txt` に添える。カタログのビルドは同梱した React などの権利表記を毎回出す（[外部パッケージの権利表記](docs/releasing.md#外部パッケージの権利表記)）。`prepack` も同じビルドを行う。 TypeScript 7 は `typescript-native` の npm alias で導入し、型検査・型定義出力・コミット前検査は `node node_modules/typescript-native/bin/tsc` を明示し、6系と共通の `.bin/tsc` の導入順には依存しない。解析パーサが任意で使う実験版の `@typescript/native` とは名前を分ける。JavaScript API を必要とする品質解析には、`typescript` の alias で公式の `@typescript/typescript6` 互換APIを残す。
 
 `dist/` とともに `DESIGN.md`・`CHANGELOG.md`・`docs/`・`templates/` を配る。README は npm が同梱する。AGENTS・CLAUDE・この文書は開発リポジトリ用で、配布対象に加えない。生成した `dist/`・`catalog-dist/`・検査結果・`releases/` は Git に追加しない。
 
@@ -53,7 +53,7 @@ Ignite 自身を変更するときの案内。デザインの規約は [DESIGN.m
 | 静的検査 | `tests/check.test.ts`・`tests/staged.test.ts` と、ビルド後の `npm run check:design` |
 | 初期化・同期・更新 | `tests/cli.test.ts` と `npm run smoke` |
 | 画面の測定・前後処理 | `tests/audit.test.ts`、`catalog/e2e/audit-extension.e2e.ts`、カタログ監査 |
-| 監査の実行・配信・公開処理 | `node --test scripts/hooks.test.mjs scripts/test-entry.test.mjs scripts/health.test.mjs scripts/audit-cache.test.mjs scripts/audit-runner.test.mjs scripts/serve-catalog.test.mjs scripts/release.test.mjs` |
+| 監査の実行・配信・公開処理 | `node --test scripts/hooks.test.mjs scripts/test-entry.test.mjs scripts/health.test.mjs scripts/audit-cache.test.mjs scripts/audit-runner.test.mjs scripts/serve-catalog.test.mjs scripts/release.test.mjs scripts/third-party-notices.test.mjs` |
 | コード品質の計測 | `scripts/health/` の各コマンドが解析・行カバレッジ・計算の速さを測る。対象と実行方法は [README のコード品質](README.md#devboard-のコード品質)を正本とし、`scripts/health.test.mjs` で出力と失敗時の扱いを確認する |
 | 表示の速さ・要素数・メモリ | `npm run perf:parts`（部品を数百個並べた見本。`scripts/perf/parts/`）と、ビルド済みカタログを渡す `npm run perf:catalog -- --dist <ディレクトリ>`。ウィンドウを開かない Chromium で、レイアウト・スタイルの計算の回数、要素数、ヒープ、何もしない間の処理を出す。時間は端末の負荷でぶれるので合否には使わず、同じ端末で変更の前後（`perf:parts -- --src <前の作業ツリー>`）を比べる。増やさない決まりの回帰は `tests/perf.test.tsx` |
 | パッケージ・ひな形・ビルド | `npm run smoke`。実際に pack して、空環境への導入・同期・模擬次版への更新を確かめる |

@@ -2,6 +2,12 @@
 
 採用アプリは `npx ignite upgrade ./vendor/次の版.tgz`（[採用手順](docs/adopting.md#更新を取り込む)）でこの内容を確かめて取り込む。形式は [docs/releasing.md](docs/releasing.md)。
 
+## 1.20.1（2026-11-17）
+
+### 修正
+
+- 公開しているカタログ（ステージング・GitHub Pages）が同梱する `react`・`react-dom`・`scheduler`・`@tabler/icons-react` と Vite・Rolldown の補助コードについて、著作権表示とライセンス文を `THIRD_PARTY_LICENSES.txt` として配るようにした。ビルドのたびに同梱したものから作り直す。パッケージ（tgz）は外部コードを同梱しておらず、中身は変わらない。採用アプリの対応は要らない。
+
 ## 1.20.0（2026-11-17）
 
 ### 変更

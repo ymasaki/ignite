@@ -1,6 +1,7 @@
 import react from '@vitejs/plugin-react'
 import path from 'node:path'
 import { defineConfig } from 'vite'
+import { thirdPartyNotices } from '../scripts/third-party-notices.mjs'
 
 const root = path.resolve(import.meta.dirname, '..')
 
@@ -9,7 +10,8 @@ const root = path.resolve(import.meta.dirname, '..')
 export default defineConfig({
   root: import.meta.dirname,
   base: process.env.CATALOG_BASE || '/',
-  plugins: [react()],
+  // 公開するカタログは react などを同梱するので、その権利表記を THIRD_PARTY_LICENSES.txt として一緒に出す
+  plugins: [react(), thirdPartyNotices({ root, product: 'Ignite カタログ' })],
   resolve: {
     alias: [
       { find: '@ymasaki/ignite/styles.css', replacement: path.join(root, 'src/styles/index.css') },

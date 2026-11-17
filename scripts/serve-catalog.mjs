@@ -8,7 +8,7 @@ const root = await realpath(fileURLToPath(new URL('../catalog-dist/', import.met
 const port = Number(process.argv[2] ?? process.env.PORT ?? 5199)
 if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error('ポート番号が不正です')
 const host = process.env.HOST ?? '127.0.0.1'
-const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.woff2': 'font/woff2' }
+const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.txt': 'text/plain; charset=utf-8', '.png': 'image/png', '.ico': 'image/x-icon', '.woff2': 'font/woff2' }
 const inside = file => file.startsWith(root + path.sep)
 const server = http.createServer(async (req, res) => {
   const reply = status => { res.writeHead(status); res.end() }
