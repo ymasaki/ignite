@@ -2,6 +2,12 @@
 
 採用アプリは `npx ignite upgrade ./vendor/次の版.tgz`（[採用手順](docs/adopting.md#更新を取り込む)）でこの内容を確かめて取り込む。形式は [docs/releasing.md](docs/releasing.md)。
 
+## 1.20.2（2026-11-18）
+
+### 変更
+
+- 開発時に React の型定義が参照する CSS プロパティの型を `csstype` 3.2.4 に更新した。採用アプリの対応は要らない。
+
 ## 1.20.1（2026-11-17）
 
 ### 修正
