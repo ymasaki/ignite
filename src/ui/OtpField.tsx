@@ -53,7 +53,7 @@ export function OtpField({ value, onChange, onComplete, length = 6, label, disab
         }}
       />
       {Array.from({ length }, (_, i) => [
-        // 6 桁以上の偶数は半分で区切り、3 桁ずつ読み取れるようにする（見た目だけ。値に区切りは入れない）
+        // 6 桁以上の偶数は半分に幅 0 の空きを挟み、そこだけ升の間を 2 倍にして 3 桁ずつ読み取れるようにする（線は引かない。値に区切りは入れない）
         i > 0 && length >= 6 && length % 2 === 0 && i === length / 2 && <span key="sep" className="otp-sep" aria-hidden="true" />,
         <span key={i} className={`otp-cell${i < value.length ? ' filled' : ''}${focused && i === cur ? ' cur' : ''}`} aria-hidden="true">
           {i < value.length && <span key={value[i]}>{value[i]}</span>}

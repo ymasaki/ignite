@@ -2,8 +2,8 @@
 .otp{position:relative;display:inline-flex;align-items:center;max-width:100%;gap:var(--space-2)}
 /* 升は 40px。置き場所が狭ければ 30px まで縮める */
 .otp-cell{flex:0 1 40px;min-width:30px}
-/* 半分の区切り。短い横線で、升の間より少し広くとる */
-.otp-sep{flex:none;width:10px;height:2px;margin:0 var(--space-1);border-radius:99px;background:var(--line-2)}
+/* 半分の区切り。線は引かず、幅 0 の空きを 1 つ挟んで、半分の間だけ升の間の 2 倍の間隔にする */
+.otp-sep{flex:none;width:0}
 .otp-input{position:absolute;inset:0;z-index:1;width:100%;height:100%;padding:0;border:0;background:transparent;color:transparent;caret-color:transparent;font-size:16px;outline:none;cursor:text} /* design-ok: 透明な入力欄。16px 未満だと iPhone が拡大する */
 .otp-input::selection{background:transparent}
 .otp-cell{display:grid;place-items:center;height:48px;border:1px solid var(--line-2);border-radius:10px;background:var(--panel);font-family:var(--font-num);font-size:var(--fs-20);font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink);transition:border-color var(--dur-fast) ease-out,box-shadow var(--dur-fast) ease-out}

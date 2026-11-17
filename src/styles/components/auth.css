@@ -17,13 +17,12 @@
 .login-notice{display:grid;padding-bottom:var(--space-4)}
 /* 先頭は知らせの Collapse。閉じた箱のぶん段の間が増えないよう、負の余白で消し、開いたときの隙間は .login-notice が持つ（grid の行は負にならないので flex で並べる） */
 .login-form > :first-child{margin-bottom:calc(var(--space-4) * -1)}
-/* 2 段階認証の確認コード（TwoFactorForm）。升は引き伸ばさず 44px までにし、左右の端を主ボタンとそろえ、余った幅は半分の区切りが受け持つ（区切りのない桁数は升の間を等分する） */
+/* 2 段階認証の確認コード（TwoFactorForm）。升は引き伸ばさず 44px までにし、左右の端を主ボタンとそろえ、余った幅は升の間に等しく配る（半分の空きを挟むので、3 桁ずつの間は升の間の 2 倍になる） */
 .login-form .otp{display:flex;width:100%;justify-content:space-between}
 .login-form .otp-cell{flex-basis:44px}
-.login-form .otp-sep{flex:0 1 auto;margin:0 auto}
-/* 狭い面（スマホの縦など）では升の幅を保つため、升の間と区切りの余白を詰めて収める */
+/* 狭い面（スマホの縦など）では升の幅を保つため、升の間を詰めて収める */
 .login-form{container-type:inline-size}
-@container (max-width:260px){.login-form .otp{gap:var(--space-1)}.login-form .otp-sep{width:8px}}
+@container (max-width:260px){.login-form .otp{gap:var(--space-1)}}
 .login-row{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2) var(--space-4)}
 .login-forgot{margin-left:auto}
 /* 確認コードの送り直しの待ち（aria-disabled。フォーカスを保つため disabled にしない）。押せない形の決まり（不透明度 0.45・ホバーで変えない） */
