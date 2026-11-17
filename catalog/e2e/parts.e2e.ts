@@ -1503,7 +1503,11 @@ const mount = async (page: import('@playwright/test').Page, name: string) => {
   await page.addScriptTag({ type: 'module', content: `import { mount } from '/e2e/fixtures.tsx'; mount(${JSON.stringify(name)})` })
   await page.waitForFunction(() => !!document.getElementById('fx'))
 }
-const setFx = (page: import('@playwright/test').Page, v: string) => page.evaluate((x) => window.fx!(x), v)
+// window.fx は描いたあとの useEffect で入る。#fx が出た直後は未設定のことがあるので、入るまで待ってから呼ぶ
+const setFx = async (page: import('@playwright/test').Page, v: string) => {
+  await page.waitForFunction(() => typeof window.fx === 'function')
+  await page.evaluate((x) => window.fx!(x), v)
+}
 
 test('Pagination: 件数があとから増えても、今のページの地が出る', async ({ page }) => {
   await mount(page, 'pagination')
