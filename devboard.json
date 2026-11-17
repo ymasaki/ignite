@@ -23,5 +23,507 @@
     "analysis": "npm run health:analysis",
     "coverage": "npm run health:coverage",
     "benchmarks": "npm run health:benchmarks"
+  },
+  "dependencies": {
+    "waiting": [
+      {
+        "id": "npm|@babel/helper-string-parser|package-lock.json",
+        "versions": [
+          "7.29.14"
+        ],
+        "reason": "2026-11-17確認: magicast@0.5.5 → @babel/types ^7.29.7 → @babel/types@7.29.14 → @babel/helper-string-parser ^7.29.14。正式最新版の親もこの系列を指定。https://registry.npmjs.org/magicast/0.5.5 現在の直接の親条件: @babel/types@7.29.14: ^7.29.14。",
+        "parent": "npm|magicast|package-lock.json",
+        "parentVersion": "0.5.5"
+      },
+      {
+        "id": "npm|@babel/helper-validator-identifier|package-lock.json",
+        "versions": [
+          "7.29.7"
+        ],
+        "reason": "2026-11-17確認: magicast@0.5.5 → @babel/types ^7.29.7 → @babel/types@7.29.14 → @babel/helper-validator-identifier ^7.29.7。正式最新版の親もこの系列を指定。https://registry.npmjs.org/magicast/0.5.5 現在の直接の親条件: @babel/types@7.29.14: ^7.29.7。",
+        "parent": "npm|magicast|package-lock.json",
+        "parentVersion": "0.5.5"
+      },
+      {
+        "id": "npm|@babel/parser|package-lock.json",
+        "versions": [
+          "7.29.14"
+        ],
+        "reason": "2026-11-17確認: magicast@0.5.5 → @babel/parser ^7.29.7。正式最新版の親もこの系列を指定。https://registry.npmjs.org/magicast/0.5.5 現在の直接の親条件: magicast@0.5.5: ^7.29.7。",
+        "parent": "npm|magicast|package-lock.json",
+        "parentVersion": "0.5.5"
+      },
+      {
+        "id": "npm|@babel/types|package-lock.json",
+        "versions": [
+          "7.29.14"
+        ],
+        "reason": "2026-11-17確認: magicast@0.5.5 → @babel/types ^7.29.7。正式最新版の親もこの系列を指定。https://registry.npmjs.org/magicast/0.5.5 現在の直接の親条件: @babel/parser@7.29.14: ^7.29.14; magicast@0.5.5: ^7.29.7。",
+        "parent": "npm|magicast|package-lock.json",
+        "parentVersion": "0.5.5"
+      },
+      {
+        "id": "npm|eslint-visitor-keys|package-lock.json",
+        "versions": [
+          "3.4.3",
+          "5.0.1"
+        ],
+        "reason": "2026-11-17確認: @eslint-community/eslint-utils@4.10.1 → eslint-visitor-keys ^3.4.3。正式最新版の親もこの系列を指定。https://registry.npmjs.org/%40eslint-community%2Feslint-utils/4.10.1 現在の直接の親条件: @eslint-community/eslint-utils@4.10.1: ^3.4.3; @typescript-eslint/visitor-keys@8.73.0: ^5.0.0; eslint@10.15.0: ^5.0.1; espree@11.2.0: ^5.0.1。",
+        "parent": "npm|@eslint-community/eslint-utils|package-lock.json",
+        "parentVersion": "4.10.1"
+      },
+      {
+        "id": "npm|@humanfs/core|package-lock.json",
+        "versions": [
+          "0.19.2"
+        ],
+        "reason": "2026-11-17確認: eslint@10.15.0 → @humanfs/node ^0.16.8 → @humanfs/node@0.16.8 → @humanfs/core ^0.19.2。正式最新版の親もこの系列を指定。https://registry.npmjs.org/eslint/10.15.0 現在の直接の親条件: @humanfs/node@0.16.8: ^0.19.2。",
+        "parent": "npm|eslint|package-lock.json",
+        "parentVersion": "10.15.0"
+      },
+      {
+        "id": "npm|@humanfs/node|package-lock.json",
+        "versions": [
+          "0.16.8"
+        ],
+        "reason": "2026-11-17確認: eslint@10.15.0 → @humanfs/node ^0.16.8。正式最新版の親もこの系列を指定。https://registry.npmjs.org/eslint/10.15.0 現在の直接の親条件: eslint@10.15.0: ^0.16.8。",
+        "parent": "npm|eslint|package-lock.json",
+        "parentVersion": "10.15.0"
+      },
+      {
+        "id": "npm|@humanfs/types|package-lock.json",
+        "versions": [
+          "0.15.0"
+        ],
+        "reason": "2026-11-17確認: eslint@10.15.0 → @humanfs/node ^0.16.8 → @humanfs/node@0.16.8 → @humanfs/core ^0.19.2 → @humanfs/core@0.19.2 → @humanfs/types ^0.15.0。正式最新版の親もこの系列を指定。https://registry.npmjs.org/eslint/10.15.0 現在の直接の親条件: @humanfs/core@0.19.2: ^0.15.0; @humanfs/node@0.16.8: ^0.15.0。",
+        "parent": "npm|eslint|package-lock.json",
+        "parentVersion": "10.15.0"
+      },
+      {
+        "id": "npm|@keyv/bigmap|package-lock.json",
+        "versions": [
+          "1.3.1"
+        ],
+        "reason": "2026-11-17確認: @cacheable/memory@2.2.0 → @keyv/bigmap ^1.3.1。正式最新版の親もこの系列を指定。https://registry.npmjs.org/%40cacheable%2Fmemory/2.2.0 現在の直接の親条件: @cacheable/memory@2.2.0: ^1.3.1。",
+        "parent": "npm|@cacheable/memory|package-lock.json",
+        "parentVersion": "2.2.0"
+      },
+      {
+        "id": "npm|@napi-rs/wasm-runtime|package-lock.json",
+        "versions": [
+          "1.2.6"
+        ],
+        "reason": "2026-11-17確認: vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-wasm32-wasi 1.2.19 → @rolldown/binding-wasm32-wasi@1.2.19 → @napi-rs/wasm-runtime 1.2.6。正式最新版の親もこの系列を指定。https://registry.npmjs.org/vite/8.3.8 現在の直接の親条件: @rolldown/binding-wasm32-wasi@1.2.19: 1.2.6。",
+        "parent": "npm|vite|package-lock.json",
+        "parentVersion": "8.3.8"
+      },
+      {
+        "id": "npm|@oxc-project/types|package-lock.json",
+        "versions": [
+          "0.156.0"
+        ],
+        "reason": "2026-11-17確認: vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @oxc-project/types =0.156.0。正式最新版の親もこの系列を指定。https://registry.npmjs.org/vite/8.3.8 現在の直接の親条件: rolldown@1.2.19: =0.156.0。",
+        "parent": "npm|vite|package-lock.json",
+        "parentVersion": "8.3.8"
+      },
+      {
+        "id": "npm|@rolldown/binding-android-arm-eabi|package-lock.json",
+        "versions": [
+          "1.2.19"
+        ],
+        "reason": "2026-11-17確認: vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-android-arm-eabi 1.2.19。正式最新版の親もこの系列を指定。https://registry.npmjs.org/vite/8.3.8 現在の直接の親条件: rolldown@1.2.19: 1.2.19。",
+        "parent": "npm|vite|package-lock.json",
+        "parentVersion": "8.3.8"
+      },
+      {
+        "id": "npm|@rolldown/binding-android-arm64|package-lock.json",
+        "versions": [
+          "1.2.19"
+        ],
+        "reason": "2026-11-17確認: vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-android-arm64 1.2.19。正式最新版の親もこの系列を指定。https://registry.npmjs.org/vite/8.3.8 現在の直接の親条件: rolldown@1.2.19: 1.2.19。",
+        "parent": "npm|vite|package-lock.json",
+        "parentVersion": "8.3.8"
+      },
+      {
+        "id": "npm|@rolldown/binding-darwin-arm64|package-lock.json",
+        "versions": [
+          "1.2.19"
+        ],
+        "reason": "2026-11-17確認: vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-darwin-arm64 1.2.19。正式最新版の親もこの系列を指定。https://registry.npmjs.org/vite/8.3.8 現在の直接の親条件: rolldown@1.2.19: 1.2.19。",
+        "parent": "npm|vite|package-lock.json",
+        "parentVersion": "8.3.8"
+      },
+      {
+        "id": "npm|@rolldown/binding-darwin-x64|package-lock.json",
+        "versions": [
+          "1.2.19"
+        ],
+        "reason": "2026-11-17確認: vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-darwin-x64 1.2.19。正式最新版の親もこの系列を指定。https://registry.npmjs.org/vite/8.3.8 現在の直接の親条件: rolldown@1.2.19: 1.2.19。",
+        "parent": "npm|vite|package-lock.json",
+        "parentVersion": "8.3.8"
+      },
+      {
+        "id": "npm|@rolldown/binding-freebsd-x64|package-lock.json",
+        "versions": [
+          "1.2.19"
+        ],
+        "reason": "2026-11-17確認: vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-freebsd-x64 1.2.19。正式最新版の親もこの系列を指定。https://registry.npmjs.org/vite/8.3.8 現在の直接の親条件: rolldown@1.2.19: 1.2.19。",
+        "parent": "npm|vite|package-lock.json",
+        "parentVersion": "8.3.8"
+      },
+      {
+        "id": "npm|@rolldown/binding-linux-arm-gnueabihf|package-lock.json",
+        "versions": [
+          "1.2.19"
+        ],
+        "reason": "2026-11-17確認: vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-linux-arm-gnueabihf 1.2.19。正式最新版の親もこの系列を指定。https://registry.npmjs.org/vite/8.3.8 現在の直接の親条件: rolldown@1.2.19: 1.2.19。",
+        "parent": "npm|vite|package-lock.json",
+        "parentVersion": "8.3.8"
+      },
+      {
+        "id": "npm|@rolldown/binding-linux-arm64-gnu|package-lock.json",
+        "versions": [
+          "1.2.19"
+        ],
+        "reason": "2026-11-17確認: vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-linux-arm64-gnu 1.2.19。正式最新版の親もこの系列を指定。https://registry.npmjs.org/vite/8.3.8 現在の直接の親条件: rolldown@1.2.19: 1.2.19。",
+        "parent": "npm|vite|package-lock.json",
+        "parentVersion": "8.3.8"
+      },
+      {
+        "id": "npm|@rolldown/binding-linux-arm64-musl|package-lock.json",
+        "versions": [
+          "1.2.19"
+        ],
+        "reason": "2026-11-17確認: vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-linux-arm64-musl 1.2.19。正式最新版の親もこの系列を指定。https://registry.npmjs.org/vite/8.3.8 現在の直接の親条件: rolldown@1.2.19: 1.2.19。",
+        "parent": "npm|vite|package-lock.json",
+        "parentVersion": "8.3.8"
+      },
+      {
+        "id": "npm|@rolldown/binding-linux-ppc64-gnu|package-lock.json",
+        "versions": [
+          "1.2.19"
+        ],
+        "reason": "2026-11-17確認: vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-linux-ppc64-gnu 1.2.19。正式最新版の親もこの系列を指定。https://registry.npmjs.org/vite/8.3.8 現在の直接の親条件: rolldown@1.2.19: 1.2.19。",
+        "parent": "npm|vite|package-lock.json",
+        "parentVersion": "8.3.8"
+      },
+      {
+        "id": "npm|@rolldown/binding-linux-s390x-gnu|package-lock.json",
+        "versions": [
+          "1.2.19"
+        ],
+        "reason": "2026-11-17確認: vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-linux-s390x-gnu 1.2.19。正式最新版の親もこの系列を指定。https://registry.npmjs.org/vite/8.3.8 現在の直接の親条件: rolldown@1.2.19: 1.2.19。",
+        "parent": "npm|vite|package-lock.json",
+        "parentVersion": "8.3.8"
+      },
+      {
+        "id": "npm|@rolldown/binding-linux-x64-gnu|package-lock.json",
+        "versions": [
+          "1.2.19"
+        ],
+        "reason": "2026-11-17確認: vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-linux-x64-gnu 1.2.19。正式最新版の親もこの系列を指定。https://registry.npmjs.org/vite/8.3.8 現在の直接の親条件: rolldown@1.2.19: 1.2.19。",
+        "parent": "npm|vite|package-lock.json",
+        "parentVersion": "8.3.8"
+      },
+      {
+        "id": "npm|@rolldown/binding-linux-x64-musl|package-lock.json",
+        "versions": [
+          "1.2.19"
+        ],
+        "reason": "2026-11-17確認: vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-linux-x64-musl 1.2.19。正式最新版の親もこの系列を指定。https://registry.npmjs.org/vite/8.3.8 現在の直接の親条件: rolldown@1.2.19: 1.2.19。",
+        "parent": "npm|vite|package-lock.json",
+        "parentVersion": "8.3.8"
+      },
+      {
+        "id": "npm|@rolldown/binding-openharmony-arm64|package-lock.json",
+        "versions": [
+          "1.2.19"
+        ],
+        "reason": "2026-11-17確認: vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-openharmony-arm64 1.2.19。正式最新版の親もこの系列を指定。https://registry.npmjs.org/vite/8.3.8 現在の直接の親条件: rolldown@1.2.19: 1.2.19。",
+        "parent": "npm|vite|package-lock.json",
+        "parentVersion": "8.3.8"
+      },
+      {
+        "id": "npm|@rolldown/binding-wasm32-wasi|package-lock.json",
+        "versions": [
+          "1.2.19"
+        ],
+        "reason": "2026-11-17確認: vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-wasm32-wasi 1.2.19。正式最新版の親もこの系列を指定。https://registry.npmjs.org/vite/8.3.8 現在の直接の親条件: rolldown@1.2.19: 1.2.19。",
+        "parent": "npm|vite|package-lock.json",
+        "parentVersion": "8.3.8"
+      },
+      {
+        "id": "npm|@rolldown/binding-win32-arm64-msvc|package-lock.json",
+        "versions": [
+          "1.2.19"
+        ],
+        "reason": "2026-11-17確認: vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-win32-arm64-msvc 1.2.19。正式最新版の親もこの系列を指定。https://registry.npmjs.org/vite/8.3.8 現在の直接の親条件: rolldown@1.2.19: 1.2.19。",
+        "parent": "npm|vite|package-lock.json",
+        "parentVersion": "8.3.8"
+      },
+      {
+        "id": "npm|@rolldown/binding-win32-x64-msvc|package-lock.json",
+        "versions": [
+          "1.2.19"
+        ],
+        "reason": "2026-11-17確認: vite@8.3.8 → rolldown ~1.2.18 → rolldown@1.2.19 → @rolldown/binding-win32-x64-msvc 1.2.19。正式最新版の親もこの系列を指定。https://registry.npmjs.org/vite/8.3.8 現在の直接の親条件: rolldown@1.2.19: 1.2.19。",
+        "parent": "npm|vite|package-lock.json",
+        "parentVersion": "8.3.8"
+      },
+      {
+        "id": "npm|@sonarsource/analyzer-commons-configurations|package-lock.json",
+        "versions": [
+          "2.31.0-5284"
+        ],
+        "reason": "2026-11-17確認: eslint-plugin-sonarjs@4.2.2 → @sonarsource/analyzer-commons-configurations ^2.31.0-5284。正式最新版の親もこの系列を指定。https://registry.npmjs.org/eslint-plugin-sonarjs/4.2.2 現在の直接の親条件: eslint-plugin-sonarjs@4.2.2: ^2.31.0-5284。",
+        "parent": "npm|eslint-plugin-sonarjs|package-lock.json",
+        "parentVersion": "4.2.2"
+      },
+      {
+        "id": "npm|typescript|package-lock.json",
+        "versions": [
+          "6.0.3",
+          "7.0.2"
+        ],
+        "reason": "2026-11-17確認: eslint-plugin-sonarjs@4.2.2 → typescript >=5 <6.1.0。正式最新版の親もこの系列を指定。https://registry.npmjs.org/eslint-plugin-sonarjs/4.2.2 現在の直接の親条件: eslint-plugin-sonarjs@4.2.2: >=5 <6.1.0。",
+        "parent": "npm|eslint-plugin-sonarjs|package-lock.json",
+        "parentVersion": "4.2.2"
+      },
+      {
+        "id": "npm|ajv|package-lock.json",
+        "versions": [
+          "6.15.0"
+        ],
+        "reason": "2026-11-17確認: eslint@10.15.0 → ajv ^6.14.0。正式最新版の親もこの系列を指定。https://registry.npmjs.org/eslint/10.15.0 現在の直接の親条件: eslint@10.15.0: ^6.14.0。",
+        "parent": "npm|eslint|package-lock.json",
+        "parentVersion": "10.15.0"
+      },
+      {
+        "id": "npm|balanced-match|package-lock.json",
+        "versions": [
+          "4.0.4"
+        ],
+        "reason": "2026-11-17確認: brace-expansion@5.0.13 → balanced-match ^4.0.2。正式最新版の親もこの系列を指定。https://registry.npmjs.org/brace-expansion/5.0.13 現在の直接の親条件: brace-expansion@5.0.13: ^4.0.2。",
+        "parent": "npm|brace-expansion|package-lock.json",
+        "parentVersion": "5.0.13"
+      },
+      {
+        "id": "npm|builtin-modules|package-lock.json",
+        "versions": [
+          "3.3.0"
+        ],
+        "reason": "2026-11-17確認: eslint-plugin-sonarjs@4.2.2 → builtin-modules ^3.3.0。正式最新版の親もこの系列を指定。https://registry.npmjs.org/eslint-plugin-sonarjs/4.2.2 現在の直接の親条件: eslint-plugin-sonarjs@4.2.2: ^3.3.0。",
+        "parent": "npm|eslint-plugin-sonarjs|package-lock.json",
+        "parentVersion": "4.2.2"
+      },
+      {
+        "id": "npm|es-module-lexer|package-lock.json",
+        "versions": [
+          "2.3.2"
+        ],
+        "reason": "2026-11-17確認: vitest@5.1.0 → es-module-lexer ^2.3.2。正式最新版の親もこの系列を指定。https://registry.npmjs.org/vitest/5.1.0 現在の直接の親条件: vitest@5.1.0: ^2.3.2。",
+        "parent": "npm|vitest|package-lock.json",
+        "parentVersion": "5.1.0"
+      },
+      {
+        "id": "npm|escape-string-regexp|package-lock.json",
+        "versions": [
+          "4.0.0"
+        ],
+        "reason": "2026-11-17確認: eslint@10.15.0 → escape-string-regexp ^4.0.0。正式最新版の親もこの系列を指定。https://registry.npmjs.org/eslint/10.15.0 現在の直接の親条件: eslint@10.15.0: ^4.0.0。",
+        "parent": "npm|eslint|package-lock.json",
+        "parentVersion": "10.15.0"
+      },
+      {
+        "id": "npm|fast-levenshtein|package-lock.json",
+        "versions": [
+          "2.0.6"
+        ],
+        "reason": "2026-11-17確認: optionator@0.9.4 → fast-levenshtein ^2.0.6。正式最新版の親もこの系列を指定。https://registry.npmjs.org/optionator/0.9.4 現在の直接の親条件: optionator@0.9.4: ^2.0.6。",
+        "parent": "npm|optionator|package-lock.json",
+        "parentVersion": "0.9.4"
+      },
+      {
+        "id": "npm|find-up|package-lock.json",
+        "versions": [
+          "5.0.0"
+        ],
+        "reason": "2026-11-17確認: eslint@10.15.0 → find-up ^5.0.0。正式最新版の親もこの系列を指定。https://registry.npmjs.org/eslint/10.15.0 現在の直接の親条件: eslint@10.15.0: ^5.0.0。",
+        "parent": "npm|eslint|package-lock.json",
+        "parentVersion": "10.15.0"
+      },
+      {
+        "id": "npm|hashery|package-lock.json",
+        "versions": [
+          "1.5.1"
+        ],
+        "reason": "2026-11-17確認: @cacheable/utils@2.5.0 → hashery ^1.5.1。正式最新版の親もこの系列を指定。https://registry.npmjs.org/%40cacheable%2Futils/2.5.0 現在の直接の親条件: @cacheable/utils@2.5.0: ^1.5.1; @keyv/bigmap@1.3.1: ^1.4.0。",
+        "parent": "npm|@cacheable/utils|package-lock.json",
+        "parentVersion": "2.5.0"
+      },
+      {
+        "id": "npm|hookified|package-lock.json",
+        "versions": [
+          "1.15.1",
+          "2.2.0"
+        ],
+        "reason": "2026-11-17確認: @cacheable/memory@2.2.0 → hookified ^1.15.1。正式最新版の親もこの系列を指定。https://registry.npmjs.org/%40cacheable%2Fmemory/2.2.0 現在の直接の親条件: @cacheable/memory@2.2.0: ^1.15.1; @keyv/bigmap@1.3.1: ^1.15.0; cacheable@2.5.0: ^1.15.0; flat-cache@6.1.23: ^1.15.0; hashery@1.5.1: ^1.15.0; qified@0.10.1: ^2.1.1。",
+        "parent": "npm|@cacheable/memory|package-lock.json",
+        "parentVersion": "2.2.0"
+      },
+      {
+        "id": "npm|ignore|package-lock.json",
+        "versions": [
+          "5.3.2"
+        ],
+        "reason": "2026-11-17確認: eslint@10.15.0 → ignore ^5.2.0。正式最新版の親もこの系列を指定。https://registry.npmjs.org/eslint/10.15.0 現在の直接の親条件: eslint@10.15.0: ^5.2.0。",
+        "parent": "npm|eslint|package-lock.json",
+        "parentVersion": "10.15.0"
+      },
+      {
+        "id": "npm|isexe|package-lock.json",
+        "versions": [
+          "2.0.0"
+        ],
+        "reason": "2026-11-17確認: cross-spawn@7.0.6 → which ^2.0.1 → which@2.0.2 → isexe ^2.0.0。正式最新版の親もこの系列を指定。https://registry.npmjs.org/cross-spawn/7.0.6 現在の直接の親条件: which@2.0.2: ^2.0.0。",
+        "parent": "npm|cross-spawn|package-lock.json",
+        "parentVersion": "7.0.6"
+      },
+      {
+        "id": "npm|json-schema-traverse|package-lock.json",
+        "versions": [
+          "0.4.1"
+        ],
+        "reason": "2026-11-17確認: eslint@10.15.0 → ajv ^6.14.0 → ajv@6.15.0 → json-schema-traverse ^0.4.1。正式最新版の親もこの系列を指定。https://registry.npmjs.org/eslint/10.15.0 現在の直接の親条件: ajv@6.15.0: ^0.4.1。",
+        "parent": "npm|eslint|package-lock.json",
+        "parentVersion": "10.15.0"
+      },
+      {
+        "id": "npm|keyv|package-lock.json",
+        "versions": [
+          "5.6.0"
+        ],
+        "reason": "2026-11-17確認: @cacheable/memory@2.2.0 → keyv ^5.6.0。正式最新版の親もこの系列を指定。https://registry.npmjs.org/%40cacheable%2Fmemory/2.2.0 現在の直接の親条件: @cacheable/memory@2.2.0: ^5.6.0; @cacheable/utils@2.5.0: ^5.6.0; cacheable@2.5.0: ^5.6.0。",
+        "parent": "npm|@cacheable/memory|package-lock.json",
+        "parentVersion": "2.2.0"
+      },
+      {
+        "id": "npm|locate-path|package-lock.json",
+        "versions": [
+          "6.0.0"
+        ],
+        "reason": "2026-11-17確認: eslint@10.15.0 → find-up ^5.0.0 → find-up@5.0.0 → locate-path ^6.0.0。正式最新版の親もこの系列を指定。https://registry.npmjs.org/eslint/10.15.0 現在の直接の親条件: find-up@5.0.0: ^6.0.0。",
+        "parent": "npm|eslint|package-lock.json",
+        "parentVersion": "10.15.0"
+      },
+      {
+        "id": "npm|nanoid|package-lock.json",
+        "versions": [
+          "3.3.20"
+        ],
+        "reason": "2026-11-17確認: postcss@8.5.33 → nanoid ^3.3.20。正式最新版の親もこの系列を指定。https://registry.npmjs.org/postcss/8.5.33 現在の直接の親条件: postcss@8.5.33: ^3.3.20。",
+        "parent": "npm|postcss|package-lock.json",
+        "parentVersion": "8.5.33"
+      },
+      {
+        "id": "npm|p-limit|package-lock.json",
+        "versions": [
+          "3.1.0"
+        ],
+        "reason": "2026-11-17確認: eslint@10.15.0 → find-up ^5.0.0 → find-up@5.0.0 → locate-path ^6.0.0 → locate-path@6.0.0 → p-locate ^5.0.0 → p-locate@5.0.0 → p-limit ^3.0.2。正式最新版の親もこの系列を指定。https://registry.npmjs.org/eslint/10.15.0 現在の直接の親条件: p-locate@5.0.0: ^3.0.2。",
+        "parent": "npm|eslint|package-lock.json",
+        "parentVersion": "10.15.0"
+      },
+      {
+        "id": "npm|p-locate|package-lock.json",
+        "versions": [
+          "5.0.0"
+        ],
+        "reason": "2026-11-17確認: eslint@10.15.0 → find-up ^5.0.0 → find-up@5.0.0 → locate-path ^6.0.0 → locate-path@6.0.0 → p-locate ^5.0.0。正式最新版の親もこの系列を指定。https://registry.npmjs.org/eslint/10.15.0 現在の直接の親条件: locate-path@6.0.0: ^5.0.0。",
+        "parent": "npm|eslint|package-lock.json",
+        "parentVersion": "10.15.0"
+      },
+      {
+        "id": "npm|path-exists|package-lock.json",
+        "versions": [
+          "4.0.0"
+        ],
+        "reason": "2026-11-17確認: eslint@10.15.0 → find-up ^5.0.0 → find-up@5.0.0 → path-exists ^4.0.0。正式最新版の親もこの系列を指定。https://registry.npmjs.org/eslint/10.15.0 現在の直接の親条件: find-up@5.0.0: ^4.0.0。",
+        "parent": "npm|eslint|package-lock.json",
+        "parentVersion": "10.15.0"
+      },
+      {
+        "id": "npm|path-key|package-lock.json",
+        "versions": [
+          "3.1.1"
+        ],
+        "reason": "2026-11-17確認: cross-spawn@7.0.6 → path-key ^3.1.0。正式最新版の親もこの系列を指定。https://registry.npmjs.org/cross-spawn/7.0.6 現在の直接の親条件: cross-spawn@7.0.6: ^3.1.0。",
+        "parent": "npm|cross-spawn|package-lock.json",
+        "parentVersion": "7.0.6"
+      },
+      {
+        "id": "npm|qified|package-lock.json",
+        "versions": [
+          "0.10.1"
+        ],
+        "reason": "2026-11-17確認: cacheable@2.5.0 → qified ^0.10.1。正式最新版の親もこの系列を指定。https://registry.npmjs.org/cacheable/2.5.0 現在の直接の親条件: cacheable@2.5.0: ^0.10.1。",
+        "parent": "npm|cacheable|package-lock.json",
+        "parentVersion": "2.5.0"
+      },
+      {
+        "id": "npm|rolldown|package-lock.json",
+        "versions": [
+          "1.2.19"
+        ],
+        "reason": "2026-11-17確認: vite@8.3.8 → rolldown ~1.2.18。正式最新版の親もこの系列を指定。https://registry.npmjs.org/vite/8.3.8 現在の直接の親条件: vite@8.3.8: ~1.2.18。",
+        "parent": "npm|vite|package-lock.json",
+        "parentVersion": "8.3.8"
+      },
+      {
+        "id": "npm|shebang-regex|package-lock.json",
+        "versions": [
+          "3.0.0"
+        ],
+        "reason": "2026-11-17確認: shebang-command@2.0.0 → shebang-regex ^3.0.0。正式最新版の親もこの系列を指定。https://registry.npmjs.org/shebang-command/2.0.0 現在の直接の親条件: shebang-command@2.0.0: ^3.0.0。",
+        "parent": "npm|shebang-command|package-lock.json",
+        "parentVersion": "2.0.0"
+      },
+      {
+        "id": "npm|undici-types|package-lock.json",
+        "versions": [
+          "8.9.0"
+        ],
+        "reason": "2026-11-17確認: @types/node@26.6.6 → undici-types ~8.9.0。正式最新版の親もこの系列を指定。https://registry.npmjs.org/%40types%2Fnode/26.6.6 現在の直接の親条件: @types/node@26.6.6: ~8.9.0。",
+        "parent": "npm|@types/node|package-lock.json",
+        "parentVersion": "26.6.6"
+      },
+      {
+        "id": "npm|which|package-lock.json",
+        "versions": [
+          "2.0.2"
+        ],
+        "reason": "2026-11-17確認: cross-spawn@7.0.6 → which ^2.0.1。正式最新版の親もこの系列を指定。https://registry.npmjs.org/cross-spawn/7.0.6 現在の直接の親条件: cross-spawn@7.0.6: ^2.0.1。",
+        "parent": "npm|cross-spawn|package-lock.json",
+        "parentVersion": "7.0.6"
+      },
+      {
+        "id": "npm|why-is-node-running|package-lock.json",
+        "versions": [
+          "3.2.1"
+        ],
+        "reason": "2026-11-17確認: vitest@5.1.0 → why-is-node-running 3.2.1。正式最新版の親もこの系列を指定。https://registry.npmjs.org/vitest/5.1.0 現在の直接の親条件: vitest@5.1.0: 3.2.1。",
+        "parent": "npm|vitest|package-lock.json",
+        "parentVersion": "5.1.0"
+      },
+      {
+        "id": "npm|yocto-queue|package-lock.json",
+        "versions": [
+          "0.1.0"
+        ],
+        "reason": "2026-11-17確認: eslint@10.15.0 → find-up ^5.0.0 → find-up@5.0.0 → locate-path ^6.0.0 → locate-path@6.0.0 → p-locate ^5.0.0 → p-locate@5.0.0 → p-limit ^3.0.2 → p-limit@3.1.0 → yocto-queue ^0.1.0。正式最新版の親もこの系列を指定。https://registry.npmjs.org/eslint/10.15.0 現在の直接の親条件: p-limit@3.1.0: ^0.1.0。",
+        "parent": "npm|eslint|package-lock.json",
+        "parentVersion": "10.15.0"
+      }
+    ]
   }
 }
