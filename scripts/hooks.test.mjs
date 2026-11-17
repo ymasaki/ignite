@@ -148,10 +148,10 @@ test('指定indexを使い、検査中のindex更新と中断を成功にしな�
   assert.equal(f.commit().status, 0)
   // 実tscのテストとは別に、停止位置を制御して競合とGit環境の分離を確認する。
   await fs.rm(path.join(f.root, 'node_modules'))
-  await fs.mkdir(path.join(f.root, 'node_modules/.bin'), { recursive: true })
+  await fs.mkdir(path.join(f.root, 'node_modules/typescript-native/bin'), { recursive: true })
   const ready = path.join(f.root, 'scratch/ready')
   const release = path.join(f.root, 'scratch/release')
-  const compiler = path.join(f.root, 'node_modules/.bin/tsc')
+  const compiler = path.join(f.root, 'node_modules/typescript-native/bin/tsc')
   await fs.writeFile(compiler, `#!/usr/bin/env node
 const fs = require('node:fs');
 setTimeout(() => process.exit(21), 10000).unref();

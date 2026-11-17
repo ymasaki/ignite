@@ -21,5 +21,5 @@ function inline(file) {
 fs.writeFileSync(path.join(dist, 'styles.css'), inline(path.join(root, 'src/styles/index.css')))
 fs.writeFileSync(path.join(dist, 'tokens.css'), inline(path.join(root, 'src/styles/tokens.css')))
 
-const tsc = path.join(root, 'node_modules/.bin/tsc')
-execFileSync(tsc, ['-p', path.join(root, 'tsconfig.build.json')], { stdio: 'inherit', cwd: root })
+const tsc = path.join(root, 'node_modules/typescript-native/bin/tsc')
+execFileSync(process.execPath, [tsc, '-p', path.join(root, 'tsconfig.build.json')], { stdio: 'inherit', cwd: root })

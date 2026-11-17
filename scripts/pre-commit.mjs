@@ -26,13 +26,13 @@ try {
   temporary = await fs.mkdtemp(path.join(os.tmpdir(), 'ignite-commit-'))
   git(['checkout-index', '--all', '--ignore-skip-worktree-bits', `--prefix=${temporary}/`])
   await fs.symlink(path.join(root, 'node_modules'), path.join(temporary, 'node_modules'), 'dir')
-  const compiler = path.join(root, 'node_modules/.bin/tsc')
+  const compiler = path.join(root, 'node_modules/typescript-native/bin/tsc')
   await fs.access(compiler)
   if (interrupted) throw new Error('コミット検査を中断しました')
   console.log('[ignite-hook] ステージした内容の型を検査します')
   const env = Object.fromEntries(Object.entries(process.env).filter(([name]) => !name.startsWith('GIT_')))
   const status = await new Promise((resolve, reject) => {
-    child = spawn(compiler, ['--noEmit', '--project', path.join(temporary, 'tsconfig.json')], {
+    child = spawn(process.execPath, [compiler, '--noEmit', '--project', path.join(temporary, 'tsconfig.json')], {
       cwd: temporary, env, stdio: 'inherit',
     })
     child.once('error', reject)
