@@ -80,5 +80,6 @@ export function input(selector: string, value: string) {
 }
 export function key(selector: string, value: string, extra: Record<string, unknown> = {}) { return event(el(selector), 'keydown', { key: value, ...extra }); }
 export function advance(ms: number) { act(() => vi.advanceTimersByTime(ms)); }
-export function frame(ms = 16) { advance(ms); const pending = [...frames.values()]; frames.clear(); act(() => pending.forEach(cb => cb(performance.now()))); }
+// 描画の前の処理（requestAnimationFrame）と、描いた直後に回した処理（待ち 0 のタイマー）まで進める。
+export function frame(ms = 16) { advance(ms); const pending = [...frames.values()]; frames.clear(); act(() => pending.forEach(cb => cb(performance.now()))); advance(0); }
 export function resize() { act(() => observers.forEach(o => o.notify())); }

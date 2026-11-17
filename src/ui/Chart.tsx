@@ -74,7 +74,10 @@ export function LineChart({ series, height = 180, xLabels = [], fit = false, are
   useLayoutEffect(() => {
     const el = ref.current
     if (!el) return
-    const ro = new ResizeObserver(() => setW(Math.max(200, el.clientWidth)))
+    // 画面に出る前に実際の幅で描き直す（大きさの通知を待つと、仮の幅で一度描かれてから描き直しになる）
+    const fit = () => setW(Math.max(200, el.clientWidth))
+    fit()
+    const ro = new ResizeObserver(fit)
     ro.observe(el)
     return () => ro.disconnect()
   }, [])
@@ -320,7 +323,10 @@ export function TileMap({ items, selected, onSelect, label, height = 360, scale 
   useLayoutEffect(() => {
     const el = ref.current
     if (!el) return
-    const ro = new ResizeObserver(() => setW(el.clientWidth))
+    // 画面に出る前に実際の幅で敷き詰める
+    const fit = () => setW(el.clientWidth)
+    fit()
+    const ro = new ResizeObserver(fit)
     ro.observe(el)
     return () => ro.disconnect()
   }, [])

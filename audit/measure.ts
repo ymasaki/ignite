@@ -164,10 +164,13 @@ export function measure(page: Page, args: MeasureArgs): Promise<Measured[]> {
       for (const col of document.querySelectorAll<HTMLElement>('.roll-col:not(.gone)')) {
         const strip = col.querySelector<HTMLElement>('.roll-strip')
         const shift = strip && /translateY\((-?[\d.]+)%\)/.exec(strip.style.transform)
-        const digit = shift && strip.children[Math.round(-parseFloat(shift[1]) / 10)]
-        if (!digit || !visible(col)) continue
+        // 帯は 0〜9 を改行で区切った 1 つの文字列（数字 d は 2d 文字目）
+        const text = strip?.firstChild
+        const at = shift ? Math.round(-parseFloat(shift[1]) / 10) * 2 : -1
+        if (!text || text.nodeType !== Node.TEXT_NODE || at < 0 || at >= (text.textContent?.length ?? 0) || !visible(col)) continue
         const range = document.createRange()
-        range.selectNodeContents(digit)
+        range.setStart(text, at)
+        range.setEnd(text, at + 1)
         const glyph = range.getBoundingClientRect().width
         const box = col.getBoundingClientRect().width
         if (glyph > box + 0.5) out.push({ rule: '横のはみ出し（5 章）', where: parentWho(col.parentElement || col), expected: '数字の字が桁の枠に収まる', actual: `字 ${glyph.toFixed(1)}px > 桁 ${box.toFixed(1)}px` })

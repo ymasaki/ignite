@@ -41,11 +41,19 @@ export function pickSuggestions(groups: SuggestGroup[], q: string, limit = 6): S
   const terms = queryTerms(q)
   if (!terms.length) return []
   return groups.flatMap((g) => {
-    const hits = g.items.filter((it) => matchTerms(keyOf(it), terms))
-    if (!hits.length) return []
-    const first = hits.filter((it) => startsWithTerm(keyOf(it), terms[0]))
-    const rest = hits.filter((it) => !first.includes(it))
-    return [{ ...g, count: hits.length, items: [...first, ...rest].slice(0, limit) }]
+    // 1 回たどって、当たった数を数えながら、出す分（先頭で当たるもの → そのほか）だけを集める（候補が多くても件数に比例する手間で済む）
+    const first: SuggestItem[] = []
+    const rest: SuggestItem[] = []
+    let count = 0
+    for (const it of g.items) {
+      const key = keyOf(it)
+      if (!matchTerms(key, terms)) continue
+      count++
+      if (startsWithTerm(key, terms[0])) first.length < limit && first.push(it)
+      else rest.length < limit && rest.push(it)
+    }
+    if (!count) return []
+    return [{ ...g, count, items: [...first, ...rest].slice(0, limit) }]
   })
 }
 

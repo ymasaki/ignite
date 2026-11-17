@@ -8,6 +8,7 @@ import { createContext, useContext, useEffect, useImperativeHandle, useLayoutEff
 
 import { IconButton, LinkButton } from './Button'
 import { clampPos, clampZoom, edgePath, fitScale, glideEase, glideMs, keepInside, nextZoomStep, zoomAround, type Box } from './canvasGeometry'
+import { afterLayout } from './frame'
 import { reducedMotion } from './Motion'
 
 // 表示位置のアニメーションの長さ（canvas.css の .canvas-stage.anim と合わせる）
@@ -101,6 +102,7 @@ export function Canvas({
   const vpFrame = useRef(0)
   const map = useRef<MapData>(EMPTY_MAP)
   const setMap = useRef<(m: MapData) => void>(() => {})
+  const mapKey = useRef('')
   // 画面上の位置を保つ節（開閉・押した直後）。中身や表示領域の大きさが変わるたびに、この節が動かないよう置き直す
   const held = useRef<{ id: string; left: number; top: number; until: number; clamp?: boolean } | null>(null)
   // 選んだ節へ表示位置を運んでいる途中（centerOn）。利用者が動かしたら止める
@@ -164,13 +166,16 @@ export function Canvas({
       drawMapVp()
     }
     const nodeEl = (id: string) => stageRef.current?.querySelector<HTMLElement>(`[data-node="${CSS.escape(id)}"]`) ?? null
-    /** 要素の、中身（stage）の上での位置と大きさ（倍率を割り戻す） */
-    const localRect = (el: Element): Box => {
+    /** 中身（stage）の画面上の位置と、いまの倍率。節をまとめて測るときは 1 回だけ求めて使い回す */
+    const stageFrame = () => {
       const st = stageRef.current!
       const s = st.getBoundingClientRect()
+      return { left: s.left, top: s.top, k: st.offsetWidth ? s.width / st.offsetWidth : liveT().k }
+    }
+    /** 要素の、中身（stage）の上での位置と大きさ（倍率を割り戻す） */
+    const localRect = (el: Element, f = stageFrame()): Box => {
       const e = el.getBoundingClientRect()
-      const k = st.offsetWidth ? s.width / st.offsetWidth : liveT().k
-      return { x: (e.left - s.left) / k, y: (e.top - s.top) / k, w: e.width / k, h: e.height / k }
+      return { x: (e.left - f.left) / f.k, y: (e.top - f.top) / f.k, w: e.width / f.k, h: e.height / f.k }
     }
     const zoomAt = (f: number, cx: number, cy: number, anim: boolean) => {
       atHome.current = false
@@ -297,8 +302,9 @@ export function Canvas({
       const oy = (MAP_H - b.h * sc) / 2
       const els = [...s.querySelectorAll<HTMLElement>('[data-node]')]
       const boxes = new Map<string, Box>()
+      const frame = stageFrame()
       const rects = els.map((el) => {
-        const r = localRect(el)
+        const r = localRect(el, frame)
         const id = el.dataset.node!
         if (!boxes.has(id)) boxes.set(id, r)
         return { id, on: el.hasAttribute('data-on'), ...r }
@@ -310,8 +316,13 @@ export function Canvas({
           return p ? edgePath(X(p), X(rects[i]), el.dataset.edge === 'rail') : ''
         })
         .join('')
-      map.current = { rects, edges, s: sc, ox, oy }
-      setMap.current(map.current)
+      // 前と同じなら縮図を描き直さない（窓の幅だけが変わるあいだは、節の位置も大きさも変わらない）
+      const key = `${sc},${ox},${oy},${edges},${rects.map((r) => `${r.id},${r.on},${r.x},${r.y},${r.w},${r.h}`).join(';')}`
+      if (key !== mapKey.current) {
+        mapKey.current = key
+        map.current = { rects, edges, s: sc, ox, oy }
+        setMap.current(map.current)
+      }
       drawMapVp()
     }
     const api: CanvasApi = {
@@ -360,24 +371,26 @@ export function Canvas({
     const vp = vpRef.current
     const stage = stageRef.current
     if (!vp || !stage) return
-    let frame = 0
-    const remeasure = () => {
-      cancelAnimationFrame(frame)
-      frame = requestAnimationFrame(inner.measure)
-    }
+    let cancel = () => {}
     const ro = new ResizeObserver(() => {
       // 運んでいる途中は、運ぶ側がフレームごとに行き先を測り直す
       if (!glide.current) {
         if (atHome.current) api.home()
         else inner.reHold()
       }
-      remeasure()
+      // 大きさの通知はレイアウトが済んだ直後に届くので、その場で測る（次の描画の前まで待つと、測るためだけにレイアウトを計算し直す）
+      cancel()
+      inner.measure()
     })
     ro.observe(vp)
     ro.observe(stage)
-    const mo = new MutationObserver(remeasure)
+    // 中身の入れ替わり・強調の変化は、描いたあとに 1 回だけ測る
+    const mo = new MutationObserver(() => {
+      cancel()
+      cancel = afterLayout(inner.measure)
+    })
     mo.observe(stage, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-node', 'data-parent', 'data-on'] })
-    return () => (ro.disconnect(), mo.disconnect(), cancelAnimationFrame(frame))
+    return () => (ro.disconnect(), mo.disconnect(), cancel())
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

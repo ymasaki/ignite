@@ -4,6 +4,8 @@
 import { IconChevronDown } from '@tabler/icons-react'
 import { useEffect, useLayoutEffect, useReducer, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 
+import { measureThenWrite } from './frame'
+
 /** 動きを減らす設定か（JS で動かすものはこれを見て止める） */
 // 端末の設定のほか、設定の「動きを減らす」（assist.ts が <html data-motion="reduce"> を付ける）でも止める
 export const reducedMotion = () => document.documentElement.dataset.motion === 'reduce' || window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -138,7 +140,11 @@ export function Collapse({ open, children }: { open: boolean; children: ReactNod
     const o = outer.current
     if (!o) return
     const fit = () => (o.style.height = open && inner.current ? `${inner.current.offsetHeight}px` : '0px')
-    fit()
+    // 一度に描かれた Collapse（ツリーの開いた節など）は、先に全部の高さを測ってからまとめて書く
+    measureThenWrite(() => {
+      const h = open && inner.current ? inner.current.offsetHeight : 0
+      return () => (o.style.height = `${h}px`)
+    })
     // 動きを減らす設定では、閉じる動きがない（transitionend が来ない）ので、すぐ中身を外す
     if (!open && mounted && reducedMotion()) {
       setMounted(false)
@@ -284,11 +290,7 @@ export function RollingNumber({ value, decimals = 0 }: { value: number; decimals
   const gone = (i: number) => i < total - n || i < n - cols
   const col = (d: string, key: string, off = false) => (
     <span className={`roll-col ${off ? 'gone' : ''}`} key={key} aria-hidden="true">
-      <span className="roll-strip" style={{ transform: `translateY(${-Number(d) * 10}%)` }}>
-        {DIGITS.map((x) => (
-          <span key={x}>{x}</span>
-        ))}
-      </span>
+      <span className="roll-strip" style={{ transform: `translateY(${-Number(d) * 10}%)` }}>{DIGITS}</span>
     </span>
   )
   return (
@@ -300,7 +302,8 @@ export function RollingNumber({ value, decimals = 0 }: { value: number; decimals
     </span>
   )
 }
-const DIGITS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+// 0〜9 の帯は改行で区切った 1 つの文字列で描く（数字ごとに要素を作ると、数字の多い画面で要素の半分が帯になる）
+const DIGITS = '0\n1\n2\n3\n4\n5\n6\n7\n8\n9'
 
 /**
  * 文字の中の数字の部分だけを RollingNumber で回す（「12 件」「45.5%」「−3」など）。数でも文字でもない中身（要素）はそのまま出す。

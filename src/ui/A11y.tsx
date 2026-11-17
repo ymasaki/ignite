@@ -1,6 +1,8 @@
 // 読み上げとフォーカスの共通の仕組み（DESIGN.md 12 章「アクセシビリティ」）。見た目は変えず、読み上げソフト・キーボードにだけ効く。
 import { useEffect, useRef, type RefObject } from 'react'
 
+import { afterLayout } from './frame'
+
 /** Tab で止まる要素（無効・tabindex=-1 を除く）。最初の操作へフォーカスを移すときに使う */
 export const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
 
@@ -60,8 +62,12 @@ export function useScrollFocus<T extends HTMLElement>(ref: RefObject<T | null>, 
   useEffect(() => {
     const el = ref.current
     if (!el || typeof ResizeObserver === 'undefined') return
+    // 付けている状態。同じなら書かない（属性を書き直すたびに、スタイルの計算をやり直させない）
+    let on: boolean | null = null
     const sync = () => {
       const scrolls = el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1
+      if (scrolls === on) return
+      on = scrolls
       if (scrolls) {
         el.tabIndex = 0
         el.setAttribute('role', 'region')
@@ -73,12 +79,17 @@ export function useScrollFocus<T extends HTMLElement>(ref: RefObject<T | null>, 
       }
     }
     sync()
-    // 枠の大きさと、中身の差し替え（読み込み中 → 中身）で測り直す
+    // 枠の大きさと、中身の差し替え（読み込み中 → 中身）で測り直す。中身が変わった直後に測るとその場でレイアウトの計算を強いるので、
+    // 差し替えのほうは描いたあとに 1 回だけ確かめる（続けて何度変わっても 1 回）
     const ro = new ResizeObserver(sync)
     ro.observe(el)
-    const mo = new MutationObserver(sync)
+    let cancel = () => {}
+    const mo = new MutationObserver(() => {
+      cancel()
+      cancel = afterLayout(sync)
+    })
     mo.observe(el, { childList: true, subtree: true })
-    return () => (ro.disconnect(), mo.disconnect())
+    return () => (ro.disconnect(), mo.disconnect(), cancel())
   }, [ref, label])
 }
 

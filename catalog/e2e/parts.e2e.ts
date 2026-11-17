@@ -1417,7 +1417,8 @@ test('RollingNumber: 書体が差し替わった直後も桁が字の幅を切�
     const strip = col.querySelector<HTMLElement>('.roll-strip')!
     const d = Math.round(-parseFloat(/-?[\d.]+/.exec(strip.style.transform)![0]) / 10)
     const range = document.createRange()
-    range.selectNodeContents(strip.children[d])
+    range.setStart(strip.firstChild!, d * 2)
+    range.setEnd(strip.firstChild!, d * 2 + 1)
     return { col: col.getBoundingClientRect().width, glyph: range.getBoundingClientRect().width }
   }))
   // 候補の書体から、数字の幅がいちばん細いものと太いものを選び（端末にない書体は既定の書体で測られる）、細い書体から太い書体へ差し替える

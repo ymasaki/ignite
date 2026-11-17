@@ -20,24 +20,39 @@ const NONE = new Map<number, number>()
 /** 階層の表で、見出しの下に積む行（行番号 → 固定する位置）。depthKey が空なら積まない */
 function useStuckRows(ref: RefObject<HTMLDivElement | null>, depthKey: string) {
   const [stuck, setStuck] = useState(NONE)
+  // 描き直したら（並べ替えなどで行の中身が替わったら）、次に使うときに測り直す
+  const stale = useRef(true)
+  useLayoutEffect(() => {
+    stale.current = true
+  })
   useLayoutEffect(() => {
     const sc = ref.current
     const table = sc?.querySelector('table')
     if (!sc || !table || !depthKey) return setStuck(NONE)
     const depths = depthKey.split(',').map(Number)
+    // 行の本来の位置と高さ。スクロールでは変わらないので、枠か表の大きさが変わったとき・描き直したときだけ測り直す（スクロールのたびに全行を測らない）
+    let geo: { tops: number[]; hs: number[]; head: number } | null = null
     const update = () => {
       const body = table.tBodies[0]
       const head = table.tHead
       if (!body || !head || body.rows.length !== depths.length) return setStuck(NONE)
-      const hs = [...body.rows].map((r) => r.getBoundingClientRect().height)
-      const tops: number[] = []
-      hs.reduce((y, h, i) => ((tops[i] = y), y + h), body.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop)
-      const m = new Map(stickyRows(depths, tops, hs, sc.scrollTop + head.getBoundingClientRect().height, sc.scrollTop).map((r) => [r.i, r.top]))
+      if (!geo || stale.current) {
+        stale.current = false
+        const hs = [...body.rows].map((r) => r.getBoundingClientRect().height)
+        const tops: number[] = []
+        hs.reduce((y, h, i) => ((tops[i] = y), y + h), body.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop)
+        geo = { tops, hs, head: head.getBoundingClientRect().height }
+      }
+      const m = new Map(stickyRows(depths, geo.tops, geo.hs, sc.scrollTop + geo.head, sc.scrollTop).map((r) => [r.i, r.top]))
       setStuck((cur) => ([...cur].join() === [...m].join() ? cur : m))
+    }
+    const remeasure = () => {
+      geo = null
+      update()
     }
     update()
     sc.addEventListener('scroll', update, { passive: true })
-    const ro = new ResizeObserver(update)
+    const ro = new ResizeObserver(remeasure)
     ro.observe(sc)
     ro.observe(table)
     return () => {

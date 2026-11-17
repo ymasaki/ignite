@@ -3,7 +3,7 @@
 // 窓の幅と寸法から決める。スマホ幅（600px 以下）では左メニューを引き出しにし、開くボタンは画面名と 1 つにまとめる（幅を空けるため）。
 
 import { IconChevronLeft, IconClock, IconMenu2, IconRefresh } from '@tabler/icons-react'
-import { createContext, Fragment, useContext, useEffect, useRef, useState, useSyncExternalStore, type ButtonHTMLAttributes, type CSSProperties, type ReactNode } from 'react'
+import { createContext, Fragment, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ButtonHTMLAttributes, type CSSProperties, type ReactNode } from 'react'
 
 import { shortcutsOn } from '../assist'
 import { FOCUSABLE } from './A11y'
@@ -11,16 +11,21 @@ import { Button } from './Button'
 import { Toaster } from './Toast'
 import { Drawer, isTyping, type DrawerPeek } from './Controls'
 import { reducedMotion } from './Motion'
-import { SHELL_SIZES, shellLayout, type ShellSizes } from './shellLayout'
+import { SHELL_SIZES, shellLayout, type ShellLayout, type ShellSizes, type ShellState } from './shellLayout'
 import { startTips } from './tip'
 
 // 左メニューを畳む・広げる動きの長さ（shell.css の .app の grid-template-columns と合わせる）
 const SIDE_MS = 280
 
 const onResize = (cb: () => void) => (window.addEventListener('resize', cb), () => window.removeEventListener('resize', cb))
-/** 窓の幅（変わったら描き直す） */
-function useWindowWidth() {
-  return useSyncExternalStore(onResize, () => window.innerWidth, () => 1440)
+/**
+ * 窓の幅から決まる骨組み。骨組みが変わったときだけ描き直す（窓の幅が 1px 変わるたびに枠の中身を描き直さない）。
+ * 利用者が左メニューを広げたとき（keepSide）の骨組みも一緒に持ち、どちらを使うかは描くときに選ぶ
+ */
+function useShellLayouts(state: Omit<ShellState, 'width' | 'keepSide'>, sizes: ShellSizes): [plain: ShellLayout, kept: ShellLayout] {
+  const at = (width: number) => JSON.stringify([shellLayout({ ...state, width }, sizes), shellLayout({ ...state, width, keepSide: true }, sizes)])
+  const key = useSyncExternalStore(onResize, () => at(window.innerWidth), () => at(1440))
+  return useMemo(() => JSON.parse(key), [key])
 }
 
 const onModeChange = (cb: () => void) => {
@@ -186,17 +191,16 @@ export function AppShell({ side, foot, collapse, title, titleAfter, search, tool
 }) {
   const [open, setOpen] = useState(false)
   const close = () => setOpen(false)
-  const width = useWindowWidth()
   const sideRef = useRef<HTMLElement>(null)
   const mainRef = useRef<HTMLElement>(null)
   const panelOpen = !!panel?.open
   // 幅が足りずに自動で畳んでいるあいだにつまみで広げたら、畳む幅より広くなる（自動で畳む場面でなくなる）まで畳まない（覚えている設定は変えない）
   const [keepSide, setKeepSide] = useState(false)
-  const state = { width, collapsed: !!collapse?.collapsed, panelOpen, railable: !!collapse }
+  const [plain, kept] = useShellLayouts({ collapsed: !!collapse?.collapsed, panelOpen, railable: !!collapse }, sizes)
   // 幅が足りないので自動で畳む場面か（そのときのつまみは、覚えている設定ではなく「この場面のあいだ広げる」を切り替える）
-  const autoCase = shellLayout(state, sizes).autoRail
+  const autoCase = plain.autoRail
   if (keepSide && !autoCase) setKeepSide(false)
-  const layout = shellLayout({ ...state, keepSide }, sizes)
+  const layout = keepSide ? kept : plain
   const toggle = () => (autoCase ? setKeepSide((v) => !v) : collapse?.onChange(!collapse.collapsed))
   const rail = layout.side === 'rail'
   const drawerSide = layout.side === 'drawer'
