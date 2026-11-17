@@ -52,11 +52,13 @@ export function OtpField({ value, onChange, onComplete, length = 6, label, disab
           if (el.selectionStart !== el.value.length || el.selectionEnd !== el.value.length) toEnd()
         }}
       />
-      {Array.from({ length }, (_, i) => (
+      {Array.from({ length }, (_, i) => [
+        // 6 桁以上の偶数は半分で区切り、3 桁ずつ読み取れるようにする（見た目だけ。値に区切りは入れない）
+        i > 0 && length >= 6 && length % 2 === 0 && i === length / 2 && <span key="sep" className="otp-sep" aria-hidden="true" />,
         <span key={i} className={`otp-cell${i < value.length ? ' filled' : ''}${focused && i === cur ? ' cur' : ''}`} aria-hidden="true">
           {i < value.length && <span key={value[i]}>{value[i]}</span>}
-        </span>
-      ))}
+        </span>,
+      ])}
     </label>
   )
 }
