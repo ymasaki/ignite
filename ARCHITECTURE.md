@@ -13,7 +13,7 @@ Ignite 自身を変更するときの案内。デザインの規約は [DESIGN.m
 | `audit/` | Playwright・axe による描画の測定と集計 | 共通の定義を `src/` から読み、アプリは公開設定で測定を接続する |
 | `templates/` | アプリのひな形・規約節・監査スキル・拡張例 | コピー後にアプリが持つものと、同期で更新するものを分ける |
 | `catalog/` | 全部品の実例・操作テスト・共通監査の対象 | Vite の alias で `src/` を直接読む。パッケージには配布しない |
-| `tests/`・`scripts/` | 単体テスト・ビルド・監査実行・配布検証 | 採用側の業務テストを持ち込まない |
+| `tests/`・`scripts/` | 単体テスト・ビルド・監査実行・配布検証・表示の負荷の測定（`scripts/perf/`） | 採用側の業務テストを持ち込まない |
 
 採用アプリは Ignite の公開入口を使い、その上にテーマと固有部品・画面を重ねる。Ignite から採用アプリへは依存しない。詳細は [DESIGN 0 章](DESIGN.md#0-層とカスケード)、拡張の所有範囲は [拡張ガイド](docs/extensions.md) を参照する。
 
@@ -55,6 +55,7 @@ Ignite 自身を変更するときの案内。デザインの規約は [DESIGN.m
 | 画面の測定・前後処理 | `tests/audit.test.ts`、`catalog/e2e/audit-extension.e2e.ts`、カタログ監査 |
 | 監査の実行・配信・公開処理 | `node --test scripts/hooks.test.mjs scripts/test-entry.test.mjs scripts/health.test.mjs scripts/audit-cache.test.mjs scripts/audit-runner.test.mjs scripts/serve-catalog.test.mjs scripts/release.test.mjs` |
 | コード品質の計測 | `scripts/health/` の各コマンドが解析・行カバレッジ・計算の速さを測る。対象と実行方法は [README のコード品質](README.md#devboard-のコード品質)を正本とし、`scripts/health.test.mjs` で出力と失敗時の扱いを確認する |
+| 表示の速さ・要素数・メモリ | `npm run perf:parts`（部品を数百個並べた見本。`scripts/perf/parts/`）と、ビルド済みカタログを渡す `npm run perf:catalog -- --dist <ディレクトリ>`。ウィンドウを開かない Chromium で、レイアウト・スタイルの計算の回数、要素数、ヒープ、何もしない間の処理を出す。時間は端末の負荷でぶれるので合否には使わず、同じ端末で変更の前後（`perf:parts -- --src <前の作業ツリー>`）を比べる。増やさない決まりの回帰は `tests/perf.test.tsx` |
 | パッケージ・ひな形・ビルド | `npm run smoke`。実際に pack して、空環境への導入・同期・模擬次版への更新を確かめる |
 
 一括確認は、スクリプトのテスト → 型 → 単体テスト → ビルド → 静的検査 → Chromium の準備 → カタログ監査 → smoke の順に実行する。単体テストは最大2 worker、カタログ監査の測定は6 workerで実行し（判定は測定のあとに記録を集計する）、各工程の時間・終了値と監査のロック待ち時間を出す。カタログ監査だけは同じ保存済み入力・環境での成功を24時間まで再利用できる。条件と強制再測定は [カタログ監査](docs/catalog-audit.md#同じ成功結果の再利用)を参照する。単体・型・ビルド・smoke は毎回実行する。カタログだけではパッケージのビルドや配布後の動作は確かめられない。

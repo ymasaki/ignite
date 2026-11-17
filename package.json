@@ -1,6 +1,6 @@
 {
   "name": "@ymasaki/ignite",
-  "version": "1.19.0",
+  "version": "1.20.0",
   "description": "Web・デスクトップのアプリで同じ見た目と使い勝手をそろえるデザインシステム",
   "type": "module",
   "license": "UNLICENSED",
@@ -53,6 +53,8 @@
     "check:design": "node dist/cli.js check",
     "audit:design": "node scripts/audit-design.mjs",
     "smoke": "node scripts/smoke.mjs",
+    "perf:catalog": "node scripts/perf/catalog.mjs",
+    "perf:parts": "node scripts/perf/parts.mjs",
     "health:analysis": "node scripts/health/run.mjs analysis",
     "health:coverage": "node scripts/health/run.mjs coverage",
     "health:benchmarks": "node scripts/health/run.mjs benchmarks"

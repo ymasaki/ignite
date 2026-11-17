@@ -1,11 +1,14 @@
 // カタログの表示の速さとメモリを、ウィンドウを開かない Chromium で測る。
-// 使い方: node scripts/perf-catalog.mjs --dist <ビルド済みカタログ> [--runs 3] [--pages a,b] [--out 結果.json]
-// 同じ端末・同じ引数で前後を測って比べる（値は端末と負荷で変わるので、合否には使わない）。
+// 使い方: node scripts/perf/catalog.mjs [--dist <ビルド済みカタログ>] [--runs 3] [--pages a,b] [--out 結果.json]
+// --dist を省くと、この作業ツリーのカタログを一時ディレクトリへビルドして測る。
+// 同じ端末・同じ引数で前後を測って比べる（時間は端末と負荷で変わるので、合否には使わない。回数・要素数は負荷に左右されにくい）。
 import { chromium } from '@playwright/test'
 import { createServer } from 'node:http'
-import { readFile, writeFile, readdir, stat } from 'node:fs/promises'
+import { mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
 import { gzipSync } from 'node:zlib'
 import path from 'node:path'
+import { build } from 'vite'
 
 const PAGES = ['overview', 'setup', 'color', 'type', 'shape', 'motion', 'actions', 'forms', 'navigate', 'marks', 'data', 'feedback', 'charts', 'code', 'list', 'header', 'dashboard', 'login', 'responsive', 'settings']
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2' }
@@ -24,7 +27,6 @@ function args() {
     else if (key === '--out') out.out = path.resolve(value)
     else throw new Error(`不明な引数: ${key}`)
   }
-  if (!out.dist) throw new Error('--dist にビルド済みカタログのディレクトリを指定してください')
   return out
 }
 
@@ -153,7 +155,10 @@ function fold(samples) {
   return out
 }
 
-const { dist, runs, pages, out } = args()
+const { dist: given, runs, pages, out } = args()
+const built = given ? null : await mkdtemp(path.join(tmpdir(), 'ignite-perf-catalog-'))
+if (built) await build({ root: path.resolve(import.meta.dirname, '../../catalog'), logLevel: 'error', build: { outDir: built, emptyOutDir: true } })
+const dist = given ?? built
 const server = await serve(dist)
 const browser = await chromium.launch({ headless: true })
 const report = { cpuRate: CPU_RATE, runs, assets: await assetSizes(dist), pages: {} }
@@ -176,5 +181,6 @@ try {
 } finally {
   await browser.close()
   await server.close()
+  if (built) await rm(built, { recursive: true, force: true })
 }
 if (out) await writeFile(out, `${JSON.stringify(report, null, 2)}\n`)
