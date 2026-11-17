@@ -27,10 +27,10 @@ function PaginationRow({ page, count, onChange, label = 'ページ送り' }: { p
     <nav className="pagination" aria-label={label}>
       <div className={`pg-row${ready ? ' ready' : ''}`} ref={ref}>
         <span className="thumb" ref={thumb} aria-hidden="true" />
-        <IconButton label="前のページ" disabled={page <= 1} onClick={() => onChange(page - 1)}><IconChevronLeft size={16} stroke={1.8} /></IconButton>
+        <IconButton label="前のページ" tip={false} disabled={page <= 1} onClick={() => onChange(page - 1)}><IconChevronLeft size={16} stroke={1.8} /></IconButton>
         {pageItems(page, count).map((p, i) => (p === '…' ? <span key={`gap${i}`} className="pg-gap" aria-hidden="true">…</span> : <button key={p} type="button" className="pg-n num" aria-label={`${p}ページ目`} aria-current={p === page ? 'page' : undefined} onClick={() => p !== page && onChange(p)}>{p}</button>))}
         <span className="pg-cur num">{page} / {count}</span>
-        <IconButton label="次のページ" disabled={page >= count} onClick={() => onChange(page + 1)}><IconChevronRight size={16} stroke={1.8} /></IconButton>
+        <IconButton label="次のページ" tip={false} disabled={page >= count} onClick={() => onChange(page + 1)}><IconChevronRight size={16} stroke={1.8} /></IconButton>
       </div>
     </nav>
   )

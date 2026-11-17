@@ -1,5 +1,6 @@
 // ボタン類。見た目は styles/components/button.css。
 // 主ボタン（primary）は 1 画面に 1 つまで。アイコンだけのボタンは必ず label（aria-label と data-tip）を付ける。
+// 「‹ ›」「＋ −」のように記号だけで動作が明らかなボタンは tip={false} で吹き出しを出さない（aria-label は残す）。
 
 import { IconExternalLink } from '@tabler/icons-react'
 import { useRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
@@ -30,9 +31,11 @@ export function Button({ type = 'button', variant = 'default', icon, active = fa
 }
 
 /** アイコンだけのボタン。label は読み上げとツールチップの両方に使う */
-export function IconButton({ label, tip = label, size = 'md', className = '', children, ...rest }: Native & { label: string; tip?: string; size?: 'md' | 'lg' }) {
+export function IconButton({ label, tip = label, size = 'md', className = '', children, ...rest }: Native & { label: string; tip?: string | false; size?: 'md' | 'lg' }) {
+  // tip={false} は「‹ ›」「＋ −」のように記号だけで動作が明らかなボタン。吹き出しを出さず、監査に意図して外したと示す
+  const tipAttr = tip === false ? { 'data-no-tip': '' } : { 'data-tip': tip }
   return (
-    <button type="button" className={`icon-btn ${size === 'lg' ? 'lg' : ''} ${className}`} aria-label={label} data-tip={tip} {...rest}>
+    <button type="button" className={`icon-btn ${size === 'lg' ? 'lg' : ''} ${className}`} aria-label={label} {...tipAttr} {...rest}>
       {children}
     </button>
   )

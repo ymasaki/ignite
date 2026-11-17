@@ -37,9 +37,9 @@ function Calendar({ value, today, min, max, weekStart, onPick, onClear }: { valu
   return (
     <div className="cal" role="dialog" aria-label={fmtMonth(ym)}>
       <div className="cal-head">
-        <IconButton label="前の月" onClick={() => ((moved.current = false), setFocus(clampDate(addMonths(focus, -1), min, max)))}><IconChevronLeft size={16} stroke={1.8} /></IconButton>
+        <IconButton label="前の月" tip={false} onClick={() => ((moved.current = false), setFocus(clampDate(addMonths(focus, -1), min, max)))}><IconChevronLeft size={16} stroke={1.8} /></IconButton>
         <b className="num" aria-live="polite">{fmtMonth(ym)}</b>
-        <IconButton label="次の月" onClick={() => ((moved.current = false), setFocus(clampDate(addMonths(focus, 1), min, max)))}><IconChevronRight size={16} stroke={1.8} /></IconButton>
+        <IconButton label="次の月" tip={false} onClick={() => ((moved.current = false), setFocus(clampDate(addMonths(focus, 1), min, max)))}><IconChevronRight size={16} stroke={1.8} /></IconButton>
       </div>
       <table ref={grid} role="grid" aria-label={fmtMonth(ym)} onKeyDown={onKey}>
         <thead><tr>{Array.from({ length: 7 }, (_, i) => <th key={i} scope="col" abbr={`${WEEK[(i + weekStart) % 7]}曜日`}>{WEEK[(i + weekStart) % 7]}</th>)}</tr></thead>

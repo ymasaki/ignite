@@ -2,6 +2,13 @@
 
 採用アプリは `npx ignite upgrade ./vendor/次の版.tgz`（[採用手順](docs/adopting.md#更新を取り込む)）でこの内容を確かめて取り込む。形式は [docs/releasing.md](docs/releasing.md)。
 
+## 1.19.0（2026-11-17）
+
+### 変更
+
+- 記号と置き場所だけで動作が明らかなボタンには吹き出しを出さないようにした。数値入力（`NumberField`）の＋−、`Stepper`・`MonthStepper` の前後送り、`Pagination` の前後のページ、`DatePicker` の前後の月が対象。読み上げ用の名前（`aria-label`）は変えていない。
+- `IconButton` に `tip={false}` を追加した。吹き出しを出さず、意図して外したことを `data-no-tip` で示す。描画監査の「アイコンだけのボタン（1 章）」は `data-no-tip` の付いたボタンを指摘しない。
+
 ## 1.18.3（2026-11-17）
 
 ### 修正

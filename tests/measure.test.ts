@@ -183,5 +183,10 @@ describe('描画監査の境界と例外', () => {
         button.setAttribute('aria-label', '説明');
         button.setAttribute('data-tip', '');
         expect(await run()).toEqual([]);
+        // 記号だけで動作が明らかなボタンは data-no-tip で意図して吹き出しを外せる。印がなければ従来どおり報告する
+        button.removeAttribute('data-tip');
+        expect(await rules()).toEqual(['アイコンだけのボタン（1 章）']);
+        button.setAttribute('data-no-tip', '');
+        expect(await run()).toEqual([]);
     });
 });

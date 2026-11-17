@@ -59,6 +59,9 @@ it('数値欄は全角入力を確定し、上下限・矢印・IMEを区別す�
     key('input', 'Enter');
     expect(change).toHaveBeenLastCalledWith(2);
     expect(el<HTMLButtonElement>('[aria-label="量を増やす"]').disabled).toBe(true);
+    // 記号だけで動作が明らかな増減は吹き出しを出さない（読み上げの名前は残す）
+    expect(el('[aria-label="量を増やす"]').hasAttribute('data-tip')).toBe(false);
+    expect(el('[aria-label="量を減らす"]').hasAttribute('data-tip')).toBe(false);
     key('input', 'ArrowDown');
     expect(change).toHaveBeenLastCalledWith(1.9);
     input('input', '０．５');

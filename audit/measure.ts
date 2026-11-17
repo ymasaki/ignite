@@ -436,11 +436,11 @@ export function measure(page: Page, args: MeasureArgs): Promise<Measured[]> {
     buttonHeight()
 
     const buttonLabels = () => {
-      // 1 章: アイコンだけのボタンは aria-label と data-tip。ブラウザ標準の title は使わない
+      // 1 章: アイコンだけのボタンは aria-label と data-tip。記号だけで動作が明らかなボタンは data-no-tip で意図して外せる。ブラウザ標準の title は使わない
       for (const el of document.querySelectorAll('button, [role="button"]')) {
         if (!visible(el) || (el.textContent || '').trim() || !el.querySelector('svg')) continue
         if (!el.getAttribute('aria-label')) out.push({ rule: 'アイコンだけのボタン（1 章）', where: parentWho(el), expected: 'aria-label あり', actual: 'なし' })
-        if (!el.hasAttribute('data-tip')) out.push({ rule: 'アイコンだけのボタン（1 章）', where: parentWho(el), expected: 'data-tip あり', actual: 'なし' })
+        if (!el.hasAttribute('data-tip') && !el.hasAttribute('data-no-tip')) out.push({ rule: 'アイコンだけのボタン（1 章）', where: parentWho(el), expected: 'data-tip あり', actual: 'なし' })
       }
       for (const el of document.querySelectorAll('[title]')) {
         if (!el.closest('svg')) out.push({ rule: 'title を使わない（1 章）', where: parentWho(el), expected: 'data-tip', actual: `title="${el.getAttribute('title')}"` })

@@ -119,6 +119,9 @@ it('ページ送りとアコーディオンは現在位置と排他開閉を守�
     const change = vi.fn();
     render(<><Pagination page={1} count={20} onChange={change}/><Accordion items={[{ key: 'a', title: 'A', meta: 1, children: '本文A' }, { key: 'b', title: 'B', children: '本文B' }]}/></>);
     expect(el<HTMLButtonElement>('[aria-label="前のページ"]').disabled).toBe(true);
+    // 前後送りは記号で動作が明らかなので吹き出しを出さない
+    expect(el('[aria-label="前のページ"]').hasAttribute('data-tip')).toBe(false);
+    expect(el('[aria-label="次のページ"]').hasAttribute('data-tip')).toBe(false);
     click('[aria-label="次のページ"]');
     expect(change).toHaveBeenCalledWith(2);
     click('[aria-current=page]');

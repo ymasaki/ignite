@@ -28,9 +28,9 @@ export function Stepper<T extends string>({ label, prevLabel, nextLabel, value, 
   const newer = i > 0 ? options[i - 1].value : undefined
   return (
     <div className={`stepper${hideMeta ? ' no-meta' : ''}`} role="group" aria-label={label}>
-      <IconButton label={prevLabel} disabled={!older} onClick={() => older && onChange(older)}><IconChevronLeft size={16} stroke={1.8} /></IconButton>
+      <IconButton label={prevLabel} tip={false} disabled={!older} onClick={() => older && onChange(older)}><IconChevronLeft size={16} stroke={1.8} /></IconButton>
       <Select label={label} value={value} onChange={onChange} options={options} display={content} />
-      <IconButton label={nextLabel} disabled={!newer} onClick={() => newer && onChange(newer)}><IconChevronRight size={16} stroke={1.8} /></IconButton>
+      <IconButton label={nextLabel} tip={false} disabled={!newer} onClick={() => newer && onChange(newer)}><IconChevronRight size={16} stroke={1.8} /></IconButton>
     </div>
   )
 }

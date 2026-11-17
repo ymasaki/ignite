@@ -28,4 +28,10 @@ describe('Stepper の既定ラベル', () => {
   it.each([false, '', 0, <strong key="custom">独自</strong>])('独自の表示を優先する（%s）', display => {
     expect(render('第 1 週', display)).not.toContain('class="roll"')
   })
+  it('前後送りは記号で動作が明らかなので吹き出しを出さず、読み上げの名前は残す', () => {
+    const html = render('第 1 週')
+    expect(html).not.toContain('data-tip')
+    expect(html).toContain('aria-label="前"')
+    expect(html).toContain('aria-label="次"')
+  })
 })
