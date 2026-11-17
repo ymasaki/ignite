@@ -17,6 +17,8 @@
 .login-notice{display:grid;padding-bottom:var(--space-4)}
 /* 先頭は知らせの Collapse。閉じた箱のぶん段の間が増えないよう、負の余白で消し、開いたときの隙間は .login-notice が持つ（grid の行は負にならないので flex で並べる） */
 .login-form > :first-child{margin-bottom:calc(var(--space-4) * -1)}
+/* 2 段階認証の確認コード（TwoFactorForm）は面の幅いっぱいに升を等分して並べ、左右の端を入力欄・主ボタンとそろえる */
+.login-form .otp{display:grid;width:100%;grid-template-columns:repeat(var(--otp-n),minmax(30px,1fr))}
 .login-row{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2) var(--space-4)}
 .login-forgot{margin-left:auto}
 /* 確認コードの送り直しの待ち（aria-disabled。フォーカスを保つため disabled にしない）。押せない形の決まり（不透明度 0.45・ホバーで変えない） */
