@@ -24,10 +24,17 @@ const REPO_URL = 'https://github.com/ymasaki/ignite/blob/main/'
 /** 文中の `パス` のうち、このリポジトリのファイルとして実在を確かめるもの */
 const REPO_PATH = /^(?:src|cli|audit|scripts|docs|templates|catalog|tests)\/[\w./-]*[\w/]$/
 
-function walk(root, dir = '', out = []) {
+/** .gitignore に「名前/」で書いた、実行時にできる場所（監査の結果など） */
+function ignoredDirs(root) {
+  const file = path.join(root, '.gitignore')
+  return new Set(fs.existsSync(file) ? fs.readFileSync(file, 'utf8').split('\n').flatMap((l) => l.match(/^([\w.-]+)\/$/)?.[1] ?? []) : [])
+}
+
+/** 管理下の文書とコードだけを集める（.gitignore の場所の生成物は読まない） */
+function walk(root, dir = '', out = [], skip = new Set([...SKIP_DIRS, ...ignoredDirs(root)])) {
   for (const e of fs.readdirSync(path.join(root, dir), { withFileTypes: true })) {
     const rel = dir ? `${dir}/${e.name}` : e.name
-    if (e.isDirectory()) { if (!SKIP_DIRS.has(e.name)) walk(root, rel, out) } else out.push(rel)
+    if (e.isDirectory()) { if (!skip.has(e.name)) walk(root, rel, out, skip) } else out.push(rel)
   }
   return out
 }
@@ -104,7 +111,7 @@ export function checkDocs(root, { today = localDate() } = {}) {
   const add = (file, line, message) => problems.push({ file, line, message })
   const docs = listDocs(root)
   const texts = new Map(docs.map((f) => [f, fs.readFileSync(path.join(root, f), 'utf8')]))
-  const ignored = new Set(fs.existsSync(path.join(root, '.gitignore')) ? fs.readFileSync(path.join(root, '.gitignore'), 'utf8').split('\n').flatMap((l) => l.match(/^([\w.-]+)\/$/)?.[1] ?? []) : [])
+  const ignored = ignoredDirs(root)
   const anchorCache = new Map()
   const anchorsOf = (f) => {
     if (!anchorCache.has(f)) anchorCache.set(f, anchors(texts.get(f) ?? fs.readFileSync(path.join(root, f), 'utf8')))

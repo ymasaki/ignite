@@ -40,6 +40,12 @@ test('整った文書は通る（テンプレートの採用アプリのパス�
   assert.deepEqual(messages(project(t)), [])
 })
 
+test('.gitignore の場所の生成物（監査の結果の .md など）は検査にも索引にも入れない', (t) => {
+  const root = project(t, { 'catalog/generated/report.md': '# 監査の結果\n\n[消えた](gone.md)\n' })
+  assert.deepEqual(messages(root), [])
+  assert.doesNotMatch(buildIndex(root), /report\.md/)
+})
+
 test('大きさ・1 行の長さの上限を超えると止める。追記だけの記録は大きさを見ない', (t) => {
   fails(t, { 'docs/design/color.md': `# 色\n\n${head('色')}\n## 2. 色\n\n### コントラスト\n\n${'あ。\n'.repeat(LIMITS.default / 2)}` }, /color\.md:1 \d+ 字。上限 20000 字/)
   fails(t, { 'AGENTS.md': `# 作業\n\n${head('毎回')}\n${'い\n'.repeat(4100)}` }, /AGENTS\.md:1 \d+ 字。上限 8000 字/)
