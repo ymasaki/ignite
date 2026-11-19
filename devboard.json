@@ -321,9 +321,9 @@
         "versions": [
           "2.3.2"
         ],
-        "reason": "2026-11-18確認。更新先 3.0.5 を親の依存範囲で解決できない。vitest@5.1.0 → es-module-lexer ^2.3.2。解決済みの制約は vitest@5.1.0 (^2.3.2)。https://registry.npmjs.org/vitest/5.1.0",
+        "reason": "2026-11-19確認。更新先 3.0.5 は vitest@5.1.1 の依存範囲で解決できない。指定は ^2.3.2。Vitest の VM 実行が使う initSync は 3 系で削除された。https://github.com/guybedford/es-module-lexer/releases/tag/3.0.0 https://registry.npmjs.org/vitest/5.1.1 2.3.2 は開発用依存で、Aikido が低重大度の問題を報告している。https://intel.aikido.dev/packages/npm/es-module-lexer",
         "parent": "npm|vitest|registry.npmjs.org",
-        "parentVersion": "5.1.0"
+        "parentVersion": "5.1.1"
       },
       {
         "id": "npm|escape-string-regexp|registry.npmjs.org",
@@ -349,6 +349,15 @@
           "5.0.0"
         ],
         "reason": "2026-11-18確認。更新先 8.0.0 を親の依存範囲で解決できない。eslint@10.15.0 → find-up ^5.0.0。解決済みの制約は eslint@10.15.0 (^5.0.0)。https://registry.npmjs.org/eslint/10.15.0",
+        "parent": "npm|eslint|registry.npmjs.org",
+        "parentVersion": "10.15.0"
+      },
+      {
+        "id": "npm|glob-parent|registry.npmjs.org",
+        "versions": [
+          "6.0.2"
+        ],
+        "reason": "2026-11-19確認。更新先 7.0.0 は eslint@10.15.0 の依存範囲で解決できない。指定は ^6.0.2。7 系は ESM に切り替わり Node.js 22.15.0 以上を要求する。https://registry.npmjs.org/glob-parent/7.0.0 https://registry.npmjs.org/eslint/10.15.0",
         "parent": "npm|eslint|registry.npmjs.org",
         "parentVersion": "10.15.0"
       },
@@ -511,9 +520,9 @@
         "versions": [
           "3.2.1"
         ],
-        "reason": "2026-11-18確認。更新先 3.2.3 を親の依存範囲で解決できない。vitest@5.1.0 → why-is-node-running 3.2.1。解決済みの制約は vitest@5.1.0 (3.2.1)。https://registry.npmjs.org/vitest/5.1.0",
+        "reason": "2026-11-19確認。更新先 3.2.3 は vitest@5.1.1 の依存範囲で解決できない。指定は 3.2.1 固定。 https://registry.npmjs.org/vitest/5.1.1",
         "parent": "npm|vitest|registry.npmjs.org",
-        "parentVersion": "5.1.0"
+        "parentVersion": "5.1.1"
       },
       {
         "id": "npm|yocto-queue|registry.npmjs.org",
