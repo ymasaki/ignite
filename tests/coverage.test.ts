@@ -15,7 +15,8 @@ const read = (f: string) => fs.readFileSync(path.join(root, f), 'utf8')
 const parts = [...read('src/index.ts').matchAll(/export \{([^}]*)\}/g)].flatMap((m) => m[1].split(',')).map((s) => s.trim()).filter((s) => /^[A-Z][a-z]/.test(s))
 
 describe('部品の一覧（AGENTS.md「部品を足す・変えるときは一緒に直す」）', () => {
-  const design = read('DESIGN.md')
+  // DESIGN.md は入口で、部品の表は docs/design/ に分けてある
+  const design = ['DESIGN.md', ...fs.readdirSync(path.join(root, 'docs/design')).filter((f) => f.endsWith('.md')).map((f) => `docs/design/${f}`)].map(read).join('\n')
   // 目録（nav.tsx）は名前を並べるだけなので数えない。実際に描いているファイルだけを見る
   const catalog = fs.readdirSync(path.join(root, 'catalog/src')).filter((f) => f.endsWith('.tsx') && f !== 'nav.tsx').map((f) => read(`catalog/src/${f}`)).join('\n')
   // カタログでは単独で見せられないもの（理由つき）
@@ -25,7 +26,7 @@ describe('部品の一覧（AGENTS.md「部品を足す・変えるときは一�
     FitBar: '帯の幅に合わせて組むので、Stepper などの修飾の組み合わせとして使う',
   }
   it('部品を 50 個より多く拾えている', () => expect(parts.length).toBeGreaterThan(50))
-  it.each(parts)('%s は DESIGN.md に書いてある', (p) => expect(design).toContain(p))
+  it.each(parts)('%s は DESIGN.md か docs/design/ に書いてある', (p) => expect(design).toContain(p))
   it.each(parts.filter((p) => !(p in NOT_IN_CATALOG)))('%s はカタログにある', (p) => expect(catalog).toMatch(new RegExp(`\\b${p}\\b`)))
 })
 

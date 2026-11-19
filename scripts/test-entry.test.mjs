@@ -8,7 +8,8 @@ import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
 const commands = [
-  'node --test scripts/hooks.test.mjs scripts/test-entry.test.mjs scripts/health.test.mjs scripts/audit-cache.test.mjs scripts/audit-runner.test.mjs scripts/serve-catalog.test.mjs scripts/release.test.mjs scripts/third-party-notices.test.mjs',
+  'node --test scripts/hooks.test.mjs scripts/test-entry.test.mjs scripts/health.test.mjs scripts/audit-cache.test.mjs scripts/audit-runner.test.mjs scripts/serve-catalog.test.mjs scripts/release.test.mjs scripts/third-party-notices.test.mjs scripts/docs.test.mjs',
+  'node scripts/docs.mjs',
   'node node_modules/typescript-native/bin/tsc --noEmit',
   'npx vitest run --dir tests --maxWorkers=2',
   'node scripts/build.mjs',
@@ -17,7 +18,7 @@ const commands = [
   'npm run audit:design',
   'node scripts/smoke.mjs',
 ]
-const stages = ['harness', 'types', 'unit', 'build', 'check', 'browser', 'catalog', 'smoke']
+const stages = ['harness', 'docs', 'types', 'unit', 'build', 'check', 'browser', 'catalog', 'smoke']
 
 test('検査入口は全件を順番に実行し、どの工程の失敗でも終了値を保持して後続を止める', () => {
   const work = mkdtempSync(path.join(tmpdir(), 'ignite-test-entry-'))

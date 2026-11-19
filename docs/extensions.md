@@ -1,5 +1,9 @@
 # アプリの拡張を保つ
 
+<!-- 読むとき: 採用アプリ固有のテーマ・部品・監査を足すとき、Ignite とアプリの所有範囲を確かめるとき -->
+<!-- 見直した日: 2026-11-20 -->
+<!-- パスの基準: templates/extensions templates/app -->
+
 テーマ、アプリ固有の部品、固有の監査は採用アプリが所有します。[DESIGN.md の0章](../DESIGN.md#0-層とカスケード)の上に差分を重ね、Igniteの共通実装をコピーしません。アプリから使うのは `@ymasaki/ignite`、CSS、`@ymasaki/ignite/audit` の公開入口です。`src/` や `dist/` 内部への直接importはしません。
 
 | 所有するもの | Ignite | 採用アプリ |

@@ -2,6 +2,9 @@
 
 # Ignite
 
+<!-- 読むとき: Ignite の概要・入っているもの・開発の始め方を知るとき -->
+<!-- 見直した日: 2026-11-20 -->
+
 Web アプリで同じ見た目・使い勝手・UX をそろえるデザインシステムです。デザインの決まり、React の UI 部品、決まりどおりかを確かめる監査を 1 つのパッケージで配ります。デスクトップアプリへの展開は次の段階です。
 
 | 入っているもの | 場所 |
@@ -22,17 +25,7 @@ Web アプリで同じ見た目・使い勝手・UX をそろえるデザイン�
 
 ## 文書の案内
 
-| 知りたいこと | 正本 |
-|---|---|
-| デザインの規約・部品と画面の型 | [DESIGN.md](DESIGN.md) |
-| Ignite 自身の構成・変更箇所・確認の対応 | [ARCHITECTURE.md](https://github.com/ymasaki/ignite/blob/main/ARCHITECTURE.md)（開発リポジトリ） |
-| 開発エージェントの作業ルール | [AGENTS.md](https://github.com/ymasaki/ignite/blob/main/AGENTS.md)（開発リポジトリ） |
-| アプリへの導入・更新・監査の設定 | [採用手順](docs/adopting.md) |
-| アプリ固有のテーマ・部品・監査の所有範囲 | [拡張ガイド](docs/extensions.md) |
-| 版・配布・カタログの運用 | [公開手順](docs/releasing.md) |
-| Ignite 開発時のカタログ監査・ロックの扱い | [カタログ監査](docs/catalog-audit.md) |
-| 外部システムとの比較記録・残りの候補 | [比較](docs/coverage.md) |
-| 版ごとの変更点と移行方法 | [CHANGELOG.md](CHANGELOG.md) |
+どの文書をいつ読むかは [文書の索引](docs/README.md) にまとめています。デザインの規約は [DESIGN.md](DESIGN.md) が入口で、章の本文は `docs/design/` にあります。
 
 ## 開発
 

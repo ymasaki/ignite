@@ -64,7 +64,7 @@ try {
   const files = pack.files.map((f) => f.path)
   const sampleFiles = files.filter((f) => f.startsWith('templates/extensions/')).map((f) => f.slice('templates/extensions/'.length))
   assert(sampleFiles.includes('src/ui/SampleRow.tsx') && sampleFiles.includes('e2e/extensions.ts') && files.includes('docs/extensions.md'), '拡張ガイドと実行例が配布される')
-  for (const f of ['dist/index.js', 'dist/styles.css', 'dist/cli.js', 'dist/audit.js', 'dist/src/index.d.ts', 'DESIGN.md', 'CHANGELOG.md', 'templates/agent/rules.md', 'templates/app/src/app/App.tsx']) assert(files.includes(f), `${f} が入っている`)
+  for (const f of ['dist/index.js', 'dist/styles.css', 'dist/cli.js', 'dist/audit.js', 'dist/src/index.d.ts', 'DESIGN.md', 'docs/README.md', 'docs/design/parts-inputs.md', 'docs/design/screens.md', 'CHANGELOG.md', 'templates/agent/rules.md', 'templates/app/src/app/App.tsx']) assert(files.includes(f), `${f} が入っている`)
   const manifest = JSON.parse(run('tar', ['xOf', v1, 'package/package.json'], tmp))
   const entries = (value) => typeof value === 'string' ? [value] : Object.values(value).flatMap(entries)
   for (const entry of entries({ exports: manifest.exports, main: manifest.main, types: manifest.types, bin: manifest.bin })) {

@@ -1,5 +1,8 @@
 # カタログ監査の実行
 
+<!-- 読むとき: Ignite のカタログ監査を実行する・直すとき、監査の再利用やロックの扱いを確かめるとき -->
+<!-- 見直した日: 2026-11-20 -->
+
 `npm run audit:design` を使う。Playwrightへの引数も渡せる（例: `npm run audit:design -- --grep DatePicker`）。直接 `playwright test -c catalog/playwright.audit.config.ts` は受け付けない。
 
 通常の検査は Playwright の既定のヘッドレス Chromium で実行し、画面やフォーカスを使わない。オーナーの操作を妨げないよう、この Mac での自動検査に `--headed`・`--ui` は使わない。グラフの吹き出しの回帰確認だけなら `npm run audit:design -- --grep グラフ共通` を使う。

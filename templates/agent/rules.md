@@ -2,7 +2,7 @@
 
 このアプリの画面は Ignite（`@ymasaki/ignite`）で作る。見た目と操作を Ignite を使うほかのアプリとそろえるため、次を守る。
 
-- 決まりの正本は `node_modules/@ymasaki/ignite/DESIGN.md`。UI を足す・直す前に読む（0 章の手順: 画面の型 → 部品 → 文言）。この版の決まりに従う。
+- 決まりの正本は `node_modules/@ymasaki/ignite/DESIGN.md`。UI を足す・直す前に読む（0 章の手順: 画面の型 → 部品 → 文言）。DESIGN.md は入口で、色・余白・部品・画面の型などの章の本文は同じ場所の `docs/design/` にある。作業する章の文書を DESIGN.md のリンクから読む。この版の決まりに従う。
 - 部品は `@ymasaki/ignite` から使う。ほかの UI ライブラリ・CSS フレームワークを入れない。画面に `<button>`・`<input>`・`<p>` などを直接書かない。
 - 色・文字の大きさ・余白・角丸はトークン（`var(--…)`）だけを使う。Ignite の部品の見た目をアプリの CSS で上書きしない。足りなければアプリの部品を作るか、Ignite に修飾を足す。
 - 書体はトークンで選ぶ。金額・KPI などの数字は `.num`、コードは `Code`・`CodeBlock` を使い、`font-family` を直接書かない。

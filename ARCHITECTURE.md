@@ -1,6 +1,9 @@
 # Ignite の構成
 
-Ignite 自身を変更するときの案内。デザインの規約は [DESIGN.md](DESIGN.md)、作業ルールは [AGENTS.md](AGENTS.md)、アプリへの組み込みは [採用手順](docs/adopting.md) を正本とする。プロジェクト概要と文書索引は [README.md](README.md) に置き、同じ内容の `PROJECT.md` は設けない。
+<!-- 読むとき: Ignite 自身の構成・公開入口・ビルドを変えるとき、変更に対応する確認を探すとき -->
+<!-- 見直した日: 2026-11-20 -->
+
+Ignite 自身を変更するときの案内。デザインの規約は [DESIGN.md](DESIGN.md)、作業ルールは [AGENTS.md](AGENTS.md)、アプリへの組み込みは [採用手順](docs/adopting.md) を正本とする。プロジェクト概要は [README.md](README.md)、どの文書をいつ読むかは [docs/README.md](docs/README.md) に置き、同じ内容の `PROJECT.md` は設けない。
 
 ## 責務と依存の向き
 
@@ -28,7 +31,7 @@ Ignite 自身を変更するときの案内。デザインの規約は [DESIGN.m
 | `@ymasaki/ignite/tokens.css` | `src/styles/tokens.css` | `dist/tokens.css` |
 | `@ymasaki/ignite/audit` | `audit/index.ts` | `dist/audit.js`・`dist/audit/index.d.ts` |
 | `ignite` | `cli/index.ts` | `dist/cli.js` |
-| `@ymasaki/ignite/DESIGN.md`・`@ymasaki/ignite/package.json` | 同名ファイル | 規約と版・入口の定義 |
+| `@ymasaki/ignite/DESIGN.md`・`@ymasaki/ignite/package.json` | 同名ファイル | 規約の入口（章の本文は配布する `docs/design/`）と版・入口の定義 |
 
 `npm run build` は `scripts/build.mjs` を実行する。JavaScript は esbuild、型定義は `tsconfig.build.json` による TypeScript 7、CSS は import の順を保った展開で作る。React・アイコン、監査の Playwright・axe は外部依存として残す。外部パッケージのコードを同梱したときだけ、その権利表記を `dist/THIRD_PARTY_LICENSES.txt` に添える。カタログのビルドは同梱した React などの権利表記を毎回出す（[外部パッケージの権利表記](docs/releasing.md#外部パッケージの権利表記)）。`prepack` も同じビルドを行う。 TypeScript 7 は `typescript-native` の npm alias で導入し、型検査・型定義出力・コミット前検査は `node node_modules/typescript-native/bin/tsc` を明示し、6系と共通の `.bin/tsc` の導入順には依存しない。解析パーサが任意で使う実験版の `@typescript/native` とは名前を分ける。JavaScript API を必要とする品質解析には、`typescript` の alias で公式の `@typescript/typescript6` 互換APIを残す。
 
@@ -43,21 +46,22 @@ Ignite 自身を変更するときの案内。デザインの規約は [DESIGN.m
 
 ## 変更と確認の対応
 
-開発には jsdom の必要版を満たす Node.js `^22.22.2 || ^24.15.0 || >=26.0.0` と `bash scripts/setup.sh` を使う。各系列の最新パッチを適用する。採用アプリが配布物を使うときの下限は `package.json` の `engines` を正本とする。依存の導入前に、共通Gitディレクトリへ完成済みの pre-commit 入口を排他的に配置する。別のhookや `core.hooksPath` があれば上書きせず停止する。コミット時は同じ入口の `--commit` がステージした全内容（skip-worktreeを含む）を一時コピーへ取り出して空白と型を検査し、成功・失敗時にコピーを消す。依存はそのworktreeのものを利用し、定義変更時の再導入と全件確認は取り込み前に行う。全件成功票は作らない。必須の一括確認は `bash scripts/test.sh`（`devboard.json` の `workflow.test` と同じ）。途中の確認には次の対応を使い、一括確認の代わりにはしない。
+開発には jsdom の必要版を満たす Node.js `^22.22.2 || ^24.15.0 || >=26.0.0` と `bash scripts/setup.sh` を使う。各系列の最新パッチを適用する。採用アプリが配布物を使うときの下限は `package.json` の `engines` を正本とする。依存の導入前に、共通Gitディレクトリへ完成済みの pre-commit 入口を排他的に配置する。別のhookや `core.hooksPath` があれば上書きせず停止する。コミット時は同じ入口の `--commit` がステージした全内容（skip-worktreeを含む）を一時コピーへ取り出して空白・文書・型を検査し、成功・失敗時にコピーを消す。依存はそのworktreeのものを利用し、定義変更時の再導入と全件確認は取り込み前に行う。全件成功票は作らない。必須の一括確認は `bash scripts/test.sh`（`devboard.json` の `workflow.test` と同じ）。途中の確認には次の対応を使い、一括確認の代わりにはしない。
 
 | 変更 | 関連する確認 |
 |---|---|
-| 部品・トークン・公開 API | `npm run typecheck`、`npm test -- --maxWorkers=2`。`tests/coverage.test.ts` が DESIGN・公開入口・カタログの載せ漏れを検査する |
+| 部品・トークン・公開 API | `npm run typecheck`、`npm test -- --maxWorkers=2`。`tests/coverage.test.ts` が DESIGN（`docs/design/` を含む）・公開入口・カタログの載せ漏れを検査する |
 | UIの状態・通知・後片付け | `tests/ui-*.test.tsx` は各テストの `@vitest-environment jsdom` と `tests/dom.tsx` で、ウィンドウを開かずに実行する。`npm test -- --maxWorkers=2` と既存の行カバレッジ計測の両方で動く。寸法・Observer・アニメーションの代替はテスト内だけに置き、実描画・実入力は下記のカタログE2Eで確認する |
 | キー操作・フォーカス・描画 | `catalog/e2e/parts.e2e.ts` とカタログ監査。例: `npm run audit:design -- --grep DatePicker` |
 | 静的検査 | `tests/check.test.ts`・`tests/staged.test.ts` と、ビルド後の `npm run check:design` |
 | 初期化・同期・更新 | `tests/cli.test.ts` と `npm run smoke` |
 | 画面の測定・前後処理 | `tests/audit.test.ts`、`catalog/e2e/audit-extension.e2e.ts`、カタログ監査 |
-| 監査の実行・配信・公開処理 | `node --test scripts/hooks.test.mjs scripts/test-entry.test.mjs scripts/health.test.mjs scripts/audit-cache.test.mjs scripts/audit-runner.test.mjs scripts/serve-catalog.test.mjs scripts/release.test.mjs scripts/third-party-notices.test.mjs` |
+| 監査の実行・配信・公開処理 | `node --test scripts/hooks.test.mjs scripts/test-entry.test.mjs scripts/health.test.mjs scripts/audit-cache.test.mjs scripts/audit-runner.test.mjs scripts/serve-catalog.test.mjs scripts/release.test.mjs scripts/third-party-notices.test.mjs scripts/docs.test.mjs` |
 | コード品質の計測 | `scripts/health/` の各コマンドが解析・行カバレッジ・計算の速さを測る。対象と実行方法は [README のコード品質](README.md#devboard-のコード品質)を正本とし、`scripts/health.test.mjs` で出力と失敗時の扱いを確認する |
 | 表示の速さ・要素数・メモリ | `npm run perf:parts`（部品を数百個並べた見本。`scripts/perf/parts/`）と、ビルド済みカタログを渡す `npm run perf:catalog -- --dist <ディレクトリ>`。ウィンドウを開かない Chromium で、レイアウト・スタイルの計算の回数、要素数、ヒープ、何もしない間の処理を出す。時間は端末の負荷でぶれるので合否には使わず、同じ端末で変更の前後（`perf:parts -- --src <前の作業ツリー>`）を比べる。増やさない決まりの回帰は `tests/perf.test.tsx` |
+| 文書 | `node scripts/docs.mjs`（大きさ・行の長さ・索引・リンクと節・パス・`DESIGN.md N 章` の参照・見直した日）。自己テストは `scripts/docs.test.mjs`。索引の作り直しは `--write`、見直しの一覧は `--report`。決まりは [AGENTS.md の「文書を保つ」](AGENTS.md#文書を保つ) |
 | パッケージ・ひな形・ビルド | `npm run smoke`。実際に pack して、空環境への導入・同期・模擬次版への更新を確かめる |
 
-一括確認は、スクリプトのテスト → 型 → 単体テスト → ビルド → 静的検査 → Chromium の準備 → カタログ監査 → smoke の順に実行する。単体テストは最大2 worker、カタログ監査の測定は6 workerで実行し（判定は測定のあとに記録を集計する）、各工程の時間・終了値と監査のロック待ち時間を出す。カタログ監査だけは同じ保存済み入力・環境での成功を24時間まで再利用できる。条件と強制再測定は [カタログ監査](docs/catalog-audit.md#同じ成功結果の再利用)を参照する。単体・型・ビルド・smoke は毎回実行する。カタログだけではパッケージのビルドや配布後の動作は確かめられない。
+一括確認は、スクリプトのテスト → 文書の検査 → 型 → 単体テスト → ビルド → 静的検査 → Chromium の準備 → カタログ監査 → smoke の順に実行する。単体テストは最大2 worker、カタログ監査の測定は6 workerで実行し（判定は測定のあとに記録を集計する）、各工程の時間・終了値と監査のロック待ち時間を出す。カタログ監査だけは同じ保存済み入力・環境での成功を24時間まで再利用できる。条件と強制再測定は [カタログ監査](docs/catalog-audit.md#同じ成功結果の再利用)を参照する。単体・型・ビルド・smoke は毎回実行する。カタログだけではパッケージのビルドや配布後の動作は確かめられない。
 
 監査の実行入口・共通ロック・復旧時の確認は [カタログ監査](docs/catalog-audit.md)、開発用と常用カタログのポート・ビルド・起動は [公開手順](docs/releasing.md#ステージングとプロダクション) にまとめる。版の判断と配布方式も同文書を正本とする。

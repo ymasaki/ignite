@@ -1,4 +1,4 @@
-// 部分stageを含め、コミットするindexだけを一時コピーで型検査する。
+// 部分stageを含め、コミットするindexだけを一時コピーで文書と型を検査する。
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import os from 'node:os'
@@ -29,16 +29,21 @@ try {
   const compiler = path.join(root, 'node_modules/typescript-native/bin/tsc')
   await fs.access(compiler)
   if (interrupted) throw new Error('コミット検査を中断しました')
-  console.log('[ignite-hook] ステージした内容の型を検査します')
   const env = Object.fromEntries(Object.entries(process.env).filter(([name]) => !name.startsWith('GIT_')))
-  const status = await new Promise((resolve, reject) => {
-    child = spawn(process.execPath, [compiler, '--noEmit', '--project', path.join(temporary, 'tsconfig.json')], {
-      cwd: temporary, env, stdio: 'inherit',
-    })
+  const run = args => new Promise((resolve, reject) => {
+    child = spawn(process.execPath, args, { cwd: temporary, env, stdio: 'inherit' })
     child.once('error', reject)
-    child.once('exit', (code, signal) => resolve(code ?? (signal ? 1 : 0)))
+    child.once('exit', (code, signal) => { child = undefined; resolve(code ?? (signal ? 1 : 0)) })
   })
-  child = undefined
+  // 文書の検査は、検査を持つ版のコミットだけに行う（導入前の版には強制しない）
+  const docs = path.join(temporary, 'scripts/docs.mjs')
+  if (await fs.access(docs).then(() => true, () => false)) {
+    console.log('[ignite-hook] ステージした内容の文書を検査します')
+    const status = await run([docs, '--root', temporary])
+    if (interrupted || status !== 0) throw new Error(`コミットする内容の文書検査が失敗しました（${interrupted || status}）`)
+  }
+  console.log('[ignite-hook] ステージした内容の型を検査します')
+  const status = await run([compiler, '--noEmit', '--project', path.join(temporary, 'tsconfig.json')])
   if (interrupted || status !== 0) throw new Error(`コミットする内容の型検査が失敗しました（${interrupted || status}）`)
   if (git(['write-tree']) !== tree) throw new Error('検査中にindexが変わりました。もう一度コミットしてください')
 } catch (error) {

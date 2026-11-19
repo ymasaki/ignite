@@ -1,6 +1,16 @@
 # 変更履歴
 
+<!-- 読むとき: 版ごとの変更点と移行方法を確かめるとき（追記だけの記録） -->
+
 採用アプリは `npx ignite upgrade ./vendor/次の版.tgz`（[採用手順](docs/adopting.md#更新を取り込む)）でこの内容を確かめて取り込む。形式は [docs/releasing.md](docs/releasing.md)。
+
+## 1.20.5（2026-11-20）
+
+### 変更
+
+- `DESIGN.md` を、エージェントが 1 回で読み切れる大きさの入口（0・1・9〜11 章と各章へのリンク）にし、2〜8 章・12 章の本文を `docs/design/` へ分けた。決まりの中身と章の番号は変えていない。部品の表は種類ごとに `docs/design/parts-inputs.md`・`parts-display.md`・`parts-charts.md`・`parts-layout.md`、画面の型は `docs/design/screens.md` にある。
+- どの文書をいつ読むかの索引 `docs/README.md` を足した。
+- 採用アプリの規約節（`ignite sync`）と `ignite-audit` スキルが、`DESIGN.md` から作業する章の `docs/design/` の文書へ進むよう案内するようにした。更新すると同期されるので、採用アプリの対応は要らない。`node_modules/@ymasaki/ignite/DESIGN.md` だけを読む独自の手順を持つアプリは、`docs/design/` も読むよう直す。
 
 ## 1.20.4（2026-11-19）
 
