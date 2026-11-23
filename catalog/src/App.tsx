@@ -1,5 +1,5 @@
 import { IconBuilding, IconFilter, IconPalette } from '@tabler/icons-react'
-import { AppShell, Brand, currentTheme, IconBox, IconButton, Popover, SearchSuggest, Segmented, Select, setTheme, SettingsButton, SideNav, toast, useShell, withFade, type Mode, type Skin, type SuggestGroup, type Theme } from '@ymasaki/ignite'
+import { AppShell, Brand, currentTheme, IconBox, IconButton, Popover, SearchSuggest, Segmented, Select, setTheme, SettingsButton, SideNav, toast, useShell, withFade, type Mode, type Skin, type ShellPanel, type SuggestGroup, type Theme } from '@ymasaki/ignite'
 import { useEffect, useState } from 'react'
 import { ChartsPage } from './Charts'
 import { CodePage } from './Code'
@@ -48,7 +48,7 @@ function useRoute() {
 }
 
 /** 詳細の中から主役を変える操作の例（狭い幅では詳細を畳んで結果を見せる） */
-function PanelContent({ id, onClose, go }: { id: string; onClose: () => void; go: (nav: string) => void }) {
+function PanelContent({ id, onClose, go }: { id: string; onClose?: () => void; go: (nav: string) => void }) {
   const { revealMain } = useShell()
   return <DetailPanel id={id} onClose={onClose} onShowDashboard={() => { go('dashboard'); revealMain() }} />
 }
@@ -78,6 +78,12 @@ export function App() {
   // 設定の画面では、行から開いたバージョン履歴・ライセンスを詳細パネルに出す
   const about = nav === 'settings' && open ? <AboutPanel id={open} onClose={close} /> : null
   const View = PAGE_VIEWS[nav as keyof typeof PAGE_VIEWS]
+  // 常に出す詳細の型: 閉じない詳細パネル（×なし）。何も選んでいなければ先頭を出す
+  const pinned = nav === 'pinned'
+  const pick = open ?? 'p1'
+  const panel: ShellPanel = pinned
+    ? { pinned: true, id: pick, peek: { title: 'プロジェクトの詳細' }, content: <PanelContent id={pick} go={(n) => go({ nav: n })} /> }
+    : { open: nav === 'settings' ? !!about : !!open, onClose: close, id: open ?? undefined, peek: { title: nav === 'settings' ? 'このアプリについて' : 'プロジェクトの詳細' }, content: nav === 'settings' ? about : open ? <PanelContent id={open} onClose={close} go={(n) => go({ nav: n })} /> : null }
   return (
     <AppShell
       side={(closeSide, state) => (
@@ -94,11 +100,12 @@ export function App() {
       tools={headerTools ? <IconButton label="絞り込み" size="lg" onClick={() => toast('絞り込みを開きました')}><IconFilter size={18} stroke={1.8} /></IconButton> : undefined}
       actions={headerTools ? undefined : <ThemePicker theme={theme} onChange={setThemeState} />}
       aux={nav === 'dashboard' ? <DashboardPage.Band /> : undefined}
-      panel={{ open: nav === 'settings' ? !!about : !!open, onClose: close, id: open ?? undefined, peek: { title: nav === 'settings' ? 'このアプリについて' : 'プロジェクトの詳細' }, content: nav === 'settings' ? about : open ? <PanelContent id={open} onClose={close} go={(n) => go({ nav: n })} /> : null }}
+      panel={panel}
     >
       {nav === 'overview' && <OverviewPage theme={theme} onTheme={setThemeState} onOpen={(key) => go({ nav: key })} />}
       {View && <View key={nav} target={spec} />}
       {(nav === 'list' || headerTools) && <ListPage selected={open} onOpen={(id) => go({ open: id })} />}
+      {pinned && <ListPage selected={pick} onOpen={(id) => go({ open: id })} />}
       {nav === 'dashboard' && <DashboardPage />}
       {nav === 'settings' && <SettingsPage detail={open} onOpen={(id) => go({ open: id })} />}
       {/* ログインはアプリでは枠の外に置く画面。カタログでは左メニューを残したまま本体の中に見せる */}

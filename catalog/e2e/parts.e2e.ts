@@ -855,6 +855,29 @@ test('PanelHeader: 任意のボタンを置け、タブは見出しの 16px 下�
   await expect(page.getByText('編集を開きました')).toBeVisible()
 })
 
+test('常時表示の詳細: ×を出さずに並べ続け、重ねる幅では下の 1 行に残して Esc で閉じずに戻る', async ({ page }) => {
+  await open(page, 'pinned')
+  const panel = page.locator('.pslot .panel')
+  await expect(panel.locator('.prof-n')).toBeVisible()
+  await expect(page.getByRole('button', { name: '詳細を閉じる' })).toHaveCount(0)
+  // 任意のボタンは残り、×だけがない
+  await expect(panel.locator('.ph').getByRole('button', { name: '編集する' })).toBeVisible()
+  const second = page.locator('.board .erow').nth(1)
+  const name = (await second.locator('.er-title').innerText()).trim()
+  await second.click()
+  await expect(panel.locator('.prof-n')).toHaveText(name)
+  await page.setViewportSize({ width: 700, height: 800 })
+  const drawer = page.locator('.drawer')
+  await expect(drawer).toHaveClass(/\bpeek\b/)
+  await expect(drawer.getByRole('button', { name: /閉じる/ })).toHaveCount(0)
+  await drawer.locator('.drawer-peek-open').click()
+  await expect(drawer).not.toHaveClass(/\bpeek\b/)
+  await expect(drawer).toBeFocused()
+  await page.keyboard.press('Escape')
+  await expect(drawer).toHaveClass(/\bpeek\b/)
+  await expect(drawer.locator('.drawer-peek-open')).toBeVisible()
+})
+
 test('CollapseInline: 閉じると幅が 0 になり、中の操作へ Tab で入らない', async ({ page }) => {
   await open(page, 'motion')
   const box = page.locator('.collapse-x')

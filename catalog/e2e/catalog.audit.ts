@@ -45,6 +45,7 @@ defineIgniteAudit({
     { name: '一覧の型', path: '/?nav=list' },
     { name: '検索欄のないヘッダー', path: '/?nav=header' },
     { name: '一覧の型（詳細）', path: '/?nav=list&open=p1' },
+    { name: '常に出す詳細の型', path: '/?nav=pinned' },
     { name: 'ダッシュボードの型', path: '/?nav=dashboard' },
     { name: '設定の型', path: '/?nav=settings' },
     { name: '設定の型（バージョン履歴）', path: '/?nav=settings&open=releases' },

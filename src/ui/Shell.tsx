@@ -136,16 +136,14 @@ export interface ShellSideState {
 
 /**
  * 詳細パネル。開閉と閉じる途中（閉じる動きを見せるあいだ）はアプリが持つ。
- * id は中身の別（変わったら畳んだのを戻す）、peek は重ねる形で畳んだときの 1 行（useShell().revealMain）
+ * id は中身の別（変わったら畳んだのを戻す）、peek は重ねる形で畳んだときの 1 行（useShell().revealMain）。
+ * pinned は閉じない常時表示（open・onClose は渡さない。中の PanelHeader にも onClose を渡さず×を出さない）。
+ * 横に並べる形ではいつも出し、重ねる形では peek の 1 行に畳んで残す（押すと広げ、Esc・外側のクリック・revealMain で 1 行に戻す。重ねる形で id が変わったら広げる）
  */
-export interface ShellPanel {
-  open: boolean
-  closing?: boolean
-  onClose: () => void
+export type ShellPanel = {
   content: ReactNode
   id?: string
-  peek?: DrawerPeek
-}
+} & ({ pinned?: false; open: boolean; closing?: boolean; onClose: () => void; peek?: DrawerPeek } | { pinned: true; open?: undefined; closing?: undefined; onClose?: undefined; peek: DrawerPeek })
 
 /** 枠の中（詳細パネルの中身など）から使う操作 */
 interface ShellApi {
@@ -171,7 +169,7 @@ export const useShell = () => useContext(ShellContext)
  * - aux（補助）: ヘッダーの直後の帯（KPI）。低い横長の画面では出さない（高さを主役に回す）
  * - band: aux の後の帯（絞り込みの帯など。いつも出す）
  * - children（主役）: 内容。panel を渡すと内容の段（.content）に入れ、右に詳細パネルを並べる
- * - panel（周り）: 詳細パネル。幅に合わせて横に並べる → 詰める → 重ねる（Drawer）を shellLayout が決める
+ * - panel（周り）: 詳細パネル。幅に合わせて横に並べる → 詰める → 重ねる（Drawer）を shellLayout が決める。pinned で閉じない常時表示
  * - sizes: 寸法（既定は SHELL_SIZES）。区切りの幅は寸法から計算で出る
  */
 export function AppShell({ side, foot, collapse, title, titleAfter, search, tools, actions, aux, band, panel, sizes = SHELL_SIZES, children }: {
@@ -193,7 +191,8 @@ export function AppShell({ side, foot, collapse, title, titleAfter, search, tool
   const close = () => setOpen(false)
   const sideRef = useRef<HTMLElement>(null)
   const mainRef = useRef<HTMLElement>(null)
-  const panelOpen = !!panel?.open
+  const pinned = !!panel?.pinned
+  const panelOpen = pinned || !!panel?.open
   // 幅が足りずに自動で畳んでいるあいだにつまみで広げたら、畳む幅より広くなる（自動で畳む場面でなくなる）まで畳まない（覚えている設定は変えない）
   const [keepSide, setKeepSide] = useState(false)
   const [plain, kept] = useShellLayouts({ collapsed: !!collapse?.collapsed, panelOpen, railable: !!collapse }, sizes)
@@ -271,20 +270,34 @@ export function AppShell({ side, foot, collapse, title, titleAfter, search, tool
   const inline = panel && (layout.panel === 'full' || layout.panel === 'compact')
   // 重ねた詳細を下の 1 行に畳んでいるか。閉じた・別の中身を開いた・ブラウザで戻った・横に並べる形になったら戻す
   const [minimized, setMinimized] = useState(false)
+  // 常時表示（pinned）のパネルを重ねる形で広げているか。はじめは 1 行に畳み、重ねる形のまま別の中身（id）を選んだら広げる。
+  // 横に並べる形になったら戻す（狭め直したときに、全面の詳細をいきなり重ねない）
+  const [expanded, setExpanded] = useState(false)
+  if (expanded && inline) setExpanded(false)
   const [minKey, setMinKey] = useState(panel?.id)
   if (minKey !== panel?.id || (minimized && (!panel?.open || inline))) {
+    if (minKey !== panel?.id && pinned && !inline) setExpanded(true)
     setMinKey(panel?.id)
     setMinimized(false)
   }
+  const peeked = !!panel && !inline && (pinned ? !expanded : minimized)
+  // 広げた常時表示のパネルは Esc で 1 行に戻す（閉じない。中で開いた一覧などが先に Esc を受けたときは戻さない）
+  const pinExpanded = pinned && !inline && expanded
+  useEffect(() => {
+    if (!pinExpanded) return
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && !e.defaultPrevented && setExpanded(false)
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [pinExpanded])
   useEffect(() => {
     const expand = () => setMinimized(false)
     window.addEventListener('popstate', expand)
     return () => window.removeEventListener('popstate', expand)
   }, [])
-  const shellApi: ShellApi = { revealMain: () => !inline && panel?.open && panel.peek && setMinimized(true), inShell: true }
+  const shellApi: ShellApi = { revealMain: () => !inline && (pinned ? setExpanded(false) : panel?.open && panel.peek && setMinimized(true)), inShell: true }
   return (
     <ShellContext.Provider value={shellApi}>
-      <div className={`app${minimized ? ' panel-peek' : ''}${rail ? ' side-min' : ''}${rail && settled ? ' side-min-done' : ''}${switching ? ' side-switch' : ''}`} style={vars}>
+      <div className={`app${peeked ? ' panel-peek' : ''}${rail ? ' side-min' : ''}${rail && settled ? ' side-min-done' : ''}${switching ? ' side-switch' : ''}`} style={vars}>
         {/* Tab を押したときだけ出る。左メニュー（お気に入りが多いと長い）を毎回越えずに本体へ（WCAG 2.4.1） */}
         <button type="button" className="skip-link" onClick={skip}>本文へ移る</button>
         <aside ref={sideRef} className={`side ${open ? 'open' : ''}`} aria-label="メニュー" inert={drawerSide && !open} {...(drawerOpen ? { role: 'dialog', 'aria-modal': true } : {})}>
@@ -326,7 +339,7 @@ export function AppShell({ side, foot, collapse, title, titleAfter, search, tool
             {panel ? (
               <div className="content">
                 {children}
-                {inline && panel.open && (
+                {inline && panelOpen && (
                   <div className={`pslot${panel.closing ? ' closing' : ''}`} style={{ '--panel-w': `${layout.panelW}px` } as CSSProperties}>
                     <section className="panel" aria-label="詳細">{panel.content}</section>
                   </div>
@@ -338,9 +351,17 @@ export function AppShell({ side, foot, collapse, title, titleAfter, search, tool
           </main>
         </div>
       </div>
-      <Toaster inert={drawerOpen || (!!panel?.open && !inline && !minimized)} />
+      <Toaster inert={drawerOpen || (panelOpen && !inline && !peeked)} />
       {panel && !inline && (
-        <Drawer open={panel.open} closing={panel.closing} onClose={panel.onClose} peek={panel.peek} minimized={minimized} onExpand={() => setMinimized(false)}>
+        <Drawer
+          open={panelOpen}
+          closing={panel.closing}
+          onClose={panel.pinned ? () => setExpanded(false) : panel.onClose}
+          pinned={pinned}
+          peek={panel.peek}
+          minimized={peeked}
+          onExpand={() => (pinned ? setExpanded(true) : setMinimized(false))}
+        >
           {panel.content}
         </Drawer>
       )}

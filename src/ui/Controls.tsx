@@ -413,9 +413,10 @@ export interface DrawerPeek {
  * 狭い画面で詳細を右（スマホ幅では下）から出す引き出し。開いたら引き出しにフォーカスを移し、閉じたら開く前の場所へ戻す
  * （Esc で閉じるのはアプリの役目。詳細を閉じる操作はアプリが持つ）。
  * peek を渡して minimized にすると、中身を残したまま画面の下の 1 行に畳む（裏の画面を見せる。DESIGN.md 5 章「操作の結果を見える場所に出す」）。
- * 畳んでいるあいだは背面を操作でき、行を押す・上へ払うと onExpand で広げる
+ * 畳んでいるあいだは背面を操作でき、行を押す・上へ払うと onExpand で広げる。
+ * pinned は閉じない常時表示（畳んだ行に×を出さない。外側のクリックの onClose は、アプリが 1 行に戻す操作を渡す）
  */
-export function Drawer({ open, closing = false, onClose, label = '詳細', peek, minimized = false, onExpand, children }: { open: boolean; closing?: boolean; onClose: () => void; label?: string; peek?: DrawerPeek; minimized?: boolean; onExpand?: () => void; children: ReactNode }) {
+export function Drawer({ open, closing = false, onClose, label = '詳細', peek, minimized = false, onExpand, pinned = false, children }: { open: boolean; closing?: boolean; onClose: () => void; label?: string; peek?: DrawerPeek; minimized?: boolean; onExpand?: () => void; pinned?: boolean; children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null)
   const min = !!peek && minimized
   // 上へ払ったら広げる（指を置いた位置から 30px 以上上へ）
@@ -452,9 +453,11 @@ export function Drawer({ open, closing = false, onClose, label = '詳細', peek,
               </span>
               <IconChevronUp size={18} stroke={1.8} aria-hidden="true" />
             </button>
-            <button type="button" className="icon-btn drawer-peek-x" aria-label={`${label}を閉じる`} data-tip="閉じる" onClick={onClose}>
-              <IconX size={16} stroke={1.8} />
-            </button>
+            {!pinned && (
+              <button type="button" className="icon-btn drawer-peek-x" aria-label={`${label}を閉じる`} data-tip="閉じる" onClick={onClose}>
+                <IconX size={16} stroke={1.8} />
+              </button>
+            )}
           </div>
         )}
         {/* 畳んでも中身は残す（広げたときにスクロールの位置・開いていたところがそのまま） */}

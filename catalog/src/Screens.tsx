@@ -26,7 +26,8 @@ export function ListPage({ selected, onOpen }: { selected: string | null; onOpen
   )
 }
 
-export function DetailPanel({ id, onClose, onShowDashboard }: { id: string; onClose: () => void; onShowDashboard: () => void }) {
+/** onClose を省くと×を出さない（常時表示の詳細） */
+export function DetailPanel({ id, onClose, onShowDashboard }: { id: string; onClose?: () => void; onShowDashboard: () => void }) {
   const p = PROJECTS.find((x) => x.id === id) ?? PROJECTS[0]
   const [tab, setTab] = useState('about')
   const rest = PROJECTS.filter((x) => x.id !== p.id).slice(0, 3)

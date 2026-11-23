@@ -1,6 +1,6 @@
 // 詳細パネルの中身の枠（DESIGN.md「詳細パネル」）。見た目は styles/components/panel.css。
 //
-//  ┌ 上段: 任意の操作（actions）………………… × ┐
+//  ┌ 上段: 任意の操作（actions）……………… (×) ┐
 //  │ 大きな顔／アイコン  補足（kicker）      │
 //  │                    名前（20px）        │
 //  └                    下の行（lines）      ┘
@@ -65,6 +65,7 @@ export function PanelHeader({
   stickySub?: string
   /** × の左に置く任意のボタン。省略できる（上段と固定ヘッダーの両方に出す。固定ヘッダーでは名前を優先し、文字ボタンはアイコンだけになる） */
   actions?: ReactNode
+  /** 詳細を閉じる。省略すると×を出さない（常時表示のパネル。AppShell の panel.pinned） */
   onClose?: () => void
 }) {
   const [titleRef, stuck] = useStuck<HTMLHeadingElement>()
@@ -75,7 +76,7 @@ export function PanelHeader({
       b.dataset.tip = b.textContent ?? ''
     })
   })
-  const close = (
+  const close = onClose && (
     <IconButton label="詳細を閉じる" tip="閉じる" onClick={onClose}>
       <IconX size={16} stroke={1.8} />
     </IconButton>
@@ -94,10 +95,12 @@ export function PanelHeader({
           {close}
         </div>
       </div>
-      <div className="ph">
-        {actions}
-        {close}
-      </div>
+      {(actions || close) && (
+        <div className="ph">
+          {actions}
+          {close}
+        </div>
+      )}
       <div className="prof">
         {visual}
         <div className="prof-t">

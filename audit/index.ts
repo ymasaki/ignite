@@ -363,7 +363,7 @@ export function defineIgniteAudit(config: IgniteAuditConfig): void {
           return `${el.tagName.toLowerCase()}${cls ? '.' + cls : ''}${el.getAttribute('role') ? `[role=${el.getAttribute('role')}]` : ''}${el instanceof HTMLInputElement ? `[type=${el.type}]` : ''}`
         }
         const seen = new Set<string>()
-        const out: { i: number; where: string; label: string }[] = []
+        const out: { i: number; where: string; label: string; x: number; y: number }[] = []
         let i = 0
         for (const el of [...document.querySelectorAll(SEL), ...[...document.querySelectorAll('body *')].filter((e) => getComputedStyle(e).cursor === 'pointer')]) {
           if (el.closest('label:has(> input)') && el.matches('input')) continue
@@ -381,7 +381,7 @@ export function defineIgniteAudit(config: IgniteAuditConfig): void {
           if (seen.has(key)) continue
           seen.add(key)
           el.setAttribute('data-hover-audit', String(i))
-          out.push({ i: i++, where: key, label: (el.getAttribute('aria-label') || (el as HTMLElement).innerText || el.getAttribute('placeholder') || '').trim().split('\n')[0].slice(0, 20) })
+          out.push({ i: i++, where: key, label: (el.getAttribute('aria-label') || (el as HTMLElement).innerText || el.getAttribute('placeholder') || '').trim().split('\n')[0].slice(0, 20), x, y })
         }
         return out
       }, hoverSkip)
@@ -413,7 +413,8 @@ export function defineIgniteAudit(config: IgniteAuditConfig): void {
         await page.mouse.move(0, 899)
         await page.waitForTimeout(250)
         const before = await look(t.i).catch(() => null)
-        await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+        // 当たりを確かめた窓の中の点に載せる（窓の端で一部だけ見える要素の中心は窓の外で、マウスを置けない。長い左メニューの下の項目など）
+        await page.mouse.move(t.x, t.y)
         await page.waitForTimeout(300)
         const after = await look(t.i).catch(() => null)
         if (before === null || after === null) continue

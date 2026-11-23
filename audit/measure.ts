@@ -87,7 +87,10 @@ export function measure(page: Page, args: MeasureArgs): Promise<Measured[]> {
             if (!skipLayout.includes('boardLeft') && !near(b.left - m.left, shell.x)) out.push({ rule: '段組みの余白（5 章）', where: '内容の枠の左', expected: `${shell.x}px（--shell-x）`, actual: `${Math.round(b.left - m.left)}px` })
             // 設定の面は行の幅で止めて左に寄せる（7 章「画面の型」の設定）ので、右は測らない
             if (!skipLayout.includes('boardRight') && !board.classList.contains('settings-board') && !near(m.right - right, shell.x)) out.push({ rule: '段組みの余白（5 章）', where: '内容の枠（詳細パネルを含む）の右', expected: `${shell.x}px（--shell-x）`, actual: `${Math.round(m.right - right)}px` })
-            if (!skipLayout.includes('boardBottom') && !near(m.bottom - b.bottom, shell.bottom)) out.push({ rule: '段組みの余白（5 章）', where: '内容の枠の下', expected: `${shell.bottom}px（--shell-bottom）`, actual: `${Math.round(m.bottom - b.bottom)}px` })
+            // 詳細を下の 1 行に畳んでいるあいだ（.app.panel-peek。常時表示の詳細では重ねる幅のいつもの姿）は、その行の高さ 64px ぶん内容を上に縮める（shell.css の .app.panel-peek .content と合わせる）
+            const peek = main.closest('.app.panel-peek') ? 64 : 0
+            const bottom = shell.bottom + peek
+            if (!skipLayout.includes('boardBottom') && !near(m.bottom - b.bottom, bottom)) out.push({ rule: '段組みの余白（5 章）', where: '内容の枠の下', expected: peek ? `${bottom}px（--shell-bottom と下の 1 行 ${peek}px）` : `${shell.bottom}px（--shell-bottom）`, actual: `${Math.round(m.bottom - b.bottom)}px` })
           }
         }
         boardSpacing()

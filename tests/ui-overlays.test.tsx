@@ -73,6 +73,11 @@ it('Drawerの展開時だけ背面をinertにし、畳んだ行から展開と�
     click('.drawer-peek-x');
     expect(close).toHaveBeenCalledTimes(2);
 });
+it('常時表示のDrawerは畳んだ行に×を出さない', () => {
+    render(<Drawer open pinned label="詳細" onClose={vi.fn()} minimized peek={{ title: '対象' }} onExpand={vi.fn()}><input /></Drawer>);
+    expect(document.querySelector('.drawer-peek-open')).not.toBeNull();
+    expect(document.querySelector('.drawer-peek-x')).toBeNull();
+});
 it('Dialogの取消・外クリックと内からのドラッグを区別し、閉鎖状態を後片付けする', () => {
     const close = vi.fn();
     const body = (open: boolean, dismissable = true) => <Dialog open={open} title="編集" onClose={close} dismissable={dismissable}><input data-autofocus/><span>内容</span></Dialog>;

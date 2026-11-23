@@ -71,6 +71,19 @@ describe('描画監査の境界と例外', () => {
         document.querySelector('.board')!.classList.add('settings-board');
         expect((await run({ skipLayout: ['rows', 'boardLeft', 'boardBottom'] }))).toEqual([]);
     });
+    it('詳細を下の1行に畳んでいるときは、内容の枠の下をその行の高さぶん広く測る', async () => {
+        document.body.innerHTML = '<div class="app"><div class="mainwrap" style="--shell-x:8;--shell-top:10;--shell-gap:12;--shell-bottom:8"><header class="top"><b>題</b></header><main class="shell-main"><div class="row board"></div></main></div></div>';
+        box('.mainwrap', 0, 0, 900, 500);
+        box('header', 0, 0, 900, 40);
+        box('b', 8, 0, 100, 40);
+        box('.board', 8, 50, 884, 378);
+        const bottoms = async () => (await run()).filter(f => f.where === '内容の枠の下').map(f => f.expected);
+        expect(await bottoms()).toEqual(['8px（--shell-bottom）']);
+        document.querySelector('.app')!.classList.add('panel-peek');
+        expect(await bottoms()).toEqual([]);
+        box('.board', 8, 50, 884, 442);
+        expect(await bottoms()).toEqual(['72px（--shell-bottom と下の 1 行 64px）']);
+    });
     it('パン内容は切り抜きを許容するが、固定操作と枠自身の切断は報告する', async () => {
         document.body.innerHTML = '<div class="outer" style="overflow-x:hidden"><div class="vp" style="overflow-x:hidden"><div class="stage"><button>節</button><a href="#" style="position:fixed">操作</a></div></div></div>';
         box('.outer', 0, 0, 300, 200);

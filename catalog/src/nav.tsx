@@ -1,4 +1,4 @@
-import { IconBell, IconBoxMultiple, IconChartDonut, IconClick, IconCode, IconDevices, IconForms, IconHome, IconLayoutDashboard, IconLayoutList, IconLogin2, IconPalette, IconRocket, IconRoute, IconTable, IconTypography, IconUsers, IconWaveSine } from '@tabler/icons-react'
+import { IconBell, IconBoxMultiple, IconChartDonut, IconClick, IconCode, IconDevices, IconForms, IconHome, IconLayoutDashboard, IconLayoutList, IconLayoutSidebarRight, IconLogin2, IconPalette, IconRocket, IconRoute, IconTable, IconTypography, IconUsers, IconWaveSine } from '@tabler/icons-react'
 import type { ReactNode } from 'react'
 
 // カタログの目録。左メニュー・ページの目次・部品の検索・概要の件数は、すべてここから作る
@@ -149,6 +149,7 @@ export const PAGES: PageDef[] = [
     { id: 'grid', title: '桁の確認' },
   ] },
   { key: 'list', label: '一覧と詳細', group: '画面の型', icon: icon(IconLayoutList), specs: [] },
+  { key: 'pinned', label: '常に出す詳細', group: '画面の型', icon: icon(IconLayoutSidebarRight), specs: [] },
   { key: 'header', label: '検索欄のないヘッダー', group: '画面の型', icon: icon(IconLayoutList), specs: [] },
   { key: 'dashboard', label: 'ダッシュボード', group: '画面の型', icon: icon(IconLayoutDashboard), specs: [] },
   { key: 'login', label: 'ログイン', group: '画面の型', icon: icon(IconLogin2), specs: [] },

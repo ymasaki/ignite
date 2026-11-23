@@ -64,7 +64,7 @@
 /* 詳細パネルを持たない画面（AppShell に panel を渡さない）では .content がないので、面が同じ余白を持つ */
 .shell-main > .board{margin:0 var(--shell-x) var(--shell-bottom)}
 .top + .shell-main > .board:first-child,.shell-aux + .board{margin-top:var(--shell-top)}
-/* 詳細を下の 1 行に畳んでいるあいだ（AppShell の revealMain）は、その行の高さぶん内容を上に縮める（行の下に結果を隠さない） */
+/* 詳細を下の 1 行に畳んでいるあいだ（AppShell の revealMain・常時表示の panel.pinned）は、その行の高さぶん内容を上に縮める（行の下に結果を隠さない。64px は audit/measure.ts の内容の枠の下と合わせる） */
 .app.panel-peek .content{padding-bottom:calc(var(--shell-bottom) + 64px + env(safe-area-inset-bottom))}
 .board{display:flex;flex:1;flex-direction:column;min-width:0;min-height:0;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
 

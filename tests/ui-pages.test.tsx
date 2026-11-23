@@ -6,6 +6,7 @@ import { AuthScreen, LoginForm, ProviderLogo, TwoFactorForm } from '../src/ui/Au
 import { ThemeSettings, AssistSettings, SettingsScreen, SettingsButton, SettingGroup, SettingRow, SettingBody, SettingKey } from '../src/ui/Settings';
 import { DEFAULT_ASSIST } from '../src/assist';
 import { DatePicker } from '../src/ui/DatePicker';
+import { PanelFrame, PanelHeader } from '../src/ui/Panel';
 import { Accordion, Menu, Pagination } from '../src/ui/Navigation';
 import { CopyText } from '../src/ui/CopyText';
 import { Code, CodeBlock } from '../src/ui/Code';
@@ -44,6 +45,43 @@ it('枠は広い窓で詳細を並べ、狭い窓ではメニューと詳細の�
     expect(el<HTMLElement>('aside').inert).toBe(true);
     event(window, 'pointermove');
     expect(document.documentElement.dataset.tips).toBeUndefined();
+});
+it('常時表示の詳細は×を出さず、広い窓では並べ続け、狭い窓では閉じずに下の1行へ畳む', () => {
+    function Reveal() { const shell = useShell(); return <button className="reveal" onClick={shell.revealMain}>主役を見る</button>; }
+    const view = (id: string) => <AppShell title="画面" side={() => null} panel={{ pinned: true, id, peek: { title: '詳細' }, content: <PanelFrame><PanelHeader visual="顔" smallVisual="顔" title={`名前${id}`} /><Reveal /></PanelFrame> }}><button className="main-action">内容</button></AppShell>;
+    vi.stubGlobal('innerWidth', 1440);
+    render(view('a'));
+    expect(document.querySelector('.pslot .panel')).not.toBeNull();
+    expect(document.querySelector('.ph')).toBeNull();
+    expect(host.querySelector('[aria-label="詳細を閉じる"]')).toBeNull();
+    // 並べる形で別の中身を選んでも、狭めたときは1行から始める
+    render(view('c'));
+    render(view('a'));
+    vi.stubGlobal('innerWidth', 375);
+    event(window, 'resize');
+    frame();
+    frame();
+    expect(document.querySelector('.pslot')).toBeNull();
+    // はじめは1行に畳み、背面を操作できる。畳んだ行に×はない
+    expect(el('.drawer').classList.contains('peek')).toBe(true);
+    expect(document.querySelector('.drawer-peek-x')).toBeNull();
+    expect(el<HTMLElement>('.app').inert).toBe(false);
+    expect(el('.app').classList.contains('panel-peek')).toBe(true);
+    click('.drawer-peek-open');
+    expect(el('.drawer').classList.contains('peek')).toBe(false);
+    expect(el<HTMLElement>('.app').inert).toBe(true);
+    event(window, 'keydown', { key: 'Escape' });
+    expect(el('.drawer').classList.contains('peek')).toBe(true);
+    click('.drawer-peek-open');
+    click('.drawer-scrim');
+    expect(el('.drawer').classList.contains('peek')).toBe(true);
+    click('.drawer-peek-open');
+    click('.reveal');
+    expect(el('.drawer').classList.contains('peek')).toBe(true);
+    // 別の中身を選んだら広げる
+    render(view('b'));
+    expect(el('.drawer').classList.contains('peek')).toBe(false);
+    expect(el('.prof-n').textContent).toBe('名前b');
 });
 it('表示モードの監視はhtml属性の変更を反映する', async () => {
     function Mode() { return <b>{useShownMode()}</b>; }
