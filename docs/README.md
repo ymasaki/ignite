@@ -20,6 +20,7 @@
 | [README.md](../README.md) | Ignite の概要・入っているもの・開発の始め方を知るとき |
 | [docs/adopting.md](adopting.md) | アプリに Ignite を導入・更新するとき、アプリ側の検査と監査を設定するとき |
 | [docs/catalog-audit.md](catalog-audit.md) | Ignite のカタログ監査を実行する・直すとき、監査の再利用やロックの扱いを確かめるとき |
+| [docs/code-health.md](code-health.md) | 本体のコードの解析・行カバレッジ・計算の速さを測る・計測の仕組みを直すとき |
 | [docs/coverage.md](coverage.md) | 部品を足す候補を選ぶとき、主要なデザインシステムとの対応を確かめるとき |
 | [docs/design/accessibility.md](design/accessibility.md) | キー操作・フォーカス・読み上げ・押す面・表示の補助を決める・直すとき |
 | [docs/design/color.md](design/color.md) | 色・コントラスト・スキン・ダークモードを決める・直すとき |

@@ -4,6 +4,12 @@
 
 採用アプリは `npx ignite upgrade ./vendor/次の版.tgz`（[採用手順](docs/adopting.md#更新を取り込む)）でこの内容を確かめて取り込む。形式は [docs/releasing.md](docs/releasing.md)。
 
+## 1.20.6（2026-11-23）
+
+### 変更
+
+- `README.md` から特定の開発環境に向けた記述を除き、どの環境でも使えるデザインシステムとして案内するようにした。コード品質の計測（`npm run health:*`）の説明は `docs/code-health.md` へ移した。部品・CSS・監査・CLI の振る舞いは変えていない。採用アプリの対応は要らない。
+
 ## 1.20.5（2026-11-20）
 
 ### 変更

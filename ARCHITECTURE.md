@@ -57,7 +57,7 @@ Ignite 自身を変更するときの案内。デザインの規約は [DESIGN.m
 | 初期化・同期・更新 | `tests/cli.test.ts` と `npm run smoke` |
 | 画面の測定・前後処理 | `tests/audit.test.ts`、`catalog/e2e/audit-extension.e2e.ts`、カタログ監査 |
 | 監査の実行・配信・公開処理 | `node --test scripts/hooks.test.mjs scripts/test-entry.test.mjs scripts/health.test.mjs scripts/audit-cache.test.mjs scripts/audit-runner.test.mjs scripts/serve-catalog.test.mjs scripts/release.test.mjs scripts/third-party-notices.test.mjs scripts/docs.test.mjs` |
-| コード品質の計測 | `scripts/health/` の各コマンドが解析・行カバレッジ・計算の速さを測る。対象と実行方法は [README のコード品質](README.md#devboard-のコード品質)を正本とし、`scripts/health.test.mjs` で出力と失敗時の扱いを確認する |
+| コード品質の計測 | `scripts/health/` の各コマンドが解析・行カバレッジ・計算の速さを測る。対象と実行方法は [コード品質の計測](docs/code-health.md)を正本とし、`scripts/health.test.mjs` で出力と失敗時の扱いを確認する |
 | 表示の速さ・要素数・メモリ | `npm run perf:parts`（部品を数百個並べた見本。`scripts/perf/parts/`）と、ビルド済みカタログを渡す `npm run perf:catalog -- --dist <ディレクトリ>`。ウィンドウを開かない Chromium で、レイアウト・スタイルの計算の回数、要素数、ヒープ、何もしない間の処理を出す。時間は端末の負荷でぶれるので合否には使わず、同じ端末で変更の前後（`perf:parts -- --src <前の作業ツリー>`）を比べる。増やさない決まりの回帰は `tests/perf.test.tsx` |
 | 文書 | `node scripts/docs.mjs`（大きさ・行の長さ・索引・リンクと節・パス・`DESIGN.md N 章` の参照・見直した日）。自己テストは `scripts/docs.test.mjs`。索引の作り直しは `--write`、見直しの一覧は `--report`。決まりは [AGENTS.md の「文書を保つ」](AGENTS.md#文書を保つ) |
 | パッケージ・ひな形・ビルド | `npm run smoke`。実際に pack して、空環境への導入・同期・模擬次版への更新を確かめる |
