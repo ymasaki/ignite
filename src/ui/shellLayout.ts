@@ -39,6 +39,8 @@ export interface ShellState {
   keepSide?: boolean
   /** 左メニューをアイコンの列に畳めるか（畳めないアプリでは、自動で畳まずにパネルを重ねる。既定は畳める） */
   railable?: boolean
+  /** 利用者がドラッグで決めた詳細パネルの幅（AppShell の panel.resize）。下限 panel.compact、上限は主役に mainMin が残る幅。省くと窓に合わせて決める */
+  panelWidth?: number
 }
 
 export interface ShellLayout {
@@ -51,7 +53,8 @@ export interface ShellLayout {
 }
 
 /**
- * 骨組みを決める。詰める順番: パネルを詰める（パネルの幅は主役とパネルに使える幅の share。上限 full から下限 compact まで、窓に合わせてなめらかに縮む）→ 左メニューを畳む（主役 < mainMin。keepSide なら畳まない）
+ * 骨組みを決める。詰める順番: パネルを詰める（パネルの幅は主役とパネルに使える幅の share。上限 full から下限 compact まで、窓に合わせてなめらかに縮む。
+ * panelWidth があればその幅を保ち、主役に mainMin が残らない分だけ compact まで詰める）→ 左メニューを畳む（主役 < mainMin。keepSide なら畳まない）
  * → パネルを重ねる（それでも主役 < mainMin。左メニューを利用者が広げたときは重ねない）。左メニューは drawerAt 以下で引き出し（そのときは主役の幅に数えない）。
  * パネルを閉じているときも、畳む幅（railBelow）未満ではアイコンの列に畳み（autoRail）、drawerAt 以下で引き出しにする
  */
@@ -66,7 +69,11 @@ export function shellLayout(s: ShellState, z: ShellSizes = SHELL_SIZES): ShellLa
   const sideW = (m: SideMode) => (m === 'full' ? z.side.full : m === 'rail' ? z.side.rail : 0)
   // 主役とパネルに使える幅（左メニュー・左右の余白・間を除く）
   const avail = (m: SideMode) => s.width - sideW(m) - z.gutter * 2 - z.panel.gap
-  const widthFor = (m: SideMode) => Math.min(z.panel.full, Math.max(z.panel.compact, Math.round(avail(m) * z.panel.share)))
+  const widthFor = (m: SideMode) =>
+    s.panelWidth === undefined
+      ? Math.min(z.panel.full, Math.max(z.panel.compact, Math.round(avail(m) * z.panel.share)))
+      : // 決めた幅を保ち、窓が狭くて主役に最小幅が残らない分だけ詰める（下限は compact）
+        Math.max(z.panel.compact, Math.min(Math.round(s.panelWidth), avail(m) - z.mainMin))
   const inline = (w: number, side: SideMode, autoRail: boolean): ShellLayout => ({ side, panel: w >= z.panel.full ? 'full' : 'compact', panelW: w, autoRail })
   const w = widthFor(base)
   if (avail(base) - w >= z.mainMin) return inline(w, base, false)
@@ -74,7 +81,7 @@ export function shellLayout(s: ShellState, z: ShellSizes = SHELL_SIZES): ShellLa
     // 利用者が広げたなら、主役が狭くなっても重ねずに横に並べる（開いたまま主役を操作できることを優先する）
     if (s.keepSide) return inline(z.panel.compact, 'full', false)
     // 自動で畳んだときは、空いた幅でパネルを広げ直さない（窓を狭めているのにパネルが広がらないように）
-    if (avail('rail') - z.panel.compact >= z.mainMin) return inline(z.panel.compact, 'rail', true)
+    if (avail('rail') - z.panel.compact >= z.mainMin) return inline(s.panelWidth === undefined ? z.panel.compact : widthFor('rail'), 'rail', true)
     // 重ねるときも、畳む幅より狭ければ畳んだまま（パネルを開いた瞬間に左メニューが広がらないように）
     if (s.width < shellBreakpoints(z).railBelow) return { side: 'rail', panel: 'overlay', panelW: 0, autoRail: true }
   }

@@ -5,7 +5,7 @@ import { DEFAULT_ASSIST, applyAssist, assistChanged, currentAssist, parseAssist,
 import { CONTRAST_TEXT_MORE, contrastRulesFor, releaseDays, tipShift } from '../src/index'
 import { lineRows, lineSummary, seriesSummary, stackRows, tileName } from '../src/ui/Chart'
 import { axisTicks, boxStats, columnSummary, pieSlices, waterfallBars } from '../src/ui/Plot'
-import { CONTRAST_RULES, CONTRAST_TEXT, CONTRAST_UI, contrastRatio, currentTheme, isMode, isSkin, fitAvatars, fitSlots, keepVisible, kpiVariants, pressOverlap, pickFitStep, pickTheme, pickWidestFit, setTheme, shellBreakpoints, shellLayout, squarify, startTheme, type ThemeEnv } from '../src/index'
+import { CONTRAST_RULES, CONTRAST_TEXT, CONTRAST_UI, contrastRatio, currentTheme, isMode, isSkin, fitAvatars, fitSlots, keepVisible, kpiVariants, pressOverlap, pickFitStep, pickTheme, pickWidestFit, setTheme, SHELL_SIZES, shellBreakpoints, shellLayout, squarify, startTheme, type ThemeEnv } from '../src/index'
 
 const at = (width: number, o: { collapsed?: boolean; panelOpen?: boolean; keepSide?: boolean } = {}) =>
   shellLayout({ width, collapsed: o.collapsed ?? false, panelOpen: o.panelOpen ?? true, keepSide: o.keepSide })
@@ -51,6 +51,22 @@ describe('アプリの枠の骨組み（shellLayout）', () => {
     expect(at(1233, { collapsed: true })).toEqual({ side: 'rail', panel: 'full', panelW: 380, autoRail: false })
     expect(at(1232, { collapsed: true }).panelW).toBe(379)
     expect(at(1190, { collapsed: true }).panelW).toBe(365)
+  })
+
+  it('ドラッグで決めた幅を保ち、主役に最小幅が残らない分だけ最低幅まで詰め、それでも残らなければ畳む・重ねる', () => {
+    const w = (width: number, panelWidth: number, compact = SHELL_SIZES.panel.compact) =>
+      shellLayout({ width, collapsed: false, panelOpen: true, panelWidth }, { ...SHELL_SIZES, panel: { ...SHELL_SIZES.panel, compact, full: Math.max(SHELL_SIZES.panel.full, compact) } })
+    // 窓 1440px: 主役とパネルに使える幅は 1174px。決めた幅はそのまま、主役に 400px が残る 774px が上限
+    expect(w(1440, 500)).toEqual({ side: 'full', panel: 'full', panelW: 500, autoRail: false })
+    expect(w(1440, 900).panelW).toBe(774)
+    // 窓 1000px: 主役に 400px 残すため 334px まで詰める
+    expect(w(1000, 500)).toEqual({ side: 'full', panel: 'compact', panelW: 334, autoRail: false })
+    // 窓 950px: 最低幅でも残らないので左メニューを畳み、空いた幅の分だけ決めた幅に近づける
+    expect(w(950, 500)).toEqual({ side: 'rail', panel: 'full', panelW: 456, autoRail: true })
+    // 最低幅 480px を指定すると、その幅より詰めない。畳んでも主役が残らない窓では重ねる
+    expect(w(1440, 300, 480).panelW).toBe(480)
+    expect(w(1000, 500, 480)).toEqual({ side: 'rail', panel: 'full', panelW: 500, autoRail: true })
+    expect(w(900, 500, 480).panel).toBe('overlay')
   })
 
   it('左メニューを畳めないアプリでは、自動で畳まずにパネルを重ねる', () => {

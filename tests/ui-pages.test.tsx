@@ -83,6 +83,32 @@ it('常時表示の詳細は×を出さず、広い窓では並べ続け、狭�
     expect(el('.drawer').classList.contains('peek')).toBe(false);
     expect(el('.prof-n').textContent).toBe('名前b');
 });
+it('幅を変えられる詳細は、つまみのキー操作で最低幅と主役の残る上限のあいだに幅を決める', () => {
+    const change = vi.fn();
+    const view = (width?: number) => <AppShell title="画面" side={() => null} panel={{ open: true, onClose: vi.fn(), resize: { width, onChange: change, min: 300 }, content: '中身' }}><button>内容</button></AppShell>;
+    vi.stubGlobal('innerWidth', 1440);
+    render(view(400));
+    const handle = el('.pslot-handle');
+    expect(handle.getAttribute('role')).toBe('separator');
+    expect(handle.getAttribute('aria-valuenow')).toBe('400');
+    expect(handle.getAttribute('aria-valuemin')).toBe('300');
+    key('.pslot-handle', 'ArrowLeft');
+    expect(change).toHaveBeenLastCalledWith(416);
+    key('.pslot-handle', 'ArrowRight', { shiftKey: true });
+    expect(change).toHaveBeenLastCalledWith(336);
+    key('.pslot-handle', 'Home');
+    expect(change).toHaveBeenLastCalledWith(300);
+    // 上限は主役に 400px が残る幅（窓 1440px・左メニューなしの計算でも、決めた幅を大きくした骨組みで測る）
+    key('.pslot-handle', 'End');
+    const max = change.mock.lastCall![0] as number;
+    render(view(max));
+    expect(el('.pslot-handle').getAttribute('aria-valuenow')).toBe(String(max));
+    key('.pslot-handle', 'ArrowLeft');
+    expect(change).toHaveBeenLastCalledWith(max);
+    // 幅を変えない詳細にはつまみを出さない
+    render(<AppShell title="画面" side={() => null} panel={{ open: true, onClose: vi.fn(), content: '中身' }}><button>内容</button></AppShell>);
+    expect(document.querySelector('.pslot-handle')).toBeNull();
+});
 it('表示モードの監視はhtml属性の変更を反映する', async () => {
     function Mode() { return <b>{useShownMode()}</b>; }
     render(<Mode />);

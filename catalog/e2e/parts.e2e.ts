@@ -878,6 +878,44 @@ test('常時表示の詳細: ×を出さずに並べ続け、重ねる幅では�
   await expect(drawer.locator('.drawer-peek-open')).toBeVisible()
 })
 
+test('詳細の幅: 境目をドラッグすると広がり、最低幅より狭くならず、主役に 400px を残し、キーでも変えられる', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/?nav=list&open=p1')
+  const panel = page.locator('.pslot .panel')
+  await expect(panel.locator('.prof-n')).toBeVisible({ timeout: 30000 })
+  const handle = page.getByRole('separator', { name: '詳細の幅' })
+  const width = () => panel.evaluate((el) => el.getBoundingClientRect().width)
+  // パネルを開く動き（列の幅を広げる）が終わってから測る
+  await page.waitForFunction(() => document.querySelector('.pslot')!.getAnimations({ subtree: true }).every((a) => a.playState === 'finished'))
+  const start = await width()
+  const box = (await handle.boundingBox())!
+  const x = box.x + box.width / 2, y = box.y + box.height / 2
+  await page.mouse.move(x, y)
+  await page.mouse.down()
+  await page.mouse.move(x - 120, y, { steps: 6 })
+  await expect(page.locator('.app')).toHaveClass(/panel-resizing/)
+  await page.mouse.up()
+  await expect(page.locator('.app')).not.toHaveClass(/panel-resizing/)
+  expect(Math.round(await width())).toBe(Math.round(start + 120))
+  // 右へ大きく動かしても最低幅（カタログは 320px）で止まる
+  const b2 = (await handle.boundingBox())!
+  await page.mouse.move(b2.x + b2.width / 2, y)
+  await page.mouse.down()
+  await page.mouse.move(b2.x + 600, y, { steps: 6 })
+  await page.mouse.up()
+  expect(Math.round(await width())).toBe(320)
+  // End で上限まで広げても、主役（内容の枠）は 400px 以上残る
+  await handle.focus()
+  await page.keyboard.press('End')
+  const main = await page.locator('.content > .board').evaluate((el) => el.getBoundingClientRect().width)
+  expect(main).toBeGreaterThanOrEqual(400)
+  expect(main).toBeLessThan(420)
+  await page.keyboard.press('Home')
+  expect(Math.round(await width())).toBe(320)
+  await page.keyboard.press('ArrowLeft')
+  expect(Math.round(await width())).toBe(336)
+})
+
 test('CollapseInline: 閉じると幅が 0 になり、中の操作へ Tab で入らない', async ({ page }) => {
   await open(page, 'motion')
   const box = page.locator('.collapse-x')

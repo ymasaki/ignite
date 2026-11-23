@@ -177,6 +177,18 @@
    本体との間は段と段の間 + 2px で、外側の余白と一緒になめらかに縮む。幅（--panel-w）は窓に合わせて AppShell が shellLayout で決める */
 .pslot{--panel-w:var(--panel-full,380px);--panel-gap:calc(var(--shell-gap) + 2px);display:flex;flex:none;justify-content:flex-end;width:calc(var(--panel-w) + var(--panel-gap));padding-left:var(--panel-gap);overflow:hidden;animation:slotIn .3s var(--ease-in-out)}
 .pslot.closing{animation:slotOut .2s ease-in forwards}
+/* 幅を変えるつまみ（AppShell の panel.resize）。パネルとの間に置き、押せる幅を 24px にするためパネルの左端に 8px 重ねる。
+   ふだんは見せず、載せる・フォーカスで縦の線を出し、押している間は主要色にする */
+.pslot:has(> .pslot-handle){position:relative}
+.pslot-handle{position:absolute;top:0;bottom:0;left:0;z-index:7;width:calc(var(--panel-gap) + 8px);cursor:col-resize;touch-action:none}
+.pslot-handle::before{content:"";position:absolute;top:50%;left:calc(var(--panel-gap) / 2 - 2px);width:4px;height:48px;border-radius:99px;background:transparent;transform:translateY(-50%);transition:background .12s}
+.pslot-handle:hover::before{background:var(--line-2)}
+.pslot-handle:focus-visible::before{background:var(--focus)}
+.pslot-handle:active::before,.app.panel-resizing .pslot-handle::before{background:var(--pri)}
+.pslot-handle:focus-visible{outline:none}
+/* ドラッグのあいだは文字を選ばず、どこでも幅を変えるカーソルにする */
+.app.panel-resizing{cursor:col-resize;user-select:none}
+.app.panel-resizing .panel{pointer-events:none}
 .panel{position:relative;flex:none;width:var(--panel-w);min-height:0;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);animation:fadeIn .22s ease-out}
 .pslot.closing > .panel{animation:fadeOut .2s ease-in forwards}
 @keyframes slotIn{from{width:0;padding-left:0}to{width:calc(var(--panel-w) + var(--panel-gap));padding-left:var(--panel-gap)}}

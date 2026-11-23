@@ -140,9 +140,22 @@ export interface ShellSideState {
  * pinned は閉じない常時表示（open・onClose は渡さない。中の PanelHeader にも onClose を渡さず×を出さない）。
  * 横に並べる形ではいつも出し、重ねる形では peek の 1 行に畳んで残す（押すと広げ、Esc・外側のクリック・revealMain で 1 行に戻す。重ねる形で id が変わったら広げる）
  */
+/**
+ * 詳細パネルの幅をドラッグ（と境目にフォーカスして ← →）で変える。幅はアプリが持つ（覚えておくなら保存する）。
+ * width を省くと窓に合わせた幅から始める。min は最低幅（既定は SHELL_SIZES の panel.compact）、max は上限。
+ * 主役に最小幅（sizes.mainMin）が残らない分は、決めた幅でも詰め、最低幅でも残らない窓では重ねる
+ */
+export interface ShellPanelResize {
+  width?: number
+  onChange: (width: number) => void
+  min?: number
+  max?: number
+}
+
 export type ShellPanel = {
   content: ReactNode
   id?: string
+  resize?: ShellPanelResize
 } & ({ pinned?: false; open: boolean; closing?: boolean; onClose: () => void; peek?: DrawerPeek } | { pinned: true; open?: undefined; closing?: undefined; onClose?: undefined; peek: DrawerPeek })
 
 /** 枠の中（詳細パネルの中身など）から使う操作 */
@@ -169,10 +182,10 @@ export const useShell = () => useContext(ShellContext)
  * - aux（補助）: ヘッダーの直後の帯（KPI）。低い横長の画面では出さない（高さを主役に回す）
  * - band: aux の後の帯（絞り込みの帯など。いつも出す）
  * - children（主役）: 内容。panel を渡すと内容の段（.content）に入れ、右に詳細パネルを並べる
- * - panel（周り）: 詳細パネル。幅に合わせて横に並べる → 詰める → 重ねる（Drawer）を shellLayout が決める。pinned で閉じない常時表示
+ * - panel（周り）: 詳細パネル。幅に合わせて横に並べる → 詰める → 重ねる（Drawer）を shellLayout が決める。pinned で閉じない常時表示、resize でドラッグして幅を変える
  * - sizes: 寸法（既定は SHELL_SIZES）。区切りの幅は寸法から計算で出る
  */
-export function AppShell({ side, foot, collapse, title, titleAfter, search, tools, actions, aux, band, panel, sizes = SHELL_SIZES, children }: {
+export function AppShell({ side, foot, collapse, title, titleAfter, search, tools, actions, aux, band, panel, sizes: baseSizes = SHELL_SIZES, children }: {
   side: (close: () => void, state: ShellSideState) => ReactNode
   foot?: ReactNode
   collapse?: { collapsed: boolean; onChange: (collapsed: boolean) => void }
@@ -193,9 +206,16 @@ export function AppShell({ side, foot, collapse, title, titleAfter, search, tool
   const mainRef = useRef<HTMLElement>(null)
   const pinned = !!panel?.pinned
   const panelOpen = pinned || !!panel?.open
+  // 幅を変えられるパネルの最低幅は、詰めるときの下限（panel.compact）として骨組みの計算に渡す（区切りの幅もこれで決まる）
+  const resize = panel?.resize
+  const sizes = useMemo(() => {
+    const min = resize?.min
+    return min === undefined ? baseSizes : { ...baseSizes, panel: { ...baseSizes.panel, compact: min, full: Math.max(baseSizes.panel.full, min) } }
+  }, [baseSizes, resize?.min])
+  const panelWidth = resize?.width === undefined ? undefined : Math.min(resize.width, resize.max ?? Infinity)
   // 幅が足りずに自動で畳んでいるあいだにつまみで広げたら、畳む幅より広くなる（自動で畳む場面でなくなる）まで畳まない（覚えている設定は変えない）
   const [keepSide, setKeepSide] = useState(false)
-  const [plain, kept] = useShellLayouts({ collapsed: !!collapse?.collapsed, panelOpen, railable: !!collapse }, sizes)
+  const [plain, kept] = useShellLayouts({ collapsed: !!collapse?.collapsed, panelOpen, railable: !!collapse, panelWidth }, sizes)
   // 幅が足りないので自動で畳む場面か（そのときのつまみは、覚えている設定ではなく「この場面のあいだ広げる」を切り替える）
   const autoCase = plain.autoRail
   if (keepSide && !autoCase) setKeepSide(false)
@@ -294,10 +314,58 @@ export function AppShell({ side, foot, collapse, title, titleAfter, search, tool
     window.addEventListener('popstate', expand)
     return () => window.removeEventListener('popstate', expand)
   }, [])
+  // 幅を変えるつまみ。上限は resize.max と、主役に最小幅が残る幅の小さいほう（決めた幅を大きくした骨組みで測る）
+  const [resizing, setResizing] = useState(false)
+  const widthRange = () => {
+    const min = sizes.panel.compact
+    const room = shellLayout({ width: window.innerWidth, collapsed: !!collapse?.collapsed, panelOpen: true, railable: !!collapse, keepSide, panelWidth: 1e6 }, sizes).panelW
+    // 骨組みの計算は外側の余白を下限（sizes.gutter）で見積もるので、広い窓では描いた主役の幅で上限を測り直す（主役に mainMin を必ず残す）
+    const content = mainRef.current?.querySelector<HTMLElement>(':scope > .content')
+    const slot = content?.querySelector<HTMLElement>(':scope > .pslot')
+    let drawn = Infinity
+    if (content && slot && content.clientWidth > 0) {
+      const cs = getComputedStyle(content)
+      const mainW = content.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - slot.getBoundingClientRect().width
+      drawn = layout.panelW + mainW - sizes.mainMin
+    }
+    return { min, max: Math.max(min, Math.floor(Math.min(resize?.max ?? Infinity, room, drawn))) }
+  }
+  const setWidth = (w: number) => {
+    const { min, max } = widthRange()
+    resize?.onChange(Math.round(Math.min(max, Math.max(min, w))))
+  }
+  const onHandleDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return
+    e.preventDefault()
+    const el = e.currentTarget
+    el.setPointerCapture(e.pointerId)
+    const startX = e.clientX
+    const startW = layout.panelW
+    setResizing(true)
+    // パネルは右にあるので、境目を左へ動かすと広がる
+    const move = (ev: PointerEvent) => setWidth(startW + startX - ev.clientX)
+    const up = () => {
+      setResizing(false)
+      el.removeEventListener('pointermove', move)
+      el.removeEventListener('pointerup', up)
+      el.removeEventListener('pointercancel', up)
+    }
+    el.addEventListener('pointermove', move)
+    el.addEventListener('pointerup', up)
+    el.addEventListener('pointercancel', up)
+  }
+  const onHandleKey = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const step = e.shiftKey ? 64 : 16
+    const { min, max } = widthRange()
+    const next = { ArrowLeft: layout.panelW + step, ArrowRight: layout.panelW - step, Home: min, End: max }[e.key]
+    if (next === undefined) return
+    e.preventDefault()
+    setWidth(next)
+  }
   const shellApi: ShellApi = { revealMain: () => !inline && (pinned ? setExpanded(false) : panel?.open && panel.peek && setMinimized(true)), inShell: true }
   return (
     <ShellContext.Provider value={shellApi}>
-      <div className={`app${peeked ? ' panel-peek' : ''}${rail ? ' side-min' : ''}${rail && settled ? ' side-min-done' : ''}${switching ? ' side-switch' : ''}`} style={vars}>
+      <div className={`app${peeked ? ' panel-peek' : ''}${resizing ? ' panel-resizing' : ''}${rail ? ' side-min' : ''}${rail && settled ? ' side-min-done' : ''}${switching ? ' side-switch' : ''}`} style={vars}>
         {/* Tab を押したときだけ出る。左メニュー（お気に入りが多いと長い）を毎回越えずに本体へ（WCAG 2.4.1） */}
         <button type="button" className="skip-link" onClick={skip}>本文へ移る</button>
         <aside ref={sideRef} className={`side ${open ? 'open' : ''}`} aria-label="メニュー" inert={drawerSide && !open} {...(drawerOpen ? { role: 'dialog', 'aria-modal': true } : {})}>
@@ -341,6 +409,21 @@ export function AppShell({ side, foot, collapse, title, titleAfter, search, tool
                 {children}
                 {inline && panelOpen && (
                   <div className={`pslot${panel.closing ? ' closing' : ''}`} style={{ '--panel-w': `${layout.panelW}px` } as CSSProperties}>
+                    {resize && (
+                      // 窓の分割のつまみ（WAI-ARIA の window splitter）。ドラッグ・← →（Shift で大きく）・Home（最低幅）・End（上限）
+                      <div
+                        className="pslot-handle"
+                        role="separator"
+                        aria-orientation="vertical"
+                        aria-label="詳細の幅"
+                        aria-valuenow={layout.panelW}
+                        aria-valuemin={sizes.panel.compact}
+                        tabIndex={0}
+                        data-tip="ドラッグで幅を変える"
+                        onPointerDown={onHandleDown}
+                        onKeyDown={onHandleKey}
+                      />
+                    )}
                     <section className="panel" aria-label="詳細">{panel.content}</section>
                   </div>
                 )}

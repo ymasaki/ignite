@@ -71,6 +71,9 @@ export function App() {
   const [collapsed, setCollapsed] = useState(false)
   const [find, setFind] = useState('')
   const [company, setCompany] = useState('all')
+  // 詳細パネルの幅（境目をドラッグして変える。最低幅 320px）。設定・バージョン履歴のパネルは窓に合わせた幅のまま
+  const [panelW, setPanelW] = useState<number>()
+  const resize = { width: panelW, onChange: setPanelW, min: 320 }
   // テーマはヘッダーのパレットと概要の両方で選べるので、選択の表示をここで 1 つに持つ
   const [theme, setThemeState] = useState(currentTheme)
   const headerTools = nav === 'header'
@@ -82,8 +85,8 @@ export function App() {
   const pinned = nav === 'pinned'
   const pick = open ?? 'p1'
   const panel: ShellPanel = pinned
-    ? { pinned: true, id: pick, peek: { title: 'プロジェクトの詳細' }, content: <PanelContent id={pick} go={(n) => go({ nav: n })} /> }
-    : { open: nav === 'settings' ? !!about : !!open, onClose: close, id: open ?? undefined, peek: { title: nav === 'settings' ? 'このアプリについて' : 'プロジェクトの詳細' }, content: nav === 'settings' ? about : open ? <PanelContent id={open} onClose={close} go={(n) => go({ nav: n })} /> : null }
+    ? { pinned: true, id: pick, resize, peek: { title: 'プロジェクトの詳細' }, content: <PanelContent id={pick} go={(n) => go({ nav: n })} /> }
+    : { open: nav === 'settings' ? !!about : !!open, onClose: close, id: open ?? undefined, resize: nav === 'settings' ? undefined : resize, peek: { title: nav === 'settings' ? 'このアプリについて' : 'プロジェクトの詳細' }, content: nav === 'settings' ? about : open ? <PanelContent id={open} onClose={close} go={(n) => go({ nav: n })} /> : null }
   return (
     <AppShell
       side={(closeSide, state) => (
