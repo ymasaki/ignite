@@ -51,7 +51,7 @@ async function acquire() {
   let deadline = Date.now() + holdLimit
   let holder
   let reported = false
-  // 待っている間も一定の間隔で出力する。何も出さないと、呼び出し元（DevBoard の取り込み前の確認など）が
+  // 待っている間も一定の間隔で出力する。何も出さないと、呼び出し元（取り込み前の確認を回す実行環境など）が
   // 固まったと見なして止めてしまうため。
   const heartbeat = 60 * 1000
   const waitStart = Date.now()

@@ -46,7 +46,7 @@ export async function measure(kind, cwd = root) {
     run('npm', ['ci', '--include=dev', '--ignore-scripts', '--prefer-offline', '--no-audit', '--no-fund'],
       { cwd: work, env: { ...process.env, npm_config_update_notifier: 'false' } })
     run(process.execPath, [path.join(work, `scripts/health/${kind}.mjs`)],
-      { cwd: work, env: { ...process.env, DEVBOARD_HEALTH_OUTPUT: result } })
+      { cwd: work, env: { ...process.env, IGNITE_HEALTH_OUTPUT: result } })
     // 結果が書かれていないまま成功扱いにしない。
     if (!fs.existsSync(result)) throw new Error(`${kind} の計測結果が出力されませんでした`)
     JSON.parse(fs.readFileSync(result, 'utf8'))

@@ -34,15 +34,18 @@ if [[ "$command" = "$IGNITE_TEST_FAIL" ]]; then exit 17; fi
     const calls = path.join(work, 'calls')
     for (const failure of [-1, ...commands.keys()]) {
       writeFileSync(calls, '')
+      // 進み具合の行の頭は既定と呼び出し元の指定を交互に確かめる。
+      const prefix = failure % 2 ? 'progress:' : 'runner-progress:'
       const result = spawnSync('/bin/bash', ['scripts/test.sh'], {
         cwd: work, encoding: 'utf8',
-        env: { ...process.env, PATH: `${path.join(work, 'bin')}:${process.env.PATH}`, IGNITE_TEST_CALLS: calls, IGNITE_TEST_FAIL: commands[failure] ?? '' },
+        env: { ...process.env, PATH: `${path.join(work, 'bin')}:${process.env.PATH}`, IGNITE_TEST_CALLS: calls, IGNITE_TEST_FAIL: commands[failure] ?? '',
+          IGNITE_PROGRESS_PREFIX: prefix === 'progress:' ? '' : prefix },
       })
       assert.equal(result.error, undefined)
       assert.equal(result.status, failure < 0 ? 0 : 17, result.stdout + result.stderr)
       const count = failure < 0 ? commands.length : failure + 1
       assert.deepEqual(readFileSync(calls, 'utf8').trim().split('\n'), commands.slice(0, count))
-      assert.equal((result.stdout.match(/^devboard-progress: /gm) ?? []).length, count)
+      assert.equal(result.stdout.split('\n').filter(line => line.startsWith(`${prefix} `)).length, count)
       assert.equal((result.stdout.match(/^harness-metric: /gm) ?? []).length, count)
       for (let i = 0; i < count; i++) assert.match(result.stdout,
         new RegExp(`harness-metric: stage=${stages[i]} seconds=\\d+ status=${i === failure ? 17 : 0}\\n`))

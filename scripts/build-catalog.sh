@@ -3,7 +3,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
-commit="${DEVBOARD_COMMIT:-$(git rev-parse HEAD)}"
+commit="${IGNITE_COMMIT:-$(git rev-parse HEAD)}"
 [[ "$commit" = "$(git rev-parse HEAD)" ]] || { echo '対象コミットとHEADが一致しません' >&2; exit 1; }
 [[ -z "$(git status --porcelain --untracked-files=all)" ]] || { echo '未コミットの変更があります' >&2; exit 1; }
 output="$PWD/catalog-dist"

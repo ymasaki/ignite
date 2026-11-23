@@ -54,7 +54,7 @@ export function buildPackage(root, commit, destination, run) {
   } finally { fs.rmSync(work, { recursive: true, force: true }) }
 }
 
-export function release({ root, commit: requested = process.env.DEVBOARD_COMMIT, prepareOnly = false, run = command, build = buildPackage, token = accountToken, wait = sleep }) {
+export function release({ root, commit: requested = process.env.IGNITE_COMMIT, prepareOnly = false, run = command, build = buildPackage, token = accountToken, wait = sleep }) {
   const git = (...args) => run('git', args, { cwd: root }).toString().trim()
   const head = git('rev-parse', 'HEAD')
   assert(!requested || requested === head, '対象コミットとHEADが一致しません')

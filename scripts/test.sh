@@ -13,12 +13,14 @@ if [[ "$#" -ne 0 ]]; then
 fi
 
 # 全件を毎回実行する。時間は整数秒で記録し、失敗した工程の終了値をそのまま返す。
+# 進み具合の行の頭は IGNITE_PROGRESS_PREFIX で替えられる（呼び出し元の書式に合わせる）。
+progress="${IGNITE_PROGRESS_PREFIX:-progress:}"
 stage=0
 run() {
   local name="$1" title="$2" started=$SECONDS rc
   shift 2
   stage=$((stage + 1))
-  printf 'devboard-progress: %s/9 %s\n' "$stage" "$title"
+  printf '%s %s/9 %s\n' "$progress" "$stage" "$title"
   if "$@"; then rc=0; else rc=$?; fi
   printf 'harness-metric: stage=%s seconds=%s status=%s\n' "$name" "$((SECONDS - started))" "$rc"
   return "$rc"

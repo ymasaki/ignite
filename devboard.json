@@ -4,25 +4,25 @@
   "staging": {
     "server": "ignite-catalog",
     "start": "bash scripts/start-catalog.sh",
-    "command": "bash scripts/build-catalog.sh",
+    "command": "IGNITE_COMMIT=\"$DEVBOARD_COMMIT\" bash scripts/build-catalog.sh",
     "note": "main取り込み後にカタログをビルド。URLを開くと専用サーバーを起動する"
   },
   "workflow": {
     "base": "main",
     "setup": "bash scripts/setup.sh",
-    "test": "bash scripts/test.sh"
+    "test": "IGNITE_PROGRESS_PREFIX=devboard-progress: bash scripts/test.sh"
   },
   "production": {
     "version": "package.json",
     "url": "https://ymasaki.github.io/ignite/",
     "branch": "release",
-    "command": "node scripts/release.mjs",
+    "command": "IGNITE_COMMIT=\"$DEVBOARD_COMMIT\" node scripts/release.mjs",
     "note": "固定コミットを検査し、tgz・SHA256・COMMITをGitHub Releaseへ配布する"
   },
   "health": {
-    "analysis": "npm run health:analysis",
-    "coverage": "npm run health:coverage",
-    "benchmarks": "npm run health:benchmarks"
+    "analysis": "IGNITE_HEALTH_OUTPUT=\"$DEVBOARD_HEALTH_OUTPUT\" npm run health:analysis",
+    "coverage": "IGNITE_HEALTH_OUTPUT=\"$DEVBOARD_HEALTH_OUTPUT\" npm run health:coverage",
+    "benchmarks": "IGNITE_HEALTH_OUTPUT=\"$DEVBOARD_HEALTH_OUTPUT\" npm run health:benchmarks"
   },
   "dependencies": {
     "waiting": [

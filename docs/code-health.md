@@ -3,12 +3,12 @@
 <!-- 読むとき: 本体のコードの解析・行カバレッジ・計算の速さを測る・計測の仕組みを直すとき -->
 <!-- 見直した日: 2026-11-23 -->
 
-次の命令は、対話なしで `DEVBOARD_HEALTH_OUTPUT` に JSON を出します。実行場所の `node_modules` が古い・欠けていても結果が変わらないよう、管理下のファイルを一時ディレクトリへ写し、`package-lock.json` どおりの固定版の道具を `npm ci --prefer-offline` で入れてから測ります（npm のキャッシュに無い版だけ取得します）。管理下のファイルと実行場所の `node_modules` は変更せず、途中の報告・キャッシュ・ビルドは一時ディレクトリで作って削除します。結果が出力されないときは失敗として終わります。
+次の命令は、対話なしで `IGNITE_HEALTH_OUTPUT` に JSON を出します。実行場所の `node_modules` が古い・欠けていても結果が変わらないよう、管理下のファイルを一時ディレクトリへ写し、`package-lock.json` どおりの固定版の道具を `npm ci --prefer-offline` で入れてから測ります（npm のキャッシュに無い版だけ取得します）。管理下のファイルと実行場所の `node_modules` は変更せず、途中の報告・キャッシュ・ビルドは一時ディレクトリで作って削除します。結果が出力されないときは失敗として終わります。
 
 ```sh
-DEVBOARD_HEALTH_OUTPUT=/tmp/ignite-analysis.json npm run health:analysis
-DEVBOARD_HEALTH_OUTPUT=/tmp/ignite-coverage.json npm run health:coverage
-DEVBOARD_HEALTH_OUTPUT=/tmp/ignite-benchmarks.json npm run health:benchmarks
+IGNITE_HEALTH_OUTPUT=/tmp/ignite-analysis.json npm run health:analysis
+IGNITE_HEALTH_OUTPUT=/tmp/ignite-coverage.json npm run health:coverage
+IGNITE_HEALTH_OUTPUT=/tmp/ignite-benchmarks.json npm run health:benchmarks
 ```
 
 解析とカバレッジの対象は `git ls-files` にある `src/`・`cli/`・`audit/` の TypeScript / TSX です。宣言ファイル・テスト・fixture・生成物を除きます。CSS・カタログ・テンプレート・開発用スクリプトは集計しません。

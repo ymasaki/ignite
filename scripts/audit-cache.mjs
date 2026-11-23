@@ -158,7 +158,7 @@ export async function auditInput(root, env = process.env, inspectRuntime = audit
     if (!tree) return null
     const conditions = await inspectRuntime(root)
     if (await sourceTree(root) !== tree) return null
-    const store = path.join(git(root, ['rev-parse', '--path-format=absolute', '--git-common-dir']), 'devboard/ignite-audit-cache-v1')
+    const store = path.join(git(root, ['rev-parse', '--path-format=absolute', '--git-common-dir']), 'ignite-audit-cache-v1')
     const environmentHash = digest(JSON.stringify(environment(root, env)))
     const parts = Array.isArray(conditions) ? { runtime: conditions } : conditions
     const fingerprints = { source: tree, environment: environmentHash, ...Object.fromEntries(Object.entries(parts).map(([name, value]) => [name, digest(JSON.stringify(value))])) }

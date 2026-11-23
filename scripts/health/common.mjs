@@ -22,8 +22,8 @@ export function sourceFiles(cwd = root) {
 }
 
 export function outputPath() {
-  const file = process.env.DEVBOARD_HEALTH_OUTPUT
-  if (!file) throw new Error('DEVBOARD_HEALTH_OUTPUT を指定してください')
+  const file = process.env.IGNITE_HEALTH_OUTPUT
+  if (!file) throw new Error('IGNITE_HEALTH_OUTPUT を指定してください')
   const output = path.resolve(file)
   const realOutput = fs.existsSync(output) ? fs.realpathSync(output) : output
   if (trackedFiles().some((name) => path.resolve(root, name) === realOutput)) {
