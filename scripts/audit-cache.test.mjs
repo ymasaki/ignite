@@ -97,8 +97,14 @@ test('Gitの未保存・未追跡・ツリー・依存実体・環境変更を�
     const first = await input(); assert.ok(first)
     assert.equal((await input()).key, first.key)
     assert.equal((await input({ IGNITE_AUDIT_FRESH: '1' })).key, first.key)
-    assert.equal((await input({ DEVBOARD_PROJECT_DIR: '/main', DEVBOARD_BASE_BRANCH: 'main', DEVBOARD_COMMIT: 'commit', DEVBOARD_CHECK_PRIORITY: 'high' })).key, first.key)
-    assert.equal((await input({ CODEX_TOOL_CALL_ID: 'another-call', CODEX_THREAD_ID: 'another-thread', CODEX_SESSION_ID: 'another-session', DEVBOARD_COMPUTER_TOKEN: 'not-a-real-token', DEVBOARD_DISTRIBUTED_SOCKET: '/tmp/test-socket', CODEX_VERSION: 'another-executor', CLAUDE_CODE_ENABLE_TODO_TOOLS: '1' })).key, first.key)
+    // 呼び出し元が指定した変数だけを外す。前方一致と名前の一致の両方を確かめ、指定がなければ照合する
+    const runner = { RUNNER_COMMIT: 'commit', RUNNER_SOCKET: '/tmp/test-socket', RUNNER_LABEL: 'land' }
+    assert.notEqual((await input(runner)).key, first.key)
+    assert.equal((await input({ ...runner, IGNITE_AUDIT_IGNORE_ENV: 'RUNNER_*' })).key, first.key)
+    assert.equal((await input({ ...runner, IGNITE_AUDIT_IGNORE_ENV: 'RUNNER_COMMIT, RUNNER_SOCKET RUNNER_LABEL' })).key, first.key)
+    assert.notEqual((await input({ ...runner, IGNITE_AUDIT_IGNORE_ENV: 'RUNNER_COMMIT' })).key, first.key)
+    assert.equal((await input({ IGNITE_PROGRESS_PREFIX: 'runner-progress:' })).key, first.key)
+    assert.equal((await input({ CODEX_TOOL_CALL_ID: 'another-call', CODEX_THREAD_ID: 'another-thread', CODEX_SESSION_ID: 'another-session', CODEX_VERSION: 'another-executor', CLAUDE_CODE_ENABLE_TODO_TOOLS: '1' })).key, first.key)
     assert.equal((await input({ CLAUDE_CODE_SESSION_ID: 'another-session', CLAUDE_PID: '1', CLAUDE_CODE_MESSAGING_SOCKET: '/tmp/test-socket', CLAUDE_CODE_MESSAGING_TOKEN: 'not-a-real-token', CLAUDE_EFFORT: 'high', CLAUDECODE: '1', LaunchInstanceID: 'another-launch', SECURITYSESSIONID: 'another-login', SSH_AUTH_SOCK: '/tmp/test-agent' })).key, first.key)
     assert.notEqual((await input({ UNKNOWN_RENDER_OPTION: 'new' })).key, first.key)
     // 単体テストの変換キャッシュは照合しない。同じ名前でも、根の直下でなければ依存として照合する

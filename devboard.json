@@ -10,7 +10,7 @@
   "workflow": {
     "base": "main",
     "setup": "bash scripts/setup.sh",
-    "test": "IGNITE_PROGRESS_PREFIX=devboard-progress: bash scripts/test.sh"
+    "test": "IGNITE_PROGRESS_PREFIX=devboard-progress: IGNITE_AUDIT_IGNORE_ENV=DEVBOARD_* bash scripts/test.sh"
   },
   "production": {
     "version": "package.json",

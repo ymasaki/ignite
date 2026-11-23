@@ -62,12 +62,7 @@ function git(root, args) {
 function environment(root, env) {
   // 起動元の識別・通信・実行制御だけを除く。未知の変数や描画設定は引き続き照合する。
   const omit = new Set([
-    'PWD', 'OLDPWD', 'SHLVL', '_', 'IGNITE_AUDIT_FRESH',
-    'DEVBOARD_PROGRESS_STAGE', 'DEVBOARD_PROGRESS_WEIGHTS', 'DEVBOARD_PROJECT_DIR',
-    'DEVBOARD_BASE_BRANCH', 'DEVBOARD_COMMIT', 'DEVBOARD_CHECK_PRIORITY',
-    'DEVBOARD_COMPUTER_SOCKET', 'DEVBOARD_COMPUTER_TOKEN', 'DEVBOARD_DISTRIBUTED_PROTOCOL',
-    'DEVBOARD_DISTRIBUTED_SOCKET', 'DEVBOARD_RESOURCE_LABEL', 'DEVBOARD_RESOURCE_MAX_WAIT',
-    'DEVBOARD_SHIM_DIR', 'DEVBOARD_TIMING_ORIGIN',
+    'PWD', 'OLDPWD', 'SHLVL', '_', 'IGNITE_AUDIT_FRESH', 'IGNITE_AUDIT_IGNORE_ENV', 'IGNITE_PROGRESS_PREFIX',
     'CODEX_APPLY_PATCH_PRESERVE_LINE_ENDINGS', 'CODEX_CI', 'CODEX_SANDBOX',
     'CODEX_SANDBOX_NETWORK_DISABLED', 'CODEX_SESSION_ID', 'CODEX_THREAD_ID',
     'CODEX_TOOL_CALL_ID', 'CODEX_VERSION', 'CLAUDE_CODE_ENABLE_TODO_TOOLS',
@@ -78,7 +73,10 @@ function environment(root, env) {
     // macOS のログイン・起動ごとに変わる識別と、鍵エージェントの通信先。
     'LaunchInstanceID', 'SECURITYSESSIONID', 'SSH_AUTH_SOCK',
   ])
-  return Object.entries(env).filter(([name]) => !omit.has(name)).sort(([a], [b]) => a.localeCompare(b))
+  // 呼び出し元が付ける変数は IGNITE_AUDIT_IGNORE_ENV（空白・カンマ区切り。末尾の * は前方一致）で足せる。
+  const extra = String(env.IGNITE_AUDIT_IGNORE_ENV ?? '').split(/[\s,]+/).filter(Boolean)
+  const ignored = name => omit.has(name) || extra.some(rule => rule.endsWith('*') ? name.startsWith(rule.slice(0, -1)) : name === rule)
+  return Object.entries(env).filter(([name]) => !ignored(name)).sort(([a], [b]) => a.localeCompare(b))
     .map(([name, value]) => [name, String(value) === root ? '<ROOT>' : String(value).replaceAll(root + path.sep, '<ROOT>/')])
 }
 // 出力先は相対パス全体で限定する。同じ名前のディレクトリが入力配下にあっても除外しない。
