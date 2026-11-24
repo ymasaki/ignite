@@ -77,7 +77,7 @@ export function release({ root, commit: requested = process.env.IGNITE_COMMIT, p
   let env
   // GitHubへ触る呼び出しはすべて公開用アカウントのトークンで行う。
   const gh = args => run('gh', args, { env: (env ??= { ...process.env, GH_TOKEN: token() }) })
-  // 読み取りは通信の失敗を2回まで待って再試行する。Releaseへの書き込みは二重にしないよう再試行せず、次回の実行で読み直す（mainの送信はsyncMainを参照）。
+  // 読み取りは通信の失敗を2回まで待って再試行する。Releaseの作成・添付は二重にしないよう再試行せず、次回の実行で読み直す（mainの送信はsyncMain、公開への切り替えはpublishを参照）。
   const fetchGh = args => {
     for (let attempt = 0; ; attempt++) {
       try { return gh(args) } catch (error) {
@@ -135,14 +135,19 @@ export function release({ root, commit: requested = process.env.IGNITE_COMMIT, p
     if (!prepareOnly) {
       syncMain()
       assert(api(`${base}/commits/${head}`).sha === head, '元コミットがGitHubに同期されていません')
+      // 公開済みタグ、なければ公開の途中で止まった同版のdraftの元コミット。draftはタグを持たないので、元コミットで照合する。
       const published = tagCommit()
-      if (published && published !== head) {
-        assert(isAncestor(published, head), `${tag}のタグが対象コミットの祖先ではありません。版を上げてください`)
-        const changed = git('diff', '--name-only', published, head).split('\n').filter(Boolean)
+      const draft = published ? null : getRelease()
+      const started = draft?.draft && /^[0-9a-f]{40}$/.test(draft.target_commitish) ? draft.target_commitish : null
+      const previous = published ?? started
+      if (previous && previous !== head) {
+        const label = published ? 'タグ' : 'draftの元コミット'
+        assert(isAncestor(previous, head), `${tag}の${label}が対象コミットの祖先ではありません。版を上げてください`)
+        const changed = git('diff', '--name-only', previous, head).split('\n').filter(Boolean)
         const inside = changed.filter(file => !outsidePackage(file))
-        assert(!inside.length, `${tag}の公開後に配布物に関わる変更があります。版を上げてください: ${inside.slice(0, 5).join(', ')}`)
-        console.error(`${tag}は${published.slice(0, 7)}で公開済みで、その後の変更は配布物に含まれないため、版を据え置いて既存のReleaseを照合します`)
-        commit = published
+        assert(!inside.length, `${tag}の${published ? '公開後' : 'draft作成後'}に配布物に関わる変更があります。版を上げてください: ${inside.slice(0, 5).join(', ')}`)
+        console.error(`${tag}は${previous.slice(0, 7)}で${published ? '公開済み' : '公開の途中（draft）'}で、その後の変更は配布物に含まれないため、版を据え置いて既存のReleaseを照合します`)
+        commit = previous
       }
       checkTag()
     }
@@ -189,6 +194,20 @@ export function release({ root, commit: requested = process.env.IGNITE_COMMIT, p
       }
       if (complete) assert(items.length === names.length, 'GitHubの添付が不足しています')
     }
+    // draftから公開への切り替えは何度送っても結果が同じなので、接続できずに失敗したときだけReleaseを読み直して2回まで送り直す。
+    // 届いて応答だけ失われた場合は、読み直しで公開済みとわかり二重には送らない。
+    const publish = () => {
+      for (let attempt = 0; ; attempt++) {
+        const current = api(`${base}/releases/${remote.id}`)
+        checkRemote(current)
+        if (!current.draft) return current
+        try { return api(`${base}/releases/${remote.id}`, ['--method', 'PATCH', '-F', 'draft=false']) } catch (error) {
+          if (!error.network || attempt >= 2) throw error
+          console.error(`Releaseの公開が通信の失敗で止まったため、読み直して再試行します（${attempt + 1}/2）`)
+          wait(5000 * (attempt + 1))
+        }
+      }
+    }
     const present = assets()
     verifyAssets(present, !remote.draft)
     if (remote.draft) {
@@ -197,9 +216,7 @@ export function release({ root, commit: requested = process.env.IGNITE_COMMIT, p
         gh(['release', 'upload', tag, path.join(directory, name), '--repo', `github.com/${REPO}`])
       }
       verifyAssets(assets(), true)
-      remote = api(`${base}/releases/${remote.id}`)
-      checkRemote(remote)
-      if (remote.draft) remote = api(`${base}/releases/${remote.id}`, ['--method', 'PATCH', '-F', 'draft=false'])
+      remote = publish()
     }
     assert(!remote.draft, 'Releaseが公開されていません')
     checkRemote(remote)

@@ -229,6 +229,39 @@ test('公開済みの版のあとに配布物に関わる変更があれば、�
   assert.equal(state.builds, builds)
   assert.equal(state.writes, writes)
 })
+// 公開への切り替えだけが失敗し、公開スクリプトの修正を取り込んでから再実行する場合
+function stalledDraft(t) {
+  const ctx = fixture(t)
+  const { perform, state, run } = ctx
+  const down = (cmd, args, options) => {
+    if (cmd === 'gh' && args.includes('PATCH')) throw Error('Patch: dial tcp 1.2.3.4:443: i/o timeout')
+    return run(cmd, args, options)
+  }
+  assert.throws(() => perform({ run: down }), /i\/o timeout/)
+  assert.equal(state.remote.draft, true)
+  assert.equal(state.tag, null)
+  state.head = newer
+  return ctx
+}
+test('公開の途中で止まったdraftのあとが配布物外の変更だけなら、版を据え置いてdraftを公開する', t => {
+  const { perform, state } = stalledDraft(t)
+  const { builds, writes } = state
+  state.changed = ['scripts/release.mjs', 'scripts/release.test.mjs']
+  assert.match(perform({ commit: newer }), /v1.3.1$/)
+  assert.equal(state.builds, builds)
+  assert.equal(state.writes, writes + 1) // 公開だけ
+  assert.equal(state.remote.draft, false)
+  assert.equal(state.tag, commit)
+})
+test('公開の途中で止まったdraftのあとに配布物に関わる変更があれば、版を上げるよう求めて書き込まない', t => {
+  const { perform, state } = stalledDraft(t)
+  const { builds, writes } = state
+  state.changed = ['scripts/release.mjs', 'docs/releasing.md']
+  assert.throws(() => perform({ commit: newer }), /draft作成後に配布物に関わる変更があります。版を上げてください: docs\/releasing.md/)
+  assert.equal(state.builds, builds)
+  assert.equal(state.writes, writes)
+  assert.equal(state.remote.draft, true)
+})
 test('公開済みタグが対象コミットの祖先でなければ据え置かない', t => {
   const { perform, state } = fixture(t)
   state.tag = 'b'.repeat(40)
@@ -272,6 +305,47 @@ test('書き込みの通信失敗は再試行しない', t => {
   assert.throws(() => perform({ run: lost }), /i\/o timeout/)
   assert.equal(posts, 1)
   assert.equal(state.waits, undefined)
+})
+// 公開への切り替え（PATCH draft=false）で実際に出た、接続できずに終わったエラー
+const patchTimeout = () => Object.assign(Error('Patch "https://api.github.com/repos/ymasaki/ignite/releases/17": dial tcp 1.2.3.4:443: i/o timeout'), { network: true })
+const isPatch = (cmd, args) => cmd === 'gh' && args.includes('PATCH')
+test('公開への切り替えが接続できずに失敗しても、読み直して送り直し公開まで進む', t => {
+  const { perform, state, run } = fixture(t)
+  let patches = 0
+  let failures = 1
+  const flaky = (cmd, args, options) => {
+    if (isPatch(cmd, args)) { patches++; if (failures-- > 0) throw patchTimeout() }
+    return run(cmd, args, options)
+  }
+  assert.match(perform({ run: flaky }), /v1.3.1$/)
+  assert.equal(patches, 2)
+  assert.equal(state.remote.draft, false)
+  assert.equal(state.waits, 1)
+})
+test('公開への切り替えが届いて応答だけ失われたら、読み直して二重に送らない', t => {
+  const { perform, state, run } = fixture(t)
+  let patches = 0
+  const lost = (cmd, args, options) => {
+    const result = run(cmd, args, options)
+    if (isPatch(cmd, args) && patches++ === 0) throw patchTimeout()
+    return result
+  }
+  assert.match(perform({ run: lost }), /v1.3.1$/)
+  assert.equal(patches, 1)
+  assert.equal(state.remote.draft, false)
+})
+test('公開への切り替えで接続できない状態が続けば、3回で止めてdraftのまま残す', t => {
+  const { perform, state, run } = fixture(t)
+  let patches = 0
+  const down = (cmd, args, options) => {
+    if (isPatch(cmd, args)) { patches++; throw patchTimeout() }
+    return run(cmd, args, options)
+  }
+  assert.throws(() => perform({ run: down }), /i\/o timeout/)
+  assert.equal(patches, 3)
+  assert.equal(state.remote.draft, true)
+  assert.match(perform(), /v1.3.1$/)
+  assert.equal(state.remote.draft, false)
 })
 // 今回の公開で実際に出た、接続できずに終わったpushのエラー
 const unreachable = () => Object.assign(Error("fatal: unable to access 'https://github.com/ymasaki/ignite.git/': Failed to connect to github.com:443 after 75011 ms: Could not connect to server"), { network: true })
