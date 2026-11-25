@@ -855,6 +855,42 @@ test('PanelHeader: 任意のボタンを置け、タブは見出しの 16px 下�
   await expect(page.getByText('編集を開きました')).toBeVisible()
 })
 
+test('PanelHeader: copyTitle の名前はふだん文字のまま、ホバーでコピーの見た目になり、長くても重ならずはみ出さない', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 })
+  await page.goto('/?nav=list&open=p1')
+  const h2 = page.locator('.pwrap h2.prof-n')
+  await expect(h2).toBeVisible({ timeout: 30000 })
+  const name = (await h2.innerText()).trim()
+  const b = h2.getByRole('button', { name: `${name} 案件名をコピー` })
+  await expect(b).toHaveAttribute('data-tip', 'コピー')
+  // ふだんは文字の見出しと同じ（1 行の高さのまま、地もアイコンも見せない）
+  await page.mouse.move(0, 0)
+  const rest = await b.evaluate((el) => ({ h: el.closest('h2')!.getBoundingClientRect().height, line: parseFloat(getComputedStyle(el.closest('h2')!).lineHeight), bg: getComputedStyle(el).backgroundColor, icon: getComputedStyle(el.querySelector('.ct-i')!).opacity }))
+  expect(rest.h).toBeCloseTo(rest.line, 0)
+  expect(rest.bg).toBe('rgba(0, 0, 0, 0)')
+  expect(rest.icon).toBe('0')
+  await b.hover()
+  await expect(b.locator('.ct-i')).toHaveCSS('opacity', '1')
+  expect(await b.evaluate((el) => getComputedStyle(el).backgroundColor)).not.toBe('rgba(0, 0, 0, 0)')
+  // 狭い幅で長い名前を折り返しても、文字とアイコンが重ならず、パネルからはみ出さない
+  await page.setViewportSize({ width: 420, height: 800 })
+  // 狭い幅では詳細を重ねて出し直すので、出し直した見出しで測る
+  await expect(page.locator('.drawer h2.prof-n .copytext')).toBeVisible()
+  await page.locator('.drawer h2.prof-n .copytext').evaluate((el) => { el.querySelector('.ct-v')!.textContent = 'とても長い名前の案件を折り返して表示するための見本の名前とても長い名前の案件' })
+  const long = page.locator('.drawer h2.prof-n .copytext')
+  await long.hover()
+  const r = await long.evaluate((el) => {
+    const v = el.querySelector('.ct-v')!.getBoundingClientRect(), i = el.querySelector('.ct-i')!.getBoundingClientRect(), box = el.getBoundingClientRect()
+    const sc = el.closest('.panel, .drawer')!
+    return { textEnd: v.right, icon: i.left, right: box.right, left: box.left, edge: sc.getBoundingClientRect(), lines: v.height / parseFloat(getComputedStyle(el).lineHeight), overflow: sc.scrollWidth - sc.clientWidth }
+  })
+  expect(r.lines).toBeGreaterThan(1.5)
+  expect(r.textEnd).toBeLessThanOrEqual(r.icon + 0.5)
+  expect(r.right).toBeLessThanOrEqual(r.edge.right)
+  expect(r.left).toBeGreaterThanOrEqual(r.edge.left)
+  expect(r.overflow).toBeLessThanOrEqual(0)
+})
+
 test('常時表示の詳細: ×を出さずに並べ続け、重ねる幅では下の 1 行に残して Esc で閉じずに戻る', async ({ page }) => {
   await open(page, 'pinned')
   const panel = page.locator('.pslot .panel')

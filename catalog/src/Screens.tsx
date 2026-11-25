@@ -38,6 +38,7 @@ export function DetailPanel({ id, onClose, onShowDashboard }: { id: string; onCl
         smallVisual={<Avatar initial={p.initial} tone={p.tone} size="sm" />}
         kicker={p.status}
         title={p.name}
+        copyTitle="案件名"
         stickySub={p.owner}
         actions={<>
           <Button icon={<IconPencil size={16} stroke={1.8} aria-hidden="true" />} onClick={() => toast('編集を開きました')}>編集する</Button>

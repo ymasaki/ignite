@@ -11,6 +11,7 @@ import { IconX } from '@tabler/icons-react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 
 import { IconButton } from './Button'
+import { CopyText } from './CopyText'
 
 // 固定ヘッダーの高さ（styles/components/panel.css の .pstick-bar と合わせる）
 const STICK_H = 64
@@ -47,6 +48,7 @@ export function PanelHeader({
   smallVisual,
   kicker,
   title,
+  copyTitle,
   lines,
   stickySub,
   actions,
@@ -59,6 +61,8 @@ export function PanelHeader({
   /** 名前の上の補足 */
   kicker?: ReactNode
   title: string
+  /** 名前を押すとコピーできるようにする。何をコピーするかの名前（「氏名」）を渡す。読み上げは「名前 氏名をコピー」で、見た目は CopyText（ふだんは文字のまま、ホバー・フォーカスで地とアイコン）。固定ヘッダーの名前は文字のまま */
+  copyTitle?: string
   /** 名前の下の行 */
   lines?: ReactNode
   /** 固定ヘッダーの補足 */
@@ -106,7 +110,7 @@ export function PanelHeader({
         <div className="prof-t">
           {kicker && <div className="prof-k">{kicker}</div>}
           <h2 /* design-ok: 詳細パネルの見出しそのもの */ className="prof-n" ref={titleRef}>
-            {title}
+            {copyTitle ? <CopyText text={title} label={copyTitle} /> : title}
           </h2>
           {lines}
         </div>

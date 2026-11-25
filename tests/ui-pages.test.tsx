@@ -254,6 +254,22 @@ it('コピーは原文を渡し、成功と失敗を通知し、コードの表�
     advance(60);
     expect(el('[aria-live]').textContent).toBe('コピーできませんでした');
 });
+it('見出しの名前は copyTitle を渡すとコピーのボタンになり、渡さないと文字のまま', async () => {
+    const write = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: write } });
+    render(<PanelFrame><PanelHeader visual="顔" smallVisual="顔" title="前田 詩織" copyTitle="氏名"/></PanelFrame>);
+    const b = el('h2.prof-n > button.copytext');
+    expect(b.getAttribute('aria-label')).toBe('前田 詩織 氏名をコピー');
+    expect(b.getAttribute('data-tip')).toBe('コピー');
+    // 固定ヘッダーの名前は文字のまま
+    expect(el('.pstick-t b').querySelector('button')).toBeNull();
+    click('h2.prof-n button');
+    await act(async () => { await Promise.resolve(); });
+    expect(write).toHaveBeenCalledWith('前田 詩織');
+    expect(el('h2.prof-n button').getAttribute('data-tip')).toBe('コピーしました');
+    render(<PanelFrame><PanelHeader visual="顔" smallVisual="顔" title="前田 詩織"/></PanelFrame>);
+    expect(el('h2.prof-n').innerHTML).toBe('前田 詩織');
+});
 it('アバターは画像失敗で頭文字へ戻り、選択中の顔を省略から残す', () => {
     const pick = vi.fn();
     const items = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
