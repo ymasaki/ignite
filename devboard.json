@@ -5,7 +5,16 @@
     "server": "ignite-catalog",
     "start": "bash scripts/start-catalog.sh",
     "command": "IGNITE_COMMIT=\"$DEVBOARD_COMMIT\" bash scripts/build-catalog.sh",
-    "note": "main取り込み後にカタログをビルド。URLを開くと専用サーバーを起動する"
+    "note": "main取り込み後にカタログをビルド。URLを開くと専用サーバーを起動する",
+    "links": [
+      {
+        "name": "カタログ",
+        "url": "http://ignite-catalog.localhost:18490/index.html"
+      }
+    ]
+  },
+  "remoteDocumentPaths": {
+    "http://ignite-catalog.localhost:18490/index.html": "catalog-dist/index.html"
   },
   "workflow": {
     "base": "main",

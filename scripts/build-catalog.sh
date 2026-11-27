@@ -12,4 +12,5 @@ trap 'rm -rf "$work"' EXIT
 git archive "$commit" | tar -x -C "$work"
 cd "$work"
 npm ci --include=dev
-node_modules/.bin/vite build catalog --outDir "$output" --emptyOutDir
+# 資源を相対パスで参照する。配信のほか、index.html をファイルとして資源ごと読む表示（遠隔の端末での閲覧など）でも同じビルドを開ける
+CATALOG_BASE=./ node_modules/.bin/vite build catalog --outDir "$output" --emptyOutDir

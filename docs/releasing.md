@@ -53,7 +53,7 @@ GitHubでは `v<版>` のdraftを作り、不足する3添付（tgz・`SHA256SUM
 
 ## カタログの公開（GitHub Pages）
 
-カタログは `https://ymasaki.github.io/ignite/` でも公開します。GitHub の `main` が更新されると、`.github/workflows/pages.yml` が `CATALOG_BASE=/ignite/` でカタログをビルドし、Pages へ配信します。`main` は「プロダクションへ」の `release.mjs` だけが送るので、Pages はプロダクションと同じ時点で更新されます。ステージングの `http://ignite-catalog.localhost:18490/` は従来どおり `/` に置いてビルドします。手で配信し直すときは、GitHub の Actions から同じ手順を `workflow_dispatch` で動かします。
+カタログは `https://ymasaki.github.io/ignite/` でも公開します。GitHub の `main` が更新されると、`.github/workflows/pages.yml` が `CATALOG_BASE=/ignite/` でカタログをビルドし、Pages へ配信します。`main` は「プロダクションへ」の `release.mjs` だけが送るので、Pages はプロダクションと同じ時点で更新されます。ステージングのカタログは資源を相対パス（`CATALOG_BASE=./`）で参照するようにビルドし、`http://ignite-catalog.localhost:18490/` での配信のほか、`catalog-dist/index.html` をファイルとして資源ごと読む表示（遠隔の端末での閲覧など）でも同じものを開けます。カタログの画面の切り替えはクエリ（`?nav=…`）だけで行うので、相対パスでも深い URL で資源を見失いません。手で配信し直すときは、GitHub の Actions から同じ手順を `workflow_dispatch` で動かします。
 
 最初の一度だけ、人がリポジトリの Settings → Pages の Source を「GitHub Actions」にします。
 

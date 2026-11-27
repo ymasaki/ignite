@@ -4,6 +4,12 @@
 
 採用アプリは `npx ignite upgrade ./vendor/次の版.tgz`（[採用手順](docs/adopting.md#更新を取り込む)）でこの内容を確かめて取り込む。形式は [docs/releasing.md](docs/releasing.md)。
 
+## 1.22.1（2026-11-27）
+
+### 変更
+
+- ステージングのカタログを、資源を相対パスで参照するようにビルドするようにした（`scripts/build-catalog.sh`）。手元の配信のほか、`catalog-dist/index.html` をファイルとして資源ごと読む表示（遠隔の端末での閲覧など）でも開ける。`docs/releasing.md` の説明を合わせて直した。部品・CSS・監査・CLI の振る舞いは変えていない。採用アプリの対応は要らない。
+
 ## 1.22.0（2026-11-25）
 
 ### 追加
