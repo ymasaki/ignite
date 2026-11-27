@@ -32,6 +32,17 @@ function run(cmd, args, cwd = app) {
 }
 const attempt = (cmd, args, cwd = app) => spawnOnceMore(cmd, args, { cwd, encoding: 'utf8' })
 const ok = (label) => console.log(`  ok: ${label}`)
+// 見本アプリの監査は、毎回 vite の一時サーバーを立てて測る。Mac が混んでいると、サーバーの起動や最初の画面の読み込みが
+// Playwright の待ち時間（60 秒）を超えることがある（判定の失敗ではない）。その時間切れで止まったときに限って 1 回だけやり直す。
+// わざと違反を入れた確認は時間切れの文言を出さないので、やり直さずにそのまま判定する
+const AUDIT_TIMEOUT = /Timed out waiting \d+ms from config\.webServer|Test timeout of \d+ms exceeded/
+function audit(args = []) {
+  const npmArgs = ['run', 'ignite:audit', ...(args.length ? ['--', ...args] : [])]
+  const result = attempt('npm', npmArgs)
+  if (result.status === 0 || !AUDIT_TIMEOUT.test(`${result.stdout}${result.stderr}`)) return result
+  console.log('  （監査の一時サーバーが時間内に応答しなかったため、1 回だけやり直します）')
+  return attempt('npm', npmArgs)
+}
 function assert(cond, label, detail = '') {
   if (!cond) throw new Error(`NG: ${label}\n${detail}`)
   ok(label)
@@ -44,16 +55,16 @@ function verifySampleAudit(label) {
   const original = read('src/ui/SampleRow.tsx')
   const broken = original.replace("? '準備済み'", "? '未設定'")
   assert(broken !== original, `${label}: 例の違反を作れる`)
-  const args = ['run', 'ignite:audit', '--', '--grep', 'ホーム（PC）|決まりから外れたところがない']
+  const args = ['--grep', 'ホーム（PC）|決まりから外れたところがない']
   try {
     fs.writeFileSync(file, broken)
-    const result = attempt('npm', args)
+    const result = audit(args)
     const report = read('test-results-audit/report.md')
     assert(result.status === 1 && report.includes('| アプリの状態表示 | `.appx-state` | 準備済み | 未設定 |'), `${label}: サンプル固有の違反で失敗しレポートに載る`, result.stdout + result.stderr + report)
   } finally {
     fs.writeFileSync(file, original)
   }
-  const corrected = attempt('npm', args)
+  const corrected = audit(args)
   assert(corrected.status === 0 && !read('test-results-audit/report.md').includes('| アプリの状態表示 |'), `${label}: 正しい拡張に戻すと成功する`, corrected.stdout + corrected.stderr)
 }
 
@@ -162,8 +173,8 @@ defineIgniteAudit({`).replace("panRegions: [{ viewport: '.diagram-viewport', con
 
   if (!skipAudit) {
     console.log('4. 描いた画面の監査')
-    const audit = attempt('npm', ['run', 'ignite:audit'])
-    assert(audit.status === 0, '監査が通る', audit.stdout.slice(-3000))
+    const first = audit()
+    assert(first.status === 0, '監査が通る', first.stdout.slice(-3000))
     if (process.env.IGNITE_SMOKE_ARTIFACTS) {
       fs.mkdirSync(process.env.IGNITE_SMOKE_ARTIFACTS, { recursive: true })
       const shot = fs.readdirSync(path.join(app, 'test-results-audit')).find((f) => /ホーム-PC\.png$/.test(f))
@@ -174,19 +185,19 @@ defineIgniteAudit({`).replace("panRegions: [{ viewport: '.diagram-viewport', con
     const css = path.join(app, 'src/styles/app.css')
     const clean = fs.readFileSync(css, 'utf8')
     fs.writeFileSync(css, `${clean}.lscreen-n{font-size:15px}\n.board{border-radius:7px}\n`)
-    const failed = attempt('npm', ['run', 'ignite:audit'])
+    const failed = audit()
     const report = read('test-results-audit/report.md')
     assert(failed.status !== 0 && report.includes('文字の大きさ') && report.includes('15px') && report.includes('角丸'), '描いた画面のずれを監査が見つける', report.slice(0, 1500))
     fs.writeFileSync(css, `${clean}\n:root{--smoke-extra-finding:yes}\n`)
     // 画面の測定と、記録した指摘で失敗させる集計テストを一緒に実行する。
-    const extraArgs = ['run', 'ignite:audit', '--', '--grep', '拡張（PC）|決まりから外れたところがない']
-    const extraFailed = attempt('npm', extraArgs)
+    const extraArgs = ['--grep', '拡張（PC）|決まりから外れたところがない']
+    const extraFailed = audit(extraArgs)
     const extraReport = read('test-results-audit/report.md')
     assert(extraFailed.status === 1 && extraReport.includes('| smoke-extra-rule | `smoke-target` | 0 | 1 |'), '追加測定の違反で監査が失敗し、共通レポートに載る', extraFailed.stdout + extraFailed.stderr + extraReport)
     const originalAudit = read('e2e/ignite.audit.ts')
     fs.writeFileSync(path.join(app, 'e2e/ignite.audit.ts'), originalAudit.replace('defineIgniteAudit({', `defineIgniteAudit({
   exceptions: [{ match: /^smoke-extra-rule smoke-target 0 1$/, why: 'smokeで追加測定の例外処理を確かめる' }],`))
-    const excepted = attempt('npm', extraArgs)
+    const excepted = audit(extraArgs)
     const exceptedReport = read('test-results-audit/report.md')
     assert(excepted.status === 0 && !exceptedReport.includes('smoke-extra-rule'), '対応する例外で追加測定の指摘が除外され、監査が通る', excepted.stdout + excepted.stderr + exceptedReport)
     fs.writeFileSync(path.join(app, 'e2e/ignite.audit.ts'), originalAudit)
