@@ -280,6 +280,7 @@ export function AppShell({ side, foot, collapse, title, titleAfter, search, tool
     const el = sideRef.current
     const scrim = scrimRef.current
     if (!drawerOpen || !el || !scrim) return
+    delete el.dataset.swiped
     let drag: { id: number; x0: number; y0: number; dx: number; lastX: number; lastT: number; vx: number; on: boolean } | null = null
     const paint = (dx: number) => {
       el.style.transition = scrim.style.transition = 'none'
@@ -323,8 +324,11 @@ export function AppShell({ side, foot, collapse, title, titleAfter, search, tool
       window.addEventListener('click', eat, true)
       window.clearTimeout(eatTimer)
       eatTimer = window.setTimeout(() => window.removeEventListener('click', eat, true), 400)
+      // 閉じるときは払った勢いのまま引っ込める目印を付ける（shell.css の .side[data-swiped]。次に開くと外す）
+      const closes = e.type === 'pointerup' && swipeCloses(d.dx, vx, el.offsetWidth)
+      if (closes) el.dataset.swiped = ''
       reset()
-      if (e.type === 'pointerup' && swipeCloses(d.dx, vx, el.offsetWidth)) setOpen(false)
+      if (closes) setOpen(false)
     }
     el.addEventListener('pointerdown', down)
     scrim.addEventListener('pointerdown', down)

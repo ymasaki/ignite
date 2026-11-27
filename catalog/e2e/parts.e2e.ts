@@ -1710,7 +1710,16 @@ test('AppShell: 開いた引き出しの左メニューは左へ払うと閉じ�
   await expect(page.locator('h1 .ttl-t')).toHaveText(before ?? '')
   // 払うあいだに付けた位置が残らず、メニューのボタンでまた開ける
   expect(await side.evaluate((el) => el.style.transform)).toBe('')
+  // 払って閉じたときは、離した勢いのまま引っ込め、暗幕もメニューの位置に合わせて同じ動きで薄める。影も一緒に薄める
+  const motion = () => page.evaluate(() => {
+    const s = getComputedStyle(document.querySelector('aside.side')!), m = getComputedStyle(document.querySelector('.side-scrim')!)
+    return { side: [s.transitionProperty, s.transitionTimingFunction], scrim: m.transitionTimingFunction }
+  })
+  expect(await side.getAttribute('data-swiped')).toBe('')
+  expect(await motion()).toEqual({ side: ['transform, box-shadow', 'cubic-bezier(0.2, 0.7, 0.2, 1), cubic-bezier(0.2, 0.7, 0.2, 1)'], scrim: 'cubic-bezier(0.2, 0.7, 0.2, 1), linear' })
   await opened()
+  // 次に開くと目印は外れ、ボタン・暗幕を押して閉じるときの動きは変えない
+  expect(await side.getAttribute('data-swiped')).toBeNull()
   // 暗い背景の上から払っても閉じる
   await swipe([380, 400], [250, 400])
   await expect(menu).toHaveAttribute('aria-expanded', 'false')
