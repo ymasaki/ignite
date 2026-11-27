@@ -5,6 +5,7 @@ import { DEFAULT_ASSIST, applyAssist, assistChanged, currentAssist, parseAssist,
 import { CONTRAST_TEXT_MORE, contrastRulesFor, releaseDays, tipShift } from '../src/index'
 import { lineRows, lineSummary, seriesSummary, stackRows, tileName } from '../src/ui/Chart'
 import { axisTicks, boxStats, columnSummary, pieSlices, waterfallBars } from '../src/ui/Plot'
+import { swipeCloses } from '../src/ui/shellLayout'
 import { CONTRAST_RULES, CONTRAST_TEXT, CONTRAST_UI, contrastRatio, currentTheme, isMode, isSkin, fitAvatars, fitSlots, keepVisible, kpiVariants, pressOverlap, pickFitStep, pickTheme, pickWidestFit, setTheme, SHELL_SIZES, shellBreakpoints, shellLayout, squarify, startTheme, type ThemeEnv } from '../src/index'
 
 const at = (width: number, o: { collapsed?: boolean; panelOpen?: boolean; keepSide?: boolean } = {}) =>
@@ -105,6 +106,20 @@ describe('アプリの枠の骨組み（shellLayout）', () => {
 
   it('つまみで広げたら、自動で畳む幅のあいだは畳まない（主役が狭くても横に並べたまま）', () => {
     expect(at(900, { keepSide: true })).toEqual({ side: 'full', panel: 'compact', panelW: 320, autoRail: false })
+  })
+})
+
+describe('引き出しの左メニューを払って閉じるか（swipeCloses）', () => {
+  it('幅の 3 割より左へ動かしたら、ゆっくりでも閉じる', () => {
+    expect(swipeCloses(-79, 0, 260)).toBe(true)
+    expect(swipeCloses(-77, 0, 260)).toBe(false)
+  })
+  it('速く左へ払えば短くても閉じるが、ほとんど動かさない払いでは閉じない', () => {
+    expect(swipeCloses(-30, -0.5, 260)).toBe(true)
+    expect(swipeCloses(-10, -0.5, 260)).toBe(false)
+  })
+  it('右へ戻しながら離したら、大きく動かしていても閉じない', () => {
+    expect(swipeCloses(-150, 0.3, 260)).toBe(false)
   })
 })
 

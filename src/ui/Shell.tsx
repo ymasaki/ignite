@@ -1,6 +1,6 @@
 // アプリの枠（左メニュー・ヘッダー・帯・内容・詳細パネル）。見た目は styles/components/shell.css。
 // 大きさへの対応はこの部品が持つ（DESIGN.md 5 章）。骨組み（左メニューを畳む・詳細パネルを詰める・重ねる）は shellLayout.ts が
-// 窓の幅と寸法から決める。スマホ幅（600px 以下）では左メニューを引き出しにし、開くボタンは画面名と 1 つにまとめる（幅を空けるため）。
+// 窓の幅と寸法から決める。スマホ幅（600px 以下）では左メニューを引き出しにし、開くボタンは画面名と 1 つにまとめる（幅を空けるため）。開いた引き出しは左へ払って閉じる。
 
 import { IconChevronLeft, IconClock, IconMenu2, IconRefresh } from '@tabler/icons-react'
 import { createContext, Fragment, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ButtonHTMLAttributes, type CSSProperties, type ReactNode } from 'react'
@@ -11,7 +11,7 @@ import { Button } from './Button'
 import { Toaster } from './Toast'
 import { Drawer, isTyping, type DrawerPeek } from './Controls'
 import { reducedMotion } from './Motion'
-import { SHELL_SIZES, shellLayout, type ShellLayout, type ShellSizes, type ShellState } from './shellLayout'
+import { SHELL_SIZES, shellLayout, swipeCloses, type ShellLayout, type ShellSizes, type ShellState } from './shellLayout'
 import { startTips } from './tip'
 
 // 左メニューを畳む・広げる動きの長さ（shell.css の .app の grid-template-columns と合わせる）
@@ -203,6 +203,7 @@ export function AppShell({ side, foot, collapse, title, titleAfter, search, tool
   const [open, setOpen] = useState(false)
   const close = () => setOpen(false)
   const sideRef = useRef<HTMLElement>(null)
+  const scrimRef = useRef<HTMLDivElement>(null)
   const mainRef = useRef<HTMLElement>(null)
   const pinned = !!panel?.pinned
   const panelOpen = pinned || !!panel?.open
@@ -270,6 +271,75 @@ export function AppShell({ side, foot, collapse, title, titleAfter, search, tool
     return () => {
       window.removeEventListener('keydown', onKey)
       back?.focus?.()
+    }
+  }, [drawerOpen])
+  // 開いた引き出しは左へ払って閉じる（指・ペンだけ。マウスは文字の選択とぶつかる）。払うあいだは指に付いて動き、背景の暗さも薄める。
+  // 離したときの距離と速さで閉じるか戻るかを決める（swipeCloses）。縦に動かしたら中のスクロールに任せる。
+  // 開く向き（画面の左端から引き出す）は持たない。端末の「戻る」の払い（iOS・Android のジェスチャー操作）とぶつかるので、開くのはメニューのボタンだけ
+  useEffect(() => {
+    const el = sideRef.current
+    const scrim = scrimRef.current
+    if (!drawerOpen || !el || !scrim) return
+    let drag: { id: number; x0: number; y0: number; dx: number; lastX: number; lastT: number; vx: number; on: boolean } | null = null
+    const paint = (dx: number) => {
+      el.style.transition = scrim.style.transition = 'none'
+      el.style.transform = `translateX(${dx}px)`
+      scrim.style.opacity = String(Math.max(0, 1 + dx / (el.offsetWidth || 1)))
+    }
+    const reset = () => {
+      for (const s of [el.style, scrim.style]) s.transition = s.transform = s.opacity = ''
+    }
+    // 払い終えた直後の click（指を離した位置の項目）は押したことにしない
+    const eat = (e: MouseEvent) => (el.contains(e.target as Node) || e.target === scrim) && (e.preventDefault(), e.stopPropagation())
+    let eatTimer = 0
+    const down = (e: PointerEvent) => {
+      if (e.pointerType === 'mouse' || !e.isPrimary || drag) return
+      drag = { id: e.pointerId, x0: e.clientX, y0: e.clientY, dx: 0, lastX: e.clientX, lastT: e.timeStamp, vx: 0, on: false }
+    }
+    const move = (e: PointerEvent) => {
+      if (!drag || e.pointerId !== drag.id) return
+      const dx = e.clientX - drag.x0
+      if (!drag.on) {
+        const dy = e.clientY - drag.y0
+        if (Math.hypot(dx, dy) < 10) return
+        // 左向きが主の動きだけを払いとして受ける（縦・右向きは見送る）
+        if (dx >= 0 || Math.abs(dx) <= Math.abs(dy)) return void (drag = null)
+        drag.on = true
+      }
+      const dt = e.timeStamp - drag.lastT
+      if (dt > 0) drag.vx = (e.clientX - drag.lastX) / dt
+      drag.lastX = e.clientX
+      drag.lastT = e.timeStamp
+      drag.dx = Math.min(0, dx)
+      paint(drag.dx)
+    }
+    const end = (e: PointerEvent) => {
+      if (!drag || e.pointerId !== drag.id) return
+      const d = drag
+      drag = null
+      if (!d.on) return
+      // 止めてから離したら速さは 0（ゆっくり戻した・止めたのに、最後の速さで閉じない）
+      const vx = e.timeStamp - d.lastT > 100 ? 0 : d.vx
+      window.addEventListener('click', eat, true)
+      window.clearTimeout(eatTimer)
+      eatTimer = window.setTimeout(() => window.removeEventListener('click', eat, true), 400)
+      reset()
+      if (e.type === 'pointerup' && swipeCloses(d.dx, vx, el.offsetWidth)) setOpen(false)
+    }
+    el.addEventListener('pointerdown', down)
+    scrim.addEventListener('pointerdown', down)
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', end)
+    window.addEventListener('pointercancel', end)
+    return () => {
+      el.removeEventListener('pointerdown', down)
+      scrim.removeEventListener('pointerdown', down)
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', end)
+      window.removeEventListener('pointercancel', end)
+      window.clearTimeout(eatTimer)
+      window.removeEventListener('click', eat, true)
+      reset()
     }
   }, [drawerOpen])
   // Esc で吹き出し（data-tip）を消し、マウスを動かす・フォーカスを移すと戻す（WCAG 1.4.13。見えている説明を閉じられるように）
@@ -379,7 +449,7 @@ export function AppShell({ side, foot, collapse, title, titleAfter, search, tool
             <IconChevronLeft size={14} stroke={2} />
           </button>
         )}
-        <div className={`side-scrim ${open ? 'on' : ''}`} onClick={close} />
+        <div ref={scrimRef} className={`side-scrim ${open ? 'on' : ''}`} onClick={close} />
         {/* 読み上げのランドマーク: 左メニュー（aside）・ヘッダー（header）・本体（main）・詳細パネル（section）。内容はどれかの中に置く */}
         <div className="mainwrap" inert={drawerOpen}>
           <header className="top">

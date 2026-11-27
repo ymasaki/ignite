@@ -75,7 +75,9 @@
   /* 影は開いているときだけ（閉じて画面の外にあるときに、影が左端ににじまないように） */
   .side{position:fixed;left:0;top:0;bottom:0;z-index:var(--z-drawer);width:260px;transform:translateX(-100%);transition:transform .2s ease-in}
   .side.open{box-shadow:var(--shadow-2);transform:none;transition:transform .22s var(--ease-in-out)}
-  .side-scrim.on{display:block;position:fixed;inset:0;z-index:var(--z-scrim);background:var(--scrim)}
+  .side-scrim.on{display:block;position:fixed;inset:0;z-index:var(--z-scrim);background:var(--scrim);touch-action:pan-y}
+  /* 開いた引き出しを左へ払って閉じる（AppShell）。横の動きはブラウザに渡さず、縦のスクロールだけ任せる */
+  .side.open{touch-action:pan-y}
   .ttl h1{display:flex;flex:none;font-size:var(--fs-16)}
   .ttl-t{display:none}
 }

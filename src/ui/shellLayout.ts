@@ -99,3 +99,13 @@ export function shellBreakpoints(z: ShellSizes = SHELL_SIZES) {
     overlayBelow: z.side.rail + z.gutter * 2 + z.panel.compact + z.panel.gap + z.mainMin,
   }
 }
+
+/**
+ * 引き出しの左メニューを左へ払ったとき、離した時点で閉じるか（閉じる向きだけ。開く向きの払いは端末の「戻る」とぶつかるので持たない）。
+ * dx は指を置いた位置からの横の移動（左が負）、vx は離す直前の速さ（px/ms、左が負）、width は引き出しの幅。
+ * 幅の 3 割より左へ動かした、または速く左へ払った（0.3px/ms より速く、20px 以上）なら閉じる。少し右へ戻して離したら閉じない
+ */
+export function swipeCloses(dx: number, vx: number, width: number): boolean {
+  if (vx > 0.1) return false
+  return dx < -width * 0.3 || (vx < -0.3 && dx < -20)
+}

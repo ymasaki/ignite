@@ -1671,6 +1671,51 @@ test('AppShell: 引き出しの左メニューを開いたまま窓を広げた�
   await expect(page.locator('aside.side')).not.toHaveClass(/open/)
 })
 
+test('AppShell: 開いた引き出しの左メニューは左へ払うと閉じ、少し動かす・縦に動かすだけでは閉じない', async ({ page }) => {
+  await open(page, 'overview')
+  await page.setViewportSize({ width: 400, height: 800 })
+  const menu = page.locator('.ttl-menu')
+  const side = page.locator('aside.side')
+  // ブラウザのタッチとして送る（CSS の touch-action とブラウザのジェスチャー判定も通す）
+  const cdp = await page.context().newCDPSession(page)
+  await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 })
+  const swipe = async (from: [number, number], to: [number, number], steps = 8) => {
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: from[0], y: from[1] }] })
+    for (let i = 1; i <= steps; i++) {
+      const p = { x: from[0] + ((to[0] - from[0]) * i) / steps, y: from[1] + ((to[1] - from[1]) * i) / steps }
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [p] })
+    }
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+  }
+  const opened = async () => {
+    await menu.click()
+    await expect(menu).toHaveAttribute('aria-expanded', 'true')
+    await expect.poll(() => side.evaluate((el) => el.getBoundingClientRect().left)).toBe(0)
+  }
+  await opened()
+  // 少しだけ左へ動かして止めてから離すと、元の位置へ戻る
+  await swipe([200, 300], [180, 300], 2)
+  await page.waitForTimeout(300)
+  await expect(menu).toHaveAttribute('aria-expanded', 'true')
+  await expect(side).toHaveClass(/open/)
+  // 縦に動かすだけ（中のスクロール）では閉じない
+  await swipe([150, 500], [140, 250])
+  await page.waitForTimeout(300)
+  await expect(menu).toHaveAttribute('aria-expanded', 'true')
+  // 項目の上から大きく左へ払うと閉じ、離した位置の項目は押したことにならない
+  const before = await page.locator('h1 .ttl-t').textContent()
+  await swipe([150, 300], [10, 300])
+  await expect(menu).toHaveAttribute('aria-expanded', 'false')
+  await expect(side).not.toHaveClass(/open/)
+  await expect(page.locator('h1 .ttl-t')).toHaveText(before ?? '')
+  // 払うあいだに付けた位置が残らず、メニューのボタンでまた開ける
+  expect(await side.evaluate((el) => el.style.transform)).toBe('')
+  await opened()
+  // 暗い背景の上から払っても閉じる
+  await swipe([380, 400], [250, 400])
+  await expect(menu).toHaveAttribute('aria-expanded', 'false')
+})
+
 test('CopyText: コピーの機能が無い環境では、できなかったと知らせる', async ({ page }) => {
   await page.addInitScript(() => Object.defineProperty(Navigator.prototype, 'clipboard', { get: () => undefined }))
   await open(page, 'actions')
