@@ -75,7 +75,9 @@
   /* 影は開いているときだけ（閉じて画面の外にあるときに、影が左端ににじまないように） */
   .side{position:fixed;left:0;top:0;bottom:0;z-index:var(--z-drawer);width:260px;transform:translateX(-100%);transition:transform .2s ease-in}
   .side.open{box-shadow:var(--shadow-2);transform:none;transition:transform .22s var(--ease-in-out)}
-  .side-scrim.on{display:block;position:fixed;inset:0;z-index:var(--z-scrim);background:var(--scrim);touch-action:pan-y}
+  /* 暗幕は出し入れをフェードにする（DESIGN.md 6 章「暗幕」）。閉じている間は見えず押せない。出は引き出しと同じ長さ */
+  .side-scrim{display:block;position:fixed;inset:0;z-index:var(--z-scrim);background:var(--scrim);touch-action:pan-y;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .2s ease-out,visibility 0s linear .2s}
+  .side-scrim.on{opacity:1;visibility:visible;pointer-events:auto;transition:opacity var(--dur-slow) ease-out}
   /* 開いた引き出しを左へ払って閉じる（AppShell）。横の動きはブラウザに渡さず、縦のスクロールだけ任せる */
   .side.open{touch-action:pan-y}
   .ttl h1{display:flex;flex:none;font-size:var(--fs-16)}

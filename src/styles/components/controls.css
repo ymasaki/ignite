@@ -132,8 +132,9 @@
 [data-keys="off"] .sfield:has(> .kbd-key) > .field{padding-right:44px}
 
 /* 引き出し（狭い画面の詳細）。スマホ幅では下から出るシート */
-.drawer-scrim{position:fixed;inset:0;z-index:var(--z-scrim);background:var(--scrim);animation:fadeIn .2s ease-out}
-.drawer-scrim.closing{animation:fadeOut .18s ease-in forwards}
+/* 背面の暗幕は、入りを引き出しより長く薄く始めて暗くし、出は引き出しと同じ長さで消す（DESIGN.md 6 章「暗幕」。引き出しより長く残すと、閉じ終えて外したときに途中で切れる） */
+.drawer-scrim{position:fixed;inset:0;z-index:var(--z-scrim);background:var(--scrim);animation:fadeIn var(--dur-slow) ease-out}
+.drawer-scrim.closing{animation:fadeOut .18s ease-out forwards}
 .drawer{position:fixed;right:12px;top:12px;bottom:12px;z-index:var(--z-drawer);width:min(400px,calc(100% - 24px));overflow:auto;
   background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-2);animation:drawerIn .22s var(--ease-in-out)}
 /* 開いたときに引き出しそのものへフォーカスを移す（中の最初の操作へ飛ばさない）。入れ物なので枠は出さない */

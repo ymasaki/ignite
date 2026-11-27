@@ -5,9 +5,9 @@
 .dialog.lg{width:min(720px,calc(100vw - 32px))}
 .dialog:focus-visible{outline:none}
 .dialog[open]{animation:dlgIn var(--dur-base) var(--ease-in-out)}
-.dialog::backdrop{background:var(--scrim);animation:fadeIn var(--dur-base) ease-out}
+.dialog::backdrop{background:var(--scrim);animation:fadeIn var(--dur-slow) ease-out} /* 暗幕は窓より長くかけて暗くする（DESIGN.md 6 章「暗幕」） */
 .dialog.closing{animation:dlgOut .16s ease-in forwards}
-.dialog.closing::backdrop{animation:fadeOut .16s ease-in forwards}
+.dialog.closing::backdrop{animation:fadeOut .16s ease-out forwards}
 @keyframes dlgIn{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
 @keyframes dlgOut{from{opacity:1;transform:none}to{opacity:0;transform:translateY(4px) scale(.98)}}
 .dlg-in{display:flex;flex-direction:column;max-height:inherit}

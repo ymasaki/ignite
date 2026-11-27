@@ -1716,6 +1716,38 @@ test('AppShell: 開いた引き出しの左メニューは左へ払うと閉じ�
   await expect(menu).toHaveAttribute('aria-expanded', 'false')
 })
 
+test('暗幕: 左メニューの引き出し・詳細の引き出し・窓の背面は、パッと切り替えずに時間をかけて暗くなる', async ({ page }) => {
+  // 入りは --dur-slow（0.32s）の ease-out、出はパネルと同じ長さの ease-out（DESIGN.md 6 章「暗幕」）
+  await open(page, 'overview')
+  await page.setViewportSize({ width: 400, height: 800 })
+  const scrim = page.locator('.side-scrim')
+  const style = () => scrim.evaluate((el) => { const c = getComputedStyle(el); return { display: c.display, visibility: c.visibility, opacity: c.opacity, duration: c.transitionDuration, ease: c.transitionTimingFunction } })
+  // 閉じている間も表示の切り替え（display）ではなく、見えない状態で待っている
+  await expect.poll(async () => (await style()).visibility).toBe('hidden')
+  expect(await style()).toMatchObject({ display: 'block', opacity: '0' })
+  await page.locator('.ttl-menu').click()
+  expect(await style()).toMatchObject({ duration: '0.32s', ease: 'ease-out' })
+  await expect.poll(async () => (await style()).opacity).toBe('1')
+  // 暗幕を押すと閉じ、薄れてから見えなくなる（押せなくなる）
+  await page.mouse.click(380, 400)
+  await expect(page.locator('.ttl-menu')).toHaveAttribute('aria-expanded', 'false')
+  expect((await style()).duration).toBe('0.2s, 0s')
+  await expect.poll(async () => (await style()).visibility).toBe('hidden')
+  expect((await style()).opacity).toBe('0')
+
+  await page.setViewportSize({ width: 375, height: 812 })
+  await page.goto('/?nav=list')
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 30000 })
+  await page.locator('.erow').first().click()
+  expect(await page.locator('.drawer-scrim').evaluate((el) => { const c = getComputedStyle(el); return [c.animationName, c.animationDuration, c.animationTimingFunction] })).toEqual(['fadeIn', '0.32s', 'ease-out'])
+
+  await open(page, 'feedback')
+  await page.getByRole('button', { name: '窓を開く' }).click()
+  const dialog = page.getByRole('dialog', { name: '名前を変える' })
+  await expect(dialog).toBeVisible()
+  expect(await dialog.evaluate((el) => { const c = getComputedStyle(el, '::backdrop'); return [c.animationName, c.animationDuration, c.animationTimingFunction] })).toEqual(['fadeIn', '0.32s', 'ease-out'])
+})
+
 test('CopyText: コピーの機能が無い環境では、できなかったと知らせる', async ({ page }) => {
   await page.addInitScript(() => Object.defineProperty(Navigator.prototype, 'clipboard', { get: () => undefined }))
   await open(page, 'actions')
