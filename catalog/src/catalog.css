@@ -1,5 +1,5 @@
 /* カタログの配置。色・文字・枠は部品に任せる */
-.cat-wrap{container-type:inline-size;height:100%}
+.cat-wrap{position:relative;container-type:inline-size;height:100%}
 .cat{display:grid;grid-template-columns:minmax(0,1fr);gap:32px;align-items:start;height:100%;padding:24px;overflow-y:auto;scroll-padding-top:24px}
 .cat-main{display:grid;grid-template-columns:minmax(0,1fr);min-width:0}
 /* まとまりの 1 段。線 1 本だけで区切る。左の見出しは長い段でも見えるよう、面の上端に留める */

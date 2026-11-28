@@ -9,6 +9,7 @@ import { Checkbox } from './Form'
 import { Notice } from './Layout'
 import { Collapse } from './Motion'
 import { OtpField } from './OtpField'
+import { ScrollBar } from './ScrollBar'
 import { useShell } from './Shell'
 import { PasswordField, TextField } from './TextArea'
 
@@ -19,23 +20,27 @@ import { PasswordField, TextField } from './TextArea'
  */
 export function AuthScreen({ mark, name, title, footer, children }: { mark?: ReactNode; name: ReactNode; title: string; footer?: ReactNode; children: ReactNode }) {
   const titleId = useId()
+  const ref = useRef<HTMLDivElement>(null)
   const inShell = useShell().inShell
   const Root = inShell ? 'div' : 'main'
   const Title = inShell ? 'h2' : 'h1'
   return (
-    <Root className="auth-screen">
-      <div className="auth-column">
-        <section className="auth-card" aria-labelledby={titleId}>
-          <div className="auth-brand">
-            {mark && <span className="auth-mark">{mark}</span>}
-            <span className="auth-name">{name}</span>
-          </div>
-          <Title className="auth-title sr-only" id={titleId}>{title}</Title>
-          {children}
-        </section>
-        {footer && <div className="auth-foot">{footer}</div>}
-      </div>
-    </Root>
+    <>
+      <Root className="auth-screen" ref={ref}>
+        <div className="auth-column">
+          <section className="auth-card" aria-labelledby={titleId}>
+            <div className="auth-brand">
+              {mark && <span className="auth-mark">{mark}</span>}
+              <span className="auth-name">{name}</span>
+            </div>
+            <Title className="auth-title sr-only" id={titleId}>{title}</Title>
+            {children}
+          </section>
+          {footer && <div className="auth-foot">{footer}</div>}
+        </div>
+      </Root>
+      <ScrollBar target={ref} />
+    </>
   )
 }
 

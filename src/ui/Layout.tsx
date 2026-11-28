@@ -4,6 +4,7 @@ import { IconAlertCircle, IconCircleCheck, IconInfoCircle } from '@tabler/icons-
 import { Fragment, useEffect, useRef, type ReactNode } from 'react'
 
 import { RollingText } from './Motion'
+import { ScrollBar } from './ScrollBar'
 
 const NOTICE_ICONS = { danger: IconAlertCircle, ok: IconCircleCheck, info: IconInfoCircle }
 
@@ -14,11 +15,13 @@ const NOTICE_ICONS = { danger: IconAlertCircle, ok: IconCircleCheck, info: IconI
  * 一覧が空のときは children の代わりに empty（EmptyState）を出す
  */
 export function ListScreen({ tools, count, notice, layout, empty, children }: { tools: ReactNode; count?: ReactNode; notice?: ReactNode; layout: 'tiles' | 'comparison'; empty?: ReactNode; children?: ReactNode }) {
+  const bodyRef = useRef<HTMLDivElement>(null)
   return (
     <div className="lscreen">
       <ScreenBar count={count}>{tools}</ScreenBar>
       {notice}
-      <div className="lscreen-body">{empty || <div className={`lscreen-list ${layout}`}>{children}</div>}</div>
+      <div className="lscreen-body" ref={bodyRef}>{empty || <div className={`lscreen-list ${layout}`}>{children}</div>}</div>
+      <ScrollBar target={bodyRef} />
     </div>
   )
 }
@@ -47,9 +50,12 @@ export function DashboardScreen({ children }: { children: ReactNode }) {
     return () => el.removeEventListener('scroll', sync)
   }, [])
   return (
-    <div className="dash" ref={ref}>
-      {children}
-    </div>
+    <>
+      <div className="dash" ref={ref}>
+        {children}
+      </div>
+      <ScrollBar target={ref} />
+    </>
   )
 }
 

@@ -3,12 +3,13 @@
 // ThemeSettings はどのアプリにも置くテーマ（テーマカラーとライト／ダーク。skin.ts。この端末に覚える）。見た目は styles/components/settings.css
 
 import { IconChevronRight, IconDeviceDesktop, IconMoon, IconSettings, IconSun, type Icon } from '@tabler/icons-react'
-import { useState, type ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 
 import { currentAssist, setAssist, type Assist } from '../assist'
 import { currentTheme, setTheme, type Mode, type Skin, type Theme } from '../skin'
 import { Segmented } from './Controls'
 import { withFade } from './Motion'
+import { ScrollBar } from './ScrollBar'
 
 /**
  * 左メニューの下の「設定」。current: 設定の画面を開いている。collapsed: 左メニューを畳んでいる（アイコンだけにし、名前は吹き出しで出す）。
@@ -30,9 +31,11 @@ export function SettingsButton({ current, onClick, collapsed = false, joined = f
  * footer は面の下端に固定する段（まとめて保存する画面の「保存」と知らせ。スクロールしても見える）
  */
 export function SettingsScreen({ children, footer }: { children: ReactNode; footer?: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null)
   return (
     <section className="board settings-board">
-      <div className="settings">{children}</div>
+      <div className="settings" ref={ref}>{children}</div>
+      <ScrollBar target={ref} />
       {footer && <div className="settings-foot">{footer}</div>}
     </section>
   )

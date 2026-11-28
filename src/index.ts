@@ -12,6 +12,7 @@ export { EntityRow, Highlight } from './ui/List'
 export { Avatar, AvatarGroup, AvatarStack, IconBox, type AvatarSize, type AvatarTone, type IconBoxSize } from './ui/Avatar'
 export { AnimatedList, Appear, Collapse, CollapseInline, Expandable, RollingNumber, RollingWord, Skeleton, WaveText, reducedMotion, withFade } from './ui/Motion'
 export { Board, Crumbs, DashboardScreen, EmptyState, KeyValues, ListScreen, Notice, Prose, ScreenBar, Section, SubHeading } from './ui/Layout'
+export { ScrollBar, scrollBarMetrics, scrollTopFromDrag, type ScrollBarMetrics } from './ui/ScrollBar'
 // Stepper の既定ラベルは、表記を保てる数字を RollingNumber で回す。
 export { MonthStepper, Stepper } from './ui/Month'
 export { FitBar, fitSlots, pickFitStep, useFitCount, useFitStep } from './ui/Fit'

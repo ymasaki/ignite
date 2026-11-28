@@ -2212,3 +2212,59 @@ test('FileDrop: 送れなかったときは赤い印と理由を出し、押す�
   const [chooser] = await Promise.all([page.waitForEvent('filechooser'), zone.click()])
   await chooser.setFiles([])
 })
+
+test.describe('ScrollBar（スマホのタッチ環境）', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true })
+
+  test('コンテンツが縦にはみ出すページで右端にスクロールバーを出し、スクロールとドラッグに追従する', async ({ page }) => {
+    await page.goto('/')
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 30000 })
+    await expect(page.locator('#boot')).toHaveCount(0)
+
+    const rail = page.locator('.scroll-rail')
+    const thumb = page.locator('.scroll-thumb')
+    await expect(rail).toHaveAttribute('data-visible', '')
+    await expect(rail).toBeVisible()
+
+    const initial = await Promise.all([rail.boundingBox(), thumb.boundingBox()])
+    expect(initial[0]).not.toBeNull()
+    expect(initial[1]).not.toBeNull()
+    expect(initial[1]!.height).toBeGreaterThanOrEqual(32)
+    expect(initial[1]!.height).toBeLessThan(initial[0]!.height)
+
+    // 本文をスクロールすると、つまみが下へ動き、スクロール中の印が付く
+    await page.locator('.cat').evaluate((el) => { el.scrollTop = 1200 })
+    await expect(rail).toHaveAttribute('data-scrolling', '')
+    await expect.poll(async () => (await thumb.boundingBox())!.y).toBeGreaterThan(initial[1]!.y + 20)
+
+    // つまみをドラッグして先頭方向へ戻せる
+    const beforeDrag = (await thumb.boundingBox())!
+    const startX = beforeDrag.x + beforeDrag.width / 2
+    const startY = beforeDrag.y + beforeDrag.height / 2
+    await page.mouse.move(startX, startY)
+    await page.mouse.down()
+    await expect(rail).toHaveAttribute('data-dragging', '')
+    await page.mouse.move(startX, startY - 60, { steps: 6 })
+    await page.mouse.up()
+    await expect(rail).not.toHaveAttribute('data-dragging', '')
+    const afterDragTop = await page.locator('.cat').evaluate((el) => el.scrollTop)
+    expect(afterDragTop).toBeLessThan(1200)
+
+    // ダッシュボード・設定でも表示され、はみ出さない一覧では非表示のまま
+    for (const nav of ['dashboard', 'settings']) {
+      await page.goto(`/?nav=${nav}`)
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 30000 })
+      await expect(page.locator('.scroll-rail')).toHaveAttribute('data-visible', '')
+      await expect(page.locator('.scroll-rail')).toBeVisible()
+    }
+
+    await page.goto('/?nav=list')
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 30000 })
+    await expect(page.locator('.scroll-rail[data-visible]')).toHaveCount(0)
+  })
+})
+
+test('ScrollBar: デスクトップ（非タッチ環境）では独自のスクロールバーを描かない', async ({ page }) => {
+  await open(page, 'overview')
+  await expect(page.locator('.scroll-rail')).toHaveCount(0)
+})

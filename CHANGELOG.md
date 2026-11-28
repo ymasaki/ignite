@@ -4,6 +4,12 @@
 
 採用アプリは `npx ignite upgrade ./vendor/次の版.tgz`（[採用手順](docs/adopting.md#更新を取り込む)）でこの内容を確かめて取り込む。形式は [docs/releasing.md](docs/releasing.md)。
 
+## 1.24.0（2026-11-28）
+
+### 追加
+
+- タッチ端末（スマホなど `pointer: coarse` の環境）でコンテンツが縦にはみ出すとき、右端に細いスクロールバーを重ねて表示する `ScrollBar` を追加し、カタログと各画面の型（`ListScreen`・`DashboardScreen`・`SettingsScreen`・`AuthScreen`）に組み込んだ。現在の位置と全体の長さが見え、つまみをドラッグしてスクロールすることもできる。デスクトップ環境では従来どおり何も描かない。採用アプリの対応は要らない。
+
 ## 1.23.1（2026-11-27）
 
 ### 変更

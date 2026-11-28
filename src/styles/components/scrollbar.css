@@ -1,0 +1,17 @@
+/* タッチ端末のコンテンツ向けスクロールバー（ui/ScrollBar.tsx）。
+   OS 標準の重ね表示は静止時に消えて位置がわからないため、はみ出すあいだだけ右端に細いバーを出し、つまみをドラッグしても送れる */
+[data-scroll-rail]{scrollbar-width:none}
+[data-scroll-rail]::-webkit-scrollbar{display:none}
+.scroll-rail{position:absolute;top:0;left:0;z-index:4;width:20px;pointer-events:none;opacity:0;visibility:hidden;transition:opacity var(--dur-base) ease-out,visibility 0s linear var(--dur-base)}
+.scroll-rail[data-visible]{opacity:1;visibility:visible;transition:opacity var(--dur-fast) ease-out}
+.scroll-thumb{position:absolute;top:0;right:0;width:20px;pointer-events:auto;touch-action:none;will-change:transform}
+.scroll-thumb::after{content:"";position:absolute;top:0;bottom:0;right:3px;width:4px;border-radius:99px;background:var(--edge);opacity:.75;transition:opacity var(--dur-base) ease-out,width var(--dur-fast) ease-out,background-color var(--dur-fast) ease-out}
+.scroll-rail[data-scrolling] .scroll-thumb::after{opacity:.95;background:var(--ink-3)}
+.scroll-rail[data-dragging] .scroll-thumb::after{width:6px;opacity:1;background:var(--pri)}
+@media (forced-colors: active){
+  .scroll-thumb::after{background:CanvasText;opacity:1}
+  .scroll-rail[data-dragging] .scroll-thumb::after{background:Highlight}
+}
+@media (prefers-reduced-motion: reduce){
+  .scroll-rail,.scroll-thumb::after{transition:none}
+}

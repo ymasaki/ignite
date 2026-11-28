@@ -1,5 +1,5 @@
 import { IconArrowRight, IconBell, IconBrandGithub, IconEyeCheck, IconRocket, IconChartBar, IconHome, IconMenu2, IconSettings, IconUsers } from '@tabler/icons-react'
-import { AvatarGroup, BarList, Board, Button, Checkbox, CodeBlock, ColumnChart, currentAssist, DatePicker, Delta, EntityRow, FormField, Gauge, IconBox, LinkButton, NumberField, reducedMotion, RollingNumber, Segmented, SettingGroup, SettingRow, setAssist, Stat, Switch, Tag, ThemeSettings, useScrollFocus, withFade, type Assist, type Theme } from '@ymasaki/ignite'
+import { AvatarGroup, BarList, Board, Button, Checkbox, CodeBlock, ColumnChart, currentAssist, DatePicker, Delta, EntityRow, FormField, Gauge, IconBox, LinkButton, NumberField, reducedMotion, RollingNumber, ScrollBar, Segmented, SettingGroup, SettingRow, setAssist, Stat, Switch, Tag, ThemeSettings, useScrollFocus, withFade, type Assist, type Theme } from '@ymasaki/ignite'
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
 import { version } from '../../package.json'
 import { HeroLogo } from './logo'
@@ -298,6 +298,7 @@ export function OverviewPage({ theme, onTheme, onOpen }: { theme: Theme; onTheme
             </section>
           </div>
         </div>
+        <ScrollBar target={ref} />
       </div>
     </Board>
   )

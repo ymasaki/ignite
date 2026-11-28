@@ -1,4 +1,4 @@
-import { CopyText, LinkButton, reducedMotion, Board, useScrollFocus } from '@ymasaki/ignite'
+import { CopyText, LinkButton, reducedMotion, Board, ScrollBar, useScrollFocus } from '@ymasaki/ignite'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { pageOf, specOf } from './nav'
 
@@ -37,6 +37,7 @@ export function Page({ page, target, children }: { page: string; target?: string
             </div>
           )}
         </div>
+        <ScrollBar target={ref} />
       </div>
     </Board>
   )
