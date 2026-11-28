@@ -358,19 +358,14 @@ export function RollingWord({ children }: { children: string }) {
 }
 
 /**
- * 読み込み中・処理中の文（「読み込んでいます」など）。字の太さと濃さの山が左から右へ流れ続ける。
+ * 読み込み中・処理中の文（「読み込んでいます」など）。落ち着いた文字の上を、主要色の淡い光が左から右へなめらかに流れる。
  * 読み上げは文のまま（role="status"）。動きを減らす設定では止まり、ふつうの文になる。待ちが長く読めない処理に 1 か所だけ置く
  */
 export function WaveText({ children }: { children: string }) {
-  const chars = [...children]
   return (
     <span className="wave" role="status">
       <span className="sr-only">{children}</span>
-      <span aria-hidden="true">
-        {chars.map((c, i) => (
-          <span key={i} style={{ '--i': i - chars.length } as CSSProperties}>{c}</span>
-        ))}
-      </span>
+      <span className="wave-t" aria-hidden="true">{children}</span>
     </span>
   )
 }

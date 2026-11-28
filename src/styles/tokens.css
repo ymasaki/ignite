@@ -23,6 +23,8 @@
   --ink:color-mix(in srgb,var(--pri) 1.5%,#3c3c43);   /* text/default */
   --ink-2:color-mix(in srgb,var(--pri) 2.5%,#67676c); /* text/secondary */
   --ink-3:color-mix(in srgb,var(--pri) 3%,#69696e); /* text/tertiary（#7b7b7f）を、小さな文字でも読める濃さ（薄い主要色の地の上でも 4.5:1）まで下げた */
+  --wave-tint:color-mix(in srgb,var(--chart-2) 55%,var(--ink-3));
+  --wave-shine:color-mix(in srgb,var(--chart-2) 68%,var(--pri-ink));
 
   /* スキンの主要色（ブランドカラー。設定の見本にも使う） */
   --skin-red:#f04600; --skin-blue:#0080ee; --skin-green:#00c093;

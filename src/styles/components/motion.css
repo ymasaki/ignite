@@ -67,13 +67,6 @@
 .roll-strip{display:block;white-space:pre;line-height:var(--roll-h);text-align:center;transition:transform .6s var(--ease-spring)}
 .roll-strip::before{content:'0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9'}
 
-@media (prefers-reduced-motion: reduce){
-  .roll-strip,.roll-col{transition:none}
-  .collapse,.collapse > div,.collapse-x,.collapse-x.open{transition:none}
-  .skel-h::before,.skel-l::before,.appear > *{animation:none}
-  .expand-body,.expand-t svg{transition:none}
-}
-
 /* テーマ（色の組）の切り替えは、画面全体を 0.3s で入れ替える（ui/Motion.tsx の withFade。View Transitions） */
 ::view-transition-old(root),::view-transition-new(root){animation-duration:.3s}
 
@@ -86,7 +79,18 @@
 @keyframes rwIn{from{opacity:0;translate:0 90%}to{opacity:1;translate:0 0}}
 @keyframes rwOut{from{opacity:1;translate:0 0}to{opacity:0;translate:0 -90%}}
 
-/* 太さの波（WaveText）: 字ごとに太さと濃さの山を少しずつ遅らせて流す。--i は字の番号から字数を引いた負の数で、初めから波の途中を見せる */
-.wave{color:var(--ink-3)}
-.wave > [aria-hidden] > span{animation:waveWeight 1.6s var(--ease-in-out) calc(var(--i) * .08s) infinite}
-@keyframes waveWeight{0%,60%,100%{font-weight:400;color:var(--ink-3)}30%{font-weight:700;color:var(--ink)}}
+/* 光の波（WaveText）: 落ち着いた文字の上を、主要色の淡い光が左から右へなめらかに流れる。
+   太さは変えず、文字の幅やカーニングを揺らさない。0% と 100% は光が外れた単色（--ink-3）なので、動きを減らす設定（data-motion="reduce"）でも静かな文字で止まる */
+.wave{position:relative;color:var(--ink-3)}
+.wave-t{background:linear-gradient(100deg,var(--ink-3) 36%,var(--wave-tint) 45%,var(--wave-shine) 50%,var(--wave-tint) 55%,var(--ink-3) 64%) 100% 0/320% 100% no-repeat;
+  -webkit-background-clip:text;background-clip:text;color:transparent;animation:waveShine 1.8s ease-in-out -.3s infinite both}
+@keyframes waveShine{0%{background-position:100% 0}82%,100%{background-position:0 0}}
+
+@media (prefers-reduced-motion: reduce){
+  .roll-strip,.roll-col{transition:none}
+  .collapse,.collapse > div,.collapse-x,.collapse-x.open{transition:none}
+  .skel-h::before,.skel-l::before,.appear > *{animation:none}
+  .expand-body,.expand-t svg{transition:none}
+  .wave-t{background:none;color:inherit;animation:none}
+}
+@media (forced-colors: active){.wave-t{background:none;color:inherit;animation:none}}

@@ -20,6 +20,8 @@
   --ink:color-mix(in srgb,var(--pri) 1.5%,#ececee);
   --ink-2:color-mix(in srgb,var(--pri) 2.5%,#b4b4ba);
   --ink-3:color-mix(in srgb,var(--pri) 3%,#a6a6ae);
+  --wave-tint:color-mix(in srgb,var(--pri-ink) 62%,var(--ink-3));
+  --wave-shine:color-mix(in srgb,var(--pri-ink) 26%,var(--ink));
 
   /* 主要色の濃淡（薄い地は暗い地に主要色を混ぜる。その上の文字は明るい赤） */
   --pri-ink:#ff9c80;

@@ -6,7 +6,7 @@ import { Popover, Select, Segmented, SearchField, Drawer } from '../src/ui/Contr
 import { FileDrop, dragLabel, splitFiles, uploadPercent } from '../src/ui/FileDrop';
 import { ChartTooltip, chartTip } from '../src/ui/ChartTooltip';
 import { announce, focusFirstInvalid, keepFocus, useReturnFocus, useScrollFocus } from '../src/ui/A11y';
-import { Collapse, Expandable, RollingNumber, RollingWord, withFade } from '../src/ui/Motion';
+import { Collapse, Expandable, RollingNumber, RollingWord, WaveText, withFade } from '../src/ui/Motion';
 import { domSetup, render, el, event, click, key, frame, advance, resize, unmount, observers, host } from './dom';
 domSetup();
 it('Popoverは外側・Escape・子のcloseで閉じ、Escapeで元へ戻る', () => {
@@ -249,4 +249,14 @@ it('数字と文字の更新は読み上げに新しい値を出し、fadeは縮
     const apply = vi.fn();
     withFade(apply);
     expect(apply).toHaveBeenCalledOnce();
+});
+it('待ちの文は読み上げと装飾の 2 要素だけで描き、文字ごとの要素へ分けない', () => {
+    render(<WaveText>読み込んでいます</WaveText>);
+    const status = el('[role="status"]');
+    expect(status.classList.contains('wave')).toBe(true);
+    expect([...status.children].map((c) => [c.className, c.getAttribute('aria-hidden'), c.textContent])).toEqual([
+        ['sr-only', null, '読み込んでいます'],
+        ['wave-t', 'true', '読み込んでいます'],
+    ]);
+    expect(status.querySelectorAll('span')).toHaveLength(2);
 });

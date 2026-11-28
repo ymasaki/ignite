@@ -1927,6 +1927,11 @@ test('強制カラー（Windows のハイコントラスト）でも、選んだ
   const pages = page.locator('.pg-row').first()
   expect(await css(pages.locator('.thumb'), 'background-color')).toBe(highlight)
   expect(await css(pages.locator('[aria-current="page"]'), 'color')).toBe(highlightText)
+  // 待ちの文: グラデーションの文字抜きのままにせず、通常の文字色に戻す
+  await open(page, 'motion')
+  const wave = page.locator('[data-spec="wave"] .wave-t').first()
+  expect(await css(wave, 'background-image')).toBe('none')
+  expect(await css(wave, 'color')).not.toBe('rgba(0, 0, 0, 0)')
 })
 
 test('Button の shortcut: キーで押し、押している間はキャップが沈む。1 文字のキーは入力中には効かない', async ({ page }) => {
@@ -2267,4 +2272,32 @@ test.describe('ScrollBar（スマホのタッチ環境）', () => {
 test('ScrollBar: デスクトップ（非タッチ環境）では独自のスクロールバーを描かない', async ({ page }) => {
   await open(page, 'overview')
   await expect(page.locator('.scroll-rail')).toHaveCount(0)
+})
+
+test('WaveText: 太さは変わらず、動きを減らす設定では装飾を止めて落ち着く', async ({ page }) => {
+  await open(page, 'motion')
+  const wave = page.locator('[data-spec="wave"] .wave-t').first()
+  for (const ms of [100, 450, 750, 1200]) {
+    const state = await wave.evaluate((el, t) => {
+      for (const a of el.getAnimations()) { a.pause(); a.currentTime = t }
+      const cs = getComputedStyle(el)
+      return { weight: cs.fontWeight, bg: cs.backgroundImage }
+    }, ms)
+    expect(state.weight).toBe('400')
+    expect(state.bg).not.toBe('none')
+  }
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await expect.poll(() => wave.evaluate((el) => getComputedStyle(el).backgroundImage)).toBe('none')
+  expect(await wave.evaluate((el) => getComputedStyle(el).color)).not.toBe('rgba(0, 0, 0, 0)')
+  // 設定の「動きを減らす」でもアニメーションは 1 回で終わり、光の外側の単色位置に収まる
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.evaluate(() => {
+    const root = document.documentElement
+    root.dataset.assist = JSON.stringify({ ...JSON.parse(root.dataset.assist || '{}'), motion: 'reduce' })
+    root.dataset.motion = 'reduce'
+  })
+  await expect.poll(() => wave.evaluate((el) => {
+    const cs = getComputedStyle(el)
+    return { count: cs.animationIterationCount, pos: cs.backgroundPosition }
+  })).toEqual({ count: '1', pos: '0px 0px' })
 })

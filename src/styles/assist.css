@@ -20,6 +20,8 @@
   --ink:color-mix(in srgb,var(--pri) 1.5%,#1c1c20);
   --ink-2:color-mix(in srgb,var(--pri) 2%,#35353b);
   --ink-3:color-mix(in srgb,var(--pri) 2.5%,#44444a);
+  --wave-tint:color-mix(in srgb,var(--pri-ink) 55%,var(--ink-3));
+  --wave-shine:var(--pri-ink);
   --line:color-mix(in srgb,var(--pri) 2%,#b9b9bc);
   --line-2:color-mix(in srgb,var(--pri) 3%,#86868b);
   --edge:color-mix(in srgb,var(--pri) 3%,#6b6b70);
@@ -39,6 +41,8 @@
   --ink:color-mix(in srgb,var(--pri) 1%,#f8f8f9);
   --ink-2:color-mix(in srgb,var(--pri) 2%,#d6d6db);
   --ink-3:color-mix(in srgb,var(--pri) 2.5%,#d0d0d6);
+  --wave-tint:var(--pri-ink);
+  --wave-shine:var(--ink);
   --line:color-mix(in srgb,var(--pri) 3%,#4d4d55);
   --line-2:color-mix(in srgb,var(--pri) 3%,#7c7c85);
   --edge:color-mix(in srgb,var(--pri) 3.5%,#94949c);
